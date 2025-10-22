@@ -1,0 +1,229 @@
+:root {
+  --bg: #9D6800;
+  --ink: #ccc6a9;
+  /* --muted: #000000; */
+  --muted: #CCC6A9;
+  --accent: #000000;
+  --accent-2: #000000;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.story-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  
+}
+
+/* Overlay layout poured into <Scroll html> */
+.story-overlay {
+  position: relative;
+  width: min(920px, 92vw);
+  margin: 0 auto;
+  pointer-events: none; /* allow scrolling without blocking canvas */
+  text-shadow: none !important;
+}
+
+.story-section {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  gap: 1.1rem;
+  padding: 4rem ;
+}
+
+.story-title {
+  font-size: clamp(2rem, 4.8vw, 4rem);
+  line-height: 1.05;
+  margin: 0;
+  letter-spacing: -0.02em;
+  padding: 4rem;
+  /* text-shadow: 0 4px 24px rgba(0,0,0,0.35); */
+}
+
+.story-subtitle {
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  line-height: 1.15;
+  margin: 0 0 0.25rem 0;
+  letter-spacing: -0.01em;
+  /* padding: 4rem; */
+}
+
+.story-p {
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0;
+  max-width: 72ch;
+  padding: 4rem;
+}
+
+.story-cta {
+  display: inline-block;
+  margin-top: 1.25rem;
+  padding: 0.8rem 1.2rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 10px;
+  pointer-events: auto; /* clickable */
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.story-cta:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.35);
+}
+
+/* Loader */
+.loader {
+  pointer-events: none;
+}
+
+.loader-box {
+  width: 240px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 12px;
+  border-radius: 40px;
+  backdrop-filter: blur(6px);
+}
+
+.loader-bar {
+  height: 8px;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+  position: relative;
+}
+
+.loader-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0 60% 0 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 6px;
+  animation: loader 1.2s linear infinite;
+}
+
+@keyframes loader {
+  0%   { inset: 0 92% 0 0; }
+  50%  { inset: 0 25% 0 0; }
+  100% { inset: 0 92% 0 0; }
+}
+
+.loader-text {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+
+
+
+
+/* Works on Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 5px; /* width of scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f100; /* color of the track */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; /* color of the scroll handle */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* color when hovered */
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin; /* "auto" or "thin" */
+  scrollbar-color: #888 #f1f1f1; /* thumb and track colors */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* mobile  */
+/* =======================================
+   MOBILE RESPONSIVENESS (≤768px)
+   ======================================= */
+@media (max-width: 768px) {
+  .story-container {
+    height: 100vh;
+    overflow-y: auto;
+    margin-top: 5rem;
+  }
+
+  .story-overlay {
+    width: 92vw;
+    padding: 0 1rem;
+  }
+
+  .story-section {
+    min-height: auto;
+    padding: 2rem 1rem;
+    gap: 1rem;
+  }
+
+  .story-title {
+    font-size: 1.8rem;
+    line-height: 1.2;
+    text-align: center;
+    padding: 1.2rem 0.6rem;
+  }
+
+  .story-subtitle {
+    font-size: 1.3rem;
+    text-align: center;
+  }
+
+  .story-p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    text-align: justify;
+    padding: 0.6rem 0;
+  }
+
+  .story-cta {
+    display: block;
+    margin: 1.5rem auto 0 auto;
+    text-align: center;
+    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+  }
+
+  /* loader smaller */
+  .loader-box {
+    width: 180px;
+    padding: 10px;
+  }
+  .loader-text {
+    font-size: 0.8rem;
+  }
+}

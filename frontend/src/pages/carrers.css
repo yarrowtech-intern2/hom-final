@@ -1,0 +1,229 @@
+:root {
+  --carrers-bg: #9D6800;
+  --carrers-center: #9D6800;
+}
+
+/* Root wrapper */
+.carrers-root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: var(--carrers-bg);
+}
+
+/* Keep canvas underneath overlays */
+.carrers-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* Radial glow overlay */
+.carrers-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60vw 60vw at 60% 40%, var(--carrers-center) 0%, var(--carrers-bg) 70%, #7a2f00 100%);
+}
+
+/* Overlays sit above canvas */
+.carrers-title,
+.carrers-sec,
+.carrers-sec-cta {
+  position: absolute;
+  z-index: 2;
+  color: #fff;
+  font-family: Manrope, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* Title (desktop) */
+.carrers-title {
+  top: 90px;
+  left: 54px;
+  user-select: none;
+  letter-spacing: 2px;
+}
+.carrers-title .big {
+  font-size: 138px;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Left copy (desktop) */
+.carrers-sec {
+  left: 62px;
+  bottom: 210px;
+  max-width: 360px;
+}
+.carrers-sec h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* Hiring CTA (desktop) */
+.carrers-sec-cta {
+  left: 62px;
+  bottom: 110px;
+  max-width: 360px;
+  opacity: 0.95;
+}
+.carrers-sec-cta .txt {
+  line-height: 1.6;
+  font-size: 18px;
+  color: #fff;
+}
+.carrers-btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 8px 16px;
+  background: #fff;
+  color: #9D6800;
+  text-decoration: none;
+  border-radius: 140px;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* --------------------------------
+   MOBILE (≤768px) — desktop untouched
+   -------------------------------- */
+@media (max-width: 768px) {
+  /* Bigger glow area for small screens */
+  .carrers-glow {
+    background: radial-gradient(90vw 90vw at 60% 40%, var(--carrers-center) 0%, var(--carrers-bg) 70%, #7a2f00 100%);
+  }
+
+  .carrers-title {
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 100%;
+    margin-top: 4rem;
+  }
+  .carrers-title .big {
+    font-size: 56px;
+    letter-spacing: 1px;
+  }
+
+  .carrers-sec {
+    left: 50%;
+    bottom: 220px;
+    transform: translateX(-50%);
+    max-width: min(90%, 520px);
+    text-align: center;
+    padding: 0 1rem;
+    color: rgb(93, 63, 6);
+  }
+  #cta-up{
+    color:black;
+    font-weight:900;
+    font-family: "Manrope";
+  }
+
+
+  .carrers-sec h1 {
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .carrers-sec-cta {
+    left: 50%;
+    bottom: 100px;
+    transform: translateX(-50%);
+    max-width: min(90%, 520px);
+    text-align: center;
+    padding: 0 1rem;
+  }
+  .carrers-sec-cta .txt {
+    font-size: 14px;
+  }
+  .carrers-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+}
+
+
+
+
+/* --------------------------------
+   CTA BUTTON ANIMATION + HOVER
+   -------------------------------- */
+.carrers-btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 8px 18px;
+  background: #fff;
+  color: #9D6800;
+  text-decoration: none;
+  border-radius: 140px;
+  font-weight: 800;
+  font-size: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* subtle glow animation on load */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); transform: scale(1); }
+  50% { box-shadow: 0 0 18px rgba(255, 255, 255, 0.6); transform: scale(1.04); }
+}
+.carrers-btn {
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+/* Hover / focus */
+.carrers-btn:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #9D6800, #d89a2b);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.carrers-btn:active {
+  transform: scale(0.98);
+}
+
+/* Smooth text fade on hover */
+.carrers-btn::after {
+  content: "→";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  opacity: 0;
+  font-weight: 900;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.carrers-btn:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* --------------------------------
+   CTA TEXT FADE-IN ON LOAD
+   -------------------------------- */
+.carrers-sec-cta .txt {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 1.2s ease forwards 1s;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

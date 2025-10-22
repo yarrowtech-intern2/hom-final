@@ -1,0 +1,499 @@
+/* Neumorphic theme variables */
+.jobs-root {
+  --bg: #eef2f7;
+  --bg-soft: #f4f6fa;
+  --text: #814a16;
+  --muted: #8e5807;
+
+  --shadow-dark: #c7ccd5;
+  --shadow-light: #ffffff;
+
+  --card: #f1f4f9;
+  --card-dark: #0f1420;
+
+  --brand-from: #563100;
+  --brand-to: #c87f37;
+
+  --accent: #0ea5e9;
+}
+
+/* :root {
+  --bg: #cea75e;
+  --bg-soft: #f6e3c9;
+  --text: #000000;
+  --muted: #000000;
+
+  --shadow-dark: #47474754;
+  --shadow-light: #ffdfa8b6;
+
+  --card: #cdaf7f;
+  --card-dark: #000000;
+
+  --brand-from: #2a1f0f;
+  --brand-to: #6b7280;
+
+  --accent: #0ea5e9;
+} */
+
+/* html, body {
+  height: auto !important;
+  overflow: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y !important; 
+} */
+
+ html, body {
+  
+  touch-action: pan-y !important;
+  webkit-overflow-scrolling: touch; 
+  overflow: auto !important;
+}
+
+
+/* Dark mode opt-in: add class="dark" to <html> if needed */
+html.dark {
+  --bg: #0b1220;
+  --bg-soft: #0e1729;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+
+  --shadow-dark: #0a0f1a;
+  --shadow-light: #101826;
+
+  --card: #0e1729;
+  --card-dark: #0b1220;
+
+  --brand-from: #ffffff;
+  --brand-to: #cbd5e1;
+}
+
+/* Reset-ish */
+.jobs-root, .modal-root {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+.jobs-root {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%);
+  color: var(--text);
+}
+
+/* ---------------- Hero ---------------- */
+.hero {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 16px 24px;
+}
+
+.hero-head {
+  /* font-size: clamp(24px, 4vw, 48px); */
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-top: 4rem;
+}
+.hero-head span{
+    font-size: clamp(24px, 4vw, 48px);
+  font-weight: 800;
+}
+
+.brand {
+  background: linear-gradient(90deg, var(--brand-from), var(--brand-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-sub {
+  margin-top: 12px;
+  max-width: 720px;
+  color: var(--muted);
+}
+
+/* --------------- Filters/Search --------------- */
+.filters {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  border: none;
+  outline: none;
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow:
+    6px 6px 14px var(--shadow-dark),
+    -6px -6px 14px var(--shadow-light);
+  transition: box-shadow .25s ease;
+}
+
+.search-input:focus {
+  box-shadow:
+    inset 6px 6px 12px var(--shadow-dark),
+    inset -6px -6px 12px var(--shadow-light);
+}
+
+.search-hint {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* --------------- Grid --------------- */
+.jobs-grid-wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 16px 96px;
+}
+
+.jobs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .jobs-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .jobs-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* --------------- Card --------------- */
+.job-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 24px;
+  background: var(--card);
+  transform-style: preserve-3d;
+  box-shadow:
+    8px 8px 18px var(--shadow-dark),
+    -8px -8px 18px var(--shadow-light);
+  transition: box-shadow .3s ease, transform .3s ease;
+  cursor: default;
+}
+
+.job-card:hover {
+  box-shadow:
+    inset 10px 10px 22px var(--shadow-dark),
+    inset -10px -10px 22px var(--shadow-light);
+}
+
+.job-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.job-title {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.chip {
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(148,163,184,.25);
+  box-shadow:
+    inset 4px 4px 8px var(--shadow-dark),
+    inset -4px -4px 8px var(--shadow-light);
+}
+
+.job-meta {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.job-desc {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.job-tags {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  font-size: 12px;
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow:
+    6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+}
+
+.job-cta {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.salary {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.btn-apply {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b1220;
+  background: linear-gradient(135deg, #ffffff, #e5e7eb);
+  box-shadow:
+    6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.btn-apply:active {
+  box-shadow:
+    inset 6px 6px 12px var(--shadow-dark),
+    inset -6px -6px 12px var(--shadow-light);
+  transform: translateY(1px);
+}
+
+/* glow */
+.hover-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  opacity: 0;
+  filter: blur(14px);
+  transition: opacity .3s ease;
+  background: linear-gradient(45deg, rgba(255,255,255,.10), rgba(203,213,225,.10), rgba(255,255,255,.10));
+}
+.job-card:hover .hover-glow { opacity: 1; }
+
+/* --------------- Modal --------------- */
+.modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(240, 243, 255, 0.705);
+  backdrop-filter: blur(8px);
+}
+.modal-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 640px;
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow:
+    12px 12px 28px var(--shadow-dark),
+    -12px -12px 28px var(--shadow-light);
+}
+
+.modal-head h4 {
+  font-size: 20px;
+  font-weight: 800;
+}
+.modal-head .muted {
+  margin-top: 6px;
+  font-size: 12px;
+  color: black;
+}
+
+/* Form */
+.form { margin-top: 12px; }
+.field { display: block; }
+.field + .field { margin-top: 12px; }
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: black;
+  text-transform: uppercase;
+}
+
+.input, .textarea {
+  width: 100%;
+  outline: none;
+  border: none;
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.223);
+  box-shadow:
+    inset 6px 6px 12px var(--shadow-dark),
+    inset -6px -6px 12px var(--shadow-light);
+}
+.textarea { resize: vertical; min-height: 110px; }
+
+.grid-2 {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+}
+
+.modal-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.btn {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 16px;
+  font-weight: 700;
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+  box-shadow:
+    6px 6px 12px var(--shadow-dark),
+    -6px -6px 12px var(--shadow-light);
+}
+.btn.ghost {
+  background: rgba(148,163,184,.25);
+  color: var(--text);
+}
+.btn.primary {
+  color: #0b1220;
+  background: linear-gradient(135deg, #ffffff, #e5e7eb);
+}
+.btn:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 6px 6px 12px var(--shadow-dark),
+    inset -6px -6px 12px var(--shadow-light);
+}
+
+.error {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #ef4444;
+}
+
+/* --------------- Loader --------------- */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%);
+}
+.loader-core {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  box-shadow:
+    6px 6px 14px var(--shadow-dark),
+    -6px -6px 14px var(--shadow-light);
+}
+.loader-ping {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(100,116,139,.5);
+  animation: ping 1s infinite;
+}
+@keyframes ping {
+  0% { transform: scale(.9); opacity: .9; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+.loader-text {
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+/* --------------- Empty state --------------- */
+.empty-box {
+  margin: 24px auto 0;
+  max-width: 520px;
+  text-align: center;
+  color: var(--muted);
+  padding: 28px 24px;
+  border-radius: 20px;
+  background: var(--bg);
+  box-shadow:
+    inset 6px 6px 12px var(--shadow-dark),
+    inset -6px -6px 12px var(--shadow-light);
+}
+
+/* --------------- Mobile spacing tweaks --------------- */
+@media (max-width: 400px) {
+  .hero { padding-top: 44px; }
+  .search-input { padding: 10px 36px 10px 12px; }
+  .btn-apply { padding: 8px 12px; }
+}
+
+
+
+
+/* Lenis helpers so touch scrolling isn’t locked */
+html.lenis,
+html.lenis body {
+  height: auto;               /* important for mobile */
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;      /* disable native smooth to avoid conflicts */
+}
+
+.lenis-stopped {
+  overflow: hidden;           /* only applied when you explicitly stop Lenis */
+}
+
+/* Safety: ensure nothing globally disables touch scroll */
+body {
+  touch-action: auto;         /* avoid accidental touch lock */
+}
+
+
+/* Loader hidden state (in case state glitches) */
+.loader[aria-hidden="true"] {
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
+/* Backdrop only when visible via React (your code already mounts/unmounts it) */
+.modal-backdrop { pointer-events: auto; }
+

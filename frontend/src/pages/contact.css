@@ -1,0 +1,205 @@
+/* Scope EVERYTHING to the contact page to avoid leaking to other routes */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+.contact-page {
+  min-height: 100vh;
+  width: 100%;
+  /* your brown theme background */
+  background: #9D6800;
+  /* center the card WITHOUT changing <body> */
+  display: grid;
+  place-items: center;
+  padding: 40px 16px;
+}
+
+/* Card */
+.contact-page .contact-container {
+  width: 100%;
+  max-width: 600px;
+  background: #b68626;
+  padding: 40px 50px;
+  border-radius: 25px;
+  /* neumorphic raised */
+  box-shadow: 10px 10px 20px #593e0c, -10px -10px 20px #ffb42a9e;
+}
+
+.contact-page h1 {
+  text-align: center;
+  font: 600 2rem/1.2 "Poppins", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #1f1f1f;
+  margin: 0 0 10px;
+  font-family: "manrope"
+}
+
+.contact-page .subtitle {
+  text-align: center;
+  color: #000000;
+  margin: 0 0 30px;
+  font-family: "manrope"
+}
+
+/* Form grid */
+.contact-page .contact-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.contact-page .form-group {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-page .form-group.full { flex: 1 1 100%; }
+
+.contact-page label {
+  font-size: 0.9rem;
+  color: #3b2a0a;
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-family: "manrope";
+}
+
+/* Inputs (inset neo) */
+.contact-page input,
+.contact-page textarea {
+  border: none;
+  outline: none;
+  border-radius: 15px;
+  background: #e8d1a3;                  /* lighter surface for contrast on brown */
+  box-shadow: inset 6px 6px 12px #c0a87a, inset -6px -6px 12px #ffffffb4;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: #1e1e1e;
+  transition: box-shadow .25s ease, transform .06s ease;
+}
+
+.contact-page input:focus,
+.contact-page textarea:focus {
+  box-shadow: inset 4px 4px 10px #b4935c, inset -4px -4px 10px #ffe9ba, 0 0 0 2px rgba(255,255,255,.18);
+}
+
+/* Button (raised neo) */
+.contact-page .btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 15px;
+  background: #7db656;
+  color: #0f160c;
+  cursor: pointer;
+  box-shadow: 6px 6px 12px #3c5a2a, -6px -6px 12px #bde7a2;
+  transition: box-shadow .25s ease, transform .06s ease;
+  font-family: "manrope"
+}
+
+.contact-page .btn:hover {
+  box-shadow: inset 6px 6px 12px #49733a, inset -6px -6px 12px #c8f0b6;
+}
+
+@media (max-width: 600px) {
+  .contact-page .form-group { flex: 1 1 100%; }
+}
+
+
+
+
+
+
+
+
+
+/* =======================================
+   MOBILE RESPONSIVENESS (≤768px)
+   ======================================= */
+@media (max-width: 768px) {
+  .contact-page {
+    padding: 24px 12px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin-top: 3.5rem;
+  }
+
+  .contact-page .contact-container {
+    max-width: 95%;
+    padding: 24px 20px;
+    border-radius: 18px;
+    box-shadow: 6px 6px 14px #5c420d, -6px -6px 14px #f8be47a4;
+  }
+
+  .contact-page h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-page .subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    padding: 0 0.5rem;
+  }
+
+  .contact-page .contact-form {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .contact-page .form-group {
+    flex: 1 1 100%;
+  }
+
+  .contact-page label {
+    font-size: 0.85rem;
+  }
+
+  .contact-page input,
+  .contact-page textarea {
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+
+  .contact-page textarea {
+    min-height: 140px;
+  }
+
+  .contact-page .btn {
+    padding: 12px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+  }
+}
+
+/* ---------------------------------------
+   SMALL DEVICES (≤480px)
+   --------------------------------------- */
+@media (max-width: 480px) {
+  .contact-page .contact-container {
+    padding: 20px 16px;
+  }
+
+  .contact-page h1 {
+    font-size: 1.4rem;
+  }
+
+  .contact-page .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .contact-page input,
+  .contact-page textarea {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+
+  .contact-page .btn {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+}

@@ -1,0 +1,273 @@
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import {
+  KeyboardControls,
+  useKeyboardControls,
+  PointerLockControls,
+  Html,
+  Environment,
+  useGLTF,
+  ContactShadows,
+} from "@react-three/drei";
+import { Physics, RigidBody, CapsuleCollider } from "@react-three/rapier";
+import * as THREE from "three";
+import { useNavigate } from "react-router-dom";
+
+const KEYMAP = [
+  { name: "forward", keys: ["KeyW", "ArrowUp"] },
+  { name: "backward", keys: ["KeyS", "ArrowDown"] },
+  { name: "left", keys: ["KeyA", "ArrowLeft"] },
+  { name: "right", keys: ["KeyD"] },
+  // { name: "right", keys: ["KeyD", "ArrowRight"] },
+  { name: "jump", keys: ["Space"] },
+  { name: "sprint", keys: ["ShiftLeft", "ShiftRight"] },
+];
+
+
+const SPEED = 3.4;
+const SPRINT = 1.8;
+const JUMP = 6.5;
+const PLAYER_HEIGHT = 3.35;   // ✅ human-sized, avoids ceiling collisions
+const PLAYER_RADIUS = 0.35;
+
+/* -------------------- 3D Scene -------------------- */
+/** Loads the GLB, emits a spawn when ready (uses Empty named SpawnPoint/spawn/Start). */
+function BalconyScene({ onSpawn }) {
+  const { scene } = useGLTF("/models/gallery2.glb");
+
+  useEffect(() => {
+    const spawn =
+      scene.getObjectByName("SpawnPoint") ||
+      scene.getObjectByName("spawn") ||
+      scene.getObjectByName("Start");
+
+    if (spawn && onSpawn) {
+      const w = new THREE.Vector3();
+      spawn.getWorldPosition(w);
+      const halfHeight = PLAYER_HEIGHT / 2 - PLAYER_RADIUS;
+      const centerY = w.y + halfHeight + PLAYER_RADIUS; // = w.y + PLAYER_HEIGHT/2
+      onSpawn([w.x, centerY, w.z]);
+    } else if (onSpawn) {
+      onSpawn([0, PLAYER_HEIGHT / 2, 3]); // fallback
+    }
+
+    // shadows + reflections on all meshes/materials
+    scene.traverse((o) => {
+      if (o.isLight) {
+        o.castShadow = true;
+      }
+      if (o.isMesh) {
+        o.castShadow = true;
+        o.receiveShadow = true;
+        if (o.material) {
+          // boost IBL reflections a bit; tune 0.6–1.5
+          if ("envMapIntensity" in o.material) o.material.envMapIntensity = 1.0;
+          o.material.needsUpdate = true;
+        }
+      }
+    });
+
+
+
+  }, [scene, onSpawn]);
+
+  return (
+    <RigidBody type="fixed" colliders="trimesh">
+      <primitive object={scene} />
+    </RigidBody>
+  );
+}
+
+function Player({ spawn = [0, 1.2, 3] }) {
+  const { camera } = useThree();
+  const bodyRef = useRef();
+
+  // ✅ Proper keyboard store usage:
+  const [, get] = useKeyboardControls(); // [subscribe, get]
+
+  const forward = useRef(new THREE.Vector3()).current;
+  const right = useRef(new THREE.Vector3()).current;
+  const dir = useRef(new THREE.Vector3()).current;
+
+  // Put camera near the head from the start
+  useEffect(() => {
+    camera.position.set(spawn[0], spawn[1] + (PLAYER_HEIGHT / 2) - PLAYER_RADIUS, spawn[2]);
+  }, [camera, spawn]);
+
+  useFrame(() => {
+    const rb = bodyRef.current;
+    if (!rb) return;
+
+    const pressed = get(); // ✅ read current keys each frame
+    const base = pressed.sprint ? SPEED * SPRINT : SPEED;
+
+    //  camera-oriented movement (yaw only)
+    // forward.set(0, 0, -1).applyQuaternion(camera.quaternion);
+    // forward.y = 0;
+    // forward.normalize();
+    // right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).negate();
+
+    // camera-oriented movement (yaw only) — robust & unambiguous
+    forward.set(0, 0, -1).applyQuaternion(camera.quaternion);
+    forward.y = 0;
+    forward.normalize();
+
+    // RIGHT = +X rotated by camera yaw (no cross-products)
+    right.set(1, 0, 0).applyQuaternion(camera.quaternion);
+    right.y = 0;
+    right.normalize();
+
+
+
+    dir.set(0, 0, 0);
+    if (pressed.forward) dir.add(forward);
+    if (pressed.backward) dir.add(forward.clone().negate());
+    if (pressed.left) dir.add(right.clone().negate());
+    if (pressed.right) dir.add(right);
+
+    if (dir.lengthSq() > 0) dir.normalize().multiplyScalar(base);
+
+    const lv = rb.linvel();
+    rb.setLinvel({ x: dir.x, y: lv.y, z: dir.z }, true);
+
+    // jump (simple ground check)
+    if (pressed.jump && Math.abs(lv.y) < 0.05) {
+      rb.applyImpulse({ x: 0, y: JUMP, z: 0 }, true);
+    }
+
+    // camera at capsule head
+    const t = rb.translation();
+    camera.position.set(t.x, t.y + (PLAYER_HEIGHT / 2) - PLAYER_RADIUS, t.z);
+  });
+
+  return (
+    <RigidBody
+      ref={bodyRef}
+      position={[...spawn]}            // spawn is the capsule center
+      colliders={false}
+      enabledRotations={[false, false, false]}
+      mass={1}
+      friction={0.2}                   // ✅ lower friction to avoid “sticking”
+      restitution={0}
+      linearDamping={0.05}             // ✅ smooth stop (optional)
+      canSleep={false}
+    >
+      <CapsuleCollider args={[PLAYER_HEIGHT / 2 - PLAYER_RADIUS, PLAYER_RADIUS]} />
+    </RigidBody>
+  );
+}
+
+/* Bridge to listen to lock/unlock from inside Canvas and update state in parent */
+function LockBridge({ plcRef, setLocked }) {
+  useEffect(() => {
+    const plc = plcRef.current;
+    if (!plc) return;
+    const onLock = () => setLocked(true);
+    const onUnlock = () => setLocked(false);
+    plc.addEventListener("lock", onLock);
+    plc.addEventListener("unlock", onUnlock);
+    return () => {
+      plc.removeEventListener("lock", onLock);
+      plc.removeEventListener("unlock", onUnlock);
+    };
+  }, [plcRef, setLocked]);
+  return null;
+}
+
+/* -------------------- Page -------------------- */
+export default function GalleryPage() {
+  const [locked, setLocked] = useState(false);
+  const [spawn, setSpawn] = useState(null);
+  const plcRef = useRef();
+  const navigate = useNavigate();
+
+  return (
+    <>
+      {/* UI OUTSIDE CANVAS */}
+      {/* <button
+        onClick={() => navigate("/")}
+        style={{
+          position: "fixed", top: 16, left: 16, zIndex: 40,
+          background: "rgba(0,0,0,0.55)", color: "#fff",
+          padding: "8px 12px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)"
+        }}
+      >
+        ⟵ Exit
+      </button> */}
+
+      {!locked && (
+        <button
+          onClick={() => plcRef.current?.lock()}
+          style={{
+            position: "fixed", inset: 0, margin: "auto",
+            width: 280, height: 120, background: "rgba(0,0,0,0.6)",
+            color: "#fff", border: "1px solid rgba(255,255,255,0.2)",
+            borderRadius: 106, fontSize: 16, backdropFilter: "blur(4px)", zIndex: 30
+          }}
+        >
+          Click to enter • WASD / Shift / Space
+        </button>
+      )}
+
+      {/* Crosshair */}
+      <div
+        style={{
+          position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+          width: 12, height: 12, border: "2px solid rgba(255,255,255,0.8)", borderRadius: 9999,
+          pointerEvents: "none", opacity: locked ? 1 : 0.35, zIndex: 20
+        }}
+      />
+
+      <KeyboardControls map={KEYMAP}>
+        <Canvas
+          shadows
+          gl={{ antialias: true, physicallyCorrectLights: true, outputColorSpace: THREE.SRGBColorSpace }}
+          onCreated={({ gl, scene }) => {
+            gl.setClearColor("#000");
+            gl.toneMapping = THREE.ACESFilmicToneMapping;
+            gl.toneMappingExposure = 1.0;
+            gl.shadowMap.enabled = true;
+             gl.shadowMap.type = THREE.PCFSoftShadowMap;
+            scene.fog = new THREE.FogExp2("#0c0c12", 0.02);
+          }}
+          camera={{ fov: 68, near: 0.1, far: 200 }}
+        >
+          <ambientLight intensity={0.35} />
+          <directionalLight
+            position={[5, 8, 3]}
+            intensity={1.1}
+            castShadow
+            shadow-bias={-0.0003}
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+          />
+          <Environment
+            files="/hdr/derelict_airfield_01_4k.hdr"
+            background
+            blur={0.2}
+          />
+
+          <Physics gravity={[0, -9.81, 0]}>
+            <Suspense fallback={<Html center style={{ color: "#fff" }}>Loading…</Html>}>
+              <BalconyScene onSpawn={setSpawn} />
+            </Suspense>
+            <ContactShadows
+              position={[0, 0.01, 0]}
+              opacity={0.5}
+              scale={30}
+              blur={2.5}
+              far={20}
+            />
+
+            {spawn && <Player spawn={spawn} />}
+          </Physics>
+
+          <PointerLockControls ref={plcRef} />
+          <LockBridge plcRef={plcRef} setLocked={setLocked} />
+        </Canvas>
+      </KeyboardControls>
+    </>
+  );
+}
+
+useGLTF.preload("/models/gallery2.glb");

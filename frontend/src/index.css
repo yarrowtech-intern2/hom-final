@@ -1,0 +1,230 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  background: #0b0b0c;
+  color: #000000;
+  font-family: 'ManropeVariable', 'Manrope', system-ui, sans-serif;
+}
+
+canvas {
+  border: none !important;
+  outline: none !important;
+  display: block;
+}
+
+/* Transparent header overlay */
+.header-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 10;
+  background: transparent;
+}
+
+.nav {
+  margin-left: auto;
+  display: flex;
+  gap: 30px;
+  margin-right: 2rem;
+  margin-top: 2rem;
+  background-color: rgba(255, 255, 255, 0.19);
+  border-radius: 100px;
+  backdrop-filter: blur(10px);
+  height: 3rem;
+  width: 28rem;
+  justify-content: center;  /* centers horizontally */
+  align-items: center;  
+}
+
+.nav a {
+  font-family: "manrope";
+  color: #000000;
+  text-decoration: none;
+  font-weight: 700;
+  opacity: .9;
+  transition: .2s;
+}
+
+.nav a:hover {
+  opacity: 1;
+  transform: translateY(-4px);
+}
+
+.logo {
+  font-weight: 700;
+  letter-spacing: .5px;
+  position: relative;
+  top: 2rem;
+  left: 1rem;
+}
+
+.logo-img {
+  height: 220px;
+  /* adjust as needed */
+  width: auto;
+  /* keeps proportions */
+  object-fit: contain;
+}
+
+
+
+/* Scrollbar for the modal content */
+.modalCard {
+  /* tunables */
+  --sb-size: 10px;
+  --sb-thumb: rgba(255, 255, 255, 0.45);
+  --sb-thumb-hover: rgba(255, 255, 255, 0.75);
+  --sb-track: rgba(255, 255, 255, 0.10);
+
+  /* quality-of-life */
+  scrollbar-gutter: stable both-edges;  /* no layout jump when bar appears */
+  overscroll-behavior: contain;         /* don't scroll the page behind */
+}
+
+/* Chrome / Edge / Safari */
+.modalCard::-webkit-scrollbar {
+  width: var(--sb-size);
+  height: var(--sb-size);
+}
+.modalCard::-webkit-scrollbar-track {
+  background: var(--sb-track);
+  border-radius: 9999px;
+}
+.modalCard::-webkit-scrollbar-thumb {
+  background-color: var(--sb-thumb);
+  border-radius: 9999px;
+  border: 3px solid transparent;        /* inner padding look */
+  background-clip: content-box;
+}
+.modalCard:hover::-webkit-scrollbar-thumb {
+  background-color: var(--sb-thumb-hover);
+}
+.modalCard::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+.modalCard {
+  scrollbar-width: thin;                 /* auto | thin | none */
+  scrollbar-color: var(--sb-thumb) transparent;
+}
+
+
+
+
+
+/* Works on Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 5px; /* width of scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f100; /* color of the track */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; /* color of the scroll handle */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* color when hovered */
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin; /* "auto" or "thin" */
+  scrollbar-color: #888 #f1f1f1; /* thumb and track colors */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Base (keeps your desktop behavior intact) --- */
+.header-overlay{
+  position: fixed; inset: 0 auto auto 0; right: 0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 20px; z-index:50;
+}
+.logo-img{ height:180px; width:auto; display:block; }
+.nav{ display:flex; gap:24px; }
+.nav a{ text-decoration:none; color:#000000; opacity:.9; }
+.nav a:hover{ opacity:1; }
+.menu-btn{ display:none; align-items:center; justify-content:center; background:transparent; border:0; color:#fff; cursor:pointer; }
+
+/* --- Mobile overrides (≤768px) --- */
+@media (max-width: 768px){
+  .logo-img{ height:148px; }          /* smaller logo on mobile */
+  .nav{ display:none; }              /* hide desktop nav */
+  .menu-btn{ display:inline-flex; }  /* show hamburger */
+
+  .mobile-panel{
+    position:absolute; right:12px; top:100%;
+    display:none; flex-direction:column; gap:8px;
+    padding:12px; margin-top:10px; width:max-content; min-width:180px;
+    background:rgba(20,20,20,.6); backdrop-filter: blur(10px);
+    border:1px solid rgba(255,255,255,.12); border-radius:12px;
+  }
+  .mobile-panel.open{ display:flex; }
+  .mobile-panel a{
+    color:#fff; text-decoration:none; padding:8px 10px; border-radius:8px;
+  }
+  .mobile-panel a:hover{ background:rgba(255,255,255,.08); }
+}
+
+
+
+@media (min-width: 769px){
+  .mobile-only{ display:none !important; }
+}
+@media (max-width: 768px){
+  .desktop-only{ display:none !important; }
+}

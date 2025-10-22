@@ -1,0 +1,56 @@
+.portal-ripple {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(76, 201, 240, 0.15);
+  border: 2px solid #4cc9f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-ripple::before,
+.portal-ripple::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid #4cc9f0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  animation: ripple 2.5s infinite;
+  opacity: 0.7;
+}
+
+.portal-ripple::after {
+  animation-delay: 1.25s;
+}
+
+.portal-ripple.hovered {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.portal-label {
+  color: white;
+  font-family: Manrope, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 0 8px #000;
+  pointer-events: none;
+}
