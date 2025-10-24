@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./tutorialHint.css";
+import "./TutorialHint.css";
 
 export default function TutorialHint() {
   const [show, setShow] = useState(false);
