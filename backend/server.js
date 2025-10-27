@@ -86,25 +86,52 @@ import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
+
+
 // 🛡 Security
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // ✅ CORS — must come before routes
+// app.use(
+//   cors({
+//     // origin: process.env.CLIENT_ORIGIN?.split(',') || ['http://localhost:5173', "https://house-of-musa-gixs.onrender.com"],
+//     origin: process.env.CLIENT_ORIGIN
+//   ? process.env.CLIENT_ORIGIN.split(',')
+//   : [
+//      'http://localhost:5173',
+//      'https://house-of-musa-gixs.onrender.com'
+//     ],
+
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//     credentials: true,
+//   })
+// );
+
+
+
 app.use(
   cors({
-    // origin: process.env.CLIENT_ORIGIN?.split(',') || ['http://localhost:5173', "https://house-of-musa-gixs.onrender.com"],
-    origin: process.env.CLIENT_ORIGIN
-  ? process.env.CLIENT_ORIGIN.split(',')
-  : [
-     'http://localhost:5173',
-     'https://house-of-musa-gixs.onrender.com'
-    ],
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'https://house-of-musa-gixs.onrender.com',
+      ];
 
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log('❌ Blocked by CORS:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   })
 );
+
 
 
 // app.options("*", cors());
