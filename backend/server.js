@@ -95,7 +95,8 @@ app.use(
     // origin: process.env.CLIENT_ORIGIN?.split(',') || ['http://localhost:5173', "https://house-of-musa-gixs.onrender.com"],
     origin: process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(',')
-  : ['http://localhost:5173',
+  : [
+     'http://localhost:5173',
      'https://house-of-musa-gixs.onrender.com'
     ],
 
