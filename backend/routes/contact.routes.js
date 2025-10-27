@@ -1,33 +1,63 @@
-import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
+// import { Router } from 'express';
+// import rateLimit from 'express-rate-limit';
+// import { body } from 'express-validator';
+// import { createMessage, listMessages } from '../controllers/contact.controller.js';
+
+// const router = Router();
+
+// // Tight per-IP limit for the create endpoint (anti-spam)
+// const contactLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 25,
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   message: { ok: false, message: 'Too many requests. Please try again later.' }
+// });
+
+// router.post(
+//   '/',
+//   contactLimiter,
+//   // Validation
+//   body('name').trim().isLength({ min: 1, max: 120 }).withMessage('Name is required'),
+//   body('email').isEmail().withMessage('Valid email is required'),
+//   body('subject').trim().isLength({ min: 1, max: 180 }).withMessage('Subject is required'),
+//   body('message').trim().isLength({ min: 10 }).withMessage('Message must be at least 10 characters'),
+//   body('phone').optional().isLength({ max: 30 }),
+//   body('company').optional().isLength({ max: 0 }), // honeypot must stay empty
+//   createMessage
+// );
+
+// // Optional admin list
+// router.get('/', listMessages);
+
+// export default router;
+
+
+
+
+
+
+
+
+// routes/contact.routes.js
+import express from 'express';
 import { body } from 'express-validator';
 import { createMessage, listMessages } from '../controllers/contact.controller.js';
 
-const router = Router();
+const router = express.Router();
 
-// Tight per-IP limit for the create endpoint (anti-spam)
-const contactLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 25,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { ok: false, message: 'Too many requests. Please try again later.' }
-});
-
-router.post(
-  '/',
-  contactLimiter,
-  // Validation
-  body('name').trim().isLength({ min: 1, max: 120 }).withMessage('Name is required'),
+// Validation rules
+const validateContact = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
-  body('subject').trim().isLength({ min: 1, max: 180 }).withMessage('Subject is required'),
-  body('message').trim().isLength({ min: 10 }).withMessage('Message must be at least 10 characters'),
-  body('phone').optional().isLength({ max: 30 }),
-  body('company').optional().isLength({ max: 0 }), // honeypot must stay empty
-  createMessage
-);
+  body('subject').trim().notEmpty().withMessage('Subject is required'),
+  body('message').trim().notEmpty().withMessage('Message is required')
+];
 
-// Optional admin list
+// POST /api/contact
+router.post('/', validateContact, createMessage);
+
+// GET /api/contact (admin only)
 router.get('/', listMessages);
 
 export default router;
