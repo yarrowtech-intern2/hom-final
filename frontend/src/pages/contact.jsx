@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./contact.css";
+import API_BASE_URL from "../config";
 
 export default function ContactUs() {
   const [form, setForm] = useState({
@@ -8,16 +9,39 @@ export default function ContactUs() {
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const onSubmit = async (e) => {
+
+
+
+//   const onSubmit = async (e) => {
+//   e.preventDefault();
+
+//   const payload = { ...form, company: "" }; // keep honeypot empty on real users
+//   try {
+//     const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/contact`, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(payload)
+//     });
+//     const data = await res.json();
+//     if (!res.ok) throw new Error(data.message || "Failed to send");
+//     alert("Thanks! We’ve received your message.");
+//     setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+//   } catch (err) {
+//     alert(err.message);
+//   }
+// };
+
+const onSubmit = async (e) => {
   e.preventDefault();
 
-  const payload = { ...form, company: "" }; // keep honeypot empty on real users
+  const payload = { ...form, company: "" }; // honeypot field
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/contact`, {
+    const res = await fetch(`${API_BASE_URL}/api/contact`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
+
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Failed to send");
     alert("Thanks! We’ve received your message.");
@@ -26,6 +50,8 @@ export default function ContactUs() {
     alert(err.message);
   }
 };
+
+
 
 
   return (
