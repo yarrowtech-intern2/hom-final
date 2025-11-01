@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import logoImg from "/logo/logo.png";
+import logoImg from "/logo/logo-black.png";
 
 const Header = () => (
   <header className="header-overlay">

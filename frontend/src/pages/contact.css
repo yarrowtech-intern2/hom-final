@@ -123,7 +123,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    margin-top: 3.5rem;
+    /* margin-top: 3.5rem; */
   }
 
   .contact-page .contact-container {
@@ -131,6 +131,7 @@
     padding: 24px 20px;
     border-radius: 18px;
     box-shadow: 6px 6px 14px #5c420d, -6px -6px 14px #f8be47a4;
+    margin-top: 4rem;
   }
 
   .contact-page h1 {

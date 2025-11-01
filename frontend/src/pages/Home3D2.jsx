@@ -305,7 +305,7 @@ function useIsMobile(breakpoint = 768) {
 function Loader() {
   return (
     <Html center style={{ color: "#aaa", fontFamily: "Manrope, system-ui", fontSize: 18 }}>
-      HOUSE OF MUSA Loading…
+      Loading 3D website,Please wait…
     </Html>
   );
 }

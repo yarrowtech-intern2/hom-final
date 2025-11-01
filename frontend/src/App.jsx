@@ -20,6 +20,10 @@ import Carrers from "./pages/carrers";
 import JobPage from "./pages/jobPage";
 
 
+// ......version2...... 
+import About2 from "./pages/version2/about2";
+
+
 export default function App() {
   return (
     <>
@@ -38,6 +42,11 @@ export default function App() {
           <Route path="/baymax" element={<Baymax />} />
           <Route path="/carrers" element={<Carrers />} />
           <Route path="/jobs" element={<JobPage />} />
+
+
+
+          {/* .....version2.....  */}
+          <Route path="/about2" element={<About2/>} />
           
         </Routes>
       </TransitionProvider>

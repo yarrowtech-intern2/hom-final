@@ -15,20 +15,36 @@ html, body, #root {
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-.story-container {
+/* .story-container {
   position: relative;
   height: 100vh;
   width: 100%;
   overflow: hidden;
   
+} */
+
+.story-container {
+  position: relative;
+  width: 100%;
+  height: 100dvh;           /* robust full-height on mobile */
+  min-height: 100svh;       /* fallback when dvh not supported */
+  background: var(--bg);    /* prevents black peek-through behind transparent canvas */
+  overflow: hidden;         /* let ScrollControls manage scrolling */
+}
+.story-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;           /* ensures no stray gaps */
 }
 
-/* Overlay layout poured into <Scroll html> */
+
 .story-overlay {
   position: relative;
   width: min(920px, 92vw);
   margin: 0 auto;
-  pointer-events: none; /* allow scrolling without blocking canvas */
+  pointer-events: none; 
   text-shadow: none !important;
 }
 
@@ -170,14 +186,13 @@ html, body, #root {
 
 
 /* mobile  */
-/* =======================================
-   MOBILE RESPONSIVENESS (≤768px)
-   ======================================= */
 @media (max-width: 768px) {
   .story-container {
-    height: 100vh;
-    overflow-y: auto;
-    margin-top: 5rem;
+    height: 100svh;
+    min-height: 100svh;
+    margin-top: 0;                      
+    padding-top: env(safe-area-inset-top, 0); 
+    overflow: hidden;                    /* let R3F control scroll */
   }
 
   .story-overlay {
@@ -187,7 +202,7 @@ html, body, #root {
 
   .story-section {
     min-height: auto;
-    padding: 2rem 1rem;
+    padding: 5rem 1rem;
     gap: 1rem;
   }
 
@@ -212,18 +227,10 @@ html, body, #root {
 
   .story-cta {
     display: block;
-    margin: 1.5rem auto 0 auto;
+    margin: 1.5rem auto 0;
     text-align: center;
     font-size: 0.95rem;
     padding: 0.6rem 1rem;
-  }
-
-  /* loader smaller */
-  .loader-box {
-    width: 180px;
-    padding: 10px;
-  }
-  .loader-text {
-    font-size: 0.8rem;
+    pointer-events: auto; /* keep CTAs clickable */
   }
 }
