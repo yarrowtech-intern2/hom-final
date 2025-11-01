@@ -375,23 +375,51 @@ useGLTF.preload("/models/house8.glb");
 
 /* ---------------------------- Inner Scene node --------------------------- */
 function Scene({ isMobile }) {
-  const { invalidate } = useThree();
+  const { camera, invalidate } = useThree();
   const [autoRotate, setAutoRotate] = useState(true);
   const controls = useRef();
   const [perf, setPerf] = useState(1);
   const [envReady, setEnvReady] = useState(false);
   const { start } = usePageTransition();
 
-  const handleReady = ({ center }) => {
-    if (controls.current) {
-      controls.current.target.copy(center.set(0, 0, 0));
-      controls.current.minDistance = isMobile ? 2 : 2;
-      controls.current.maxDistance = isMobile ? 16 : 32;
-      controls.current.update();
-    }
+  // const handleReady = ({ center }) => {
+  //   if (controls.current) {
+  //     controls.current.target.copy(center.set(0, 0, 0));
+  //     controls.current.minDistance = isMobile ? 2 : 2;
+  //     controls.current.maxDistance = isMobile ? 16 : 32;
+  //     controls.current.update();
+  //   }
+  //   setEnvReady(true);
+  //   invalidate();
+  // };
+
+    const handleReady = ({ center, size }) => {
+    if (!controls.current) return;
+    // Fit camera to the model’s bounding box
+    const radius = Math.max(size.x, size.y, size.z) * 0.05;
+    const startDist = Math.max(radius * (isMobile ? 3.0 : 2.2), 6);
+    const dir = new THREE.Vector3(15, 0.3, -16).normalize(); // pleasant 3/4 view
+
+    const lookAt = center.clone();              // keep real center (don’t zero it)
+    const camPos  = center.clone().add(dir.multiplyScalar(startDist));
+
+    camera.position.copy(camPos);
+    camera.near = Math.max(0.01, startDist / 100);
+    camera.far  = startDist * 50;
+    camera.updateProjectionMatrix();
+
+    controls.current.target.copy(lookAt);
+    controls.current.minDistance = Math.max(radius * 0.9, 2.0);
+    controls.current.maxDistance = Math.max(radius * (isMobile ? 6 : 8), 12);
+    controls.current.update();
+
     setEnvReady(true);
     invalidate();
   };
+
+
+
+
 
   const effectsOn = perf >= 1;
 
@@ -451,7 +479,8 @@ function Scene({ isMobile }) {
       <OrbitControls
         ref={controls}
         enablePan={!isMobile ? false : false}
-        enableZoom={!isMobile}           // lock zoom on mobile to keep UX clean
+        // enableZoom={!isMobile}
+        enableZoom={true}           
         enableRotate
         autoRotate={autoRotate}
         autoRotateSpeed={isMobile ? 0.5 : 0.7}

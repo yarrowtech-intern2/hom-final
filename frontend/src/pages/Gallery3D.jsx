@@ -375,6 +375,9 @@
 
 
 
+
+
+
 // pages/Gallery3D.jsx
 import React, { Suspense, useMemo, useRef, useState, useEffect, useCallback } from "react";
 import * as THREE from "three";
@@ -390,6 +393,12 @@ import {
   PerformanceMonitor,
 } from "@react-three/drei";
 import { EffectComposer, Vignette } from "@react-three/postprocessing";
+
+
+const isCoarsePointer = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(pointer: coarse)").matches;
+
 
 /* ---------- BASE-URL safe asset helper ---------- */
 function assetUrl(path) {
@@ -730,7 +739,64 @@ function GalleryScene() {
   );
 }
 
+// export default function Gallery3D() {
+//   return (
+//     <Canvas
+//       frameloop="demand"
+//       dpr={[1, 1.25]}
+//       camera={{ position: [0, 1.6, START_Z], fov: 60, near: 0.01, far: 200 }}
+//       gl={{
+//         antialias: true,
+//         powerPreference: "high-performance",
+//         toneMapping: THREE.ACESFilmicToneMapping,
+//         outputColorSpace: THREE.SRGBColorSpace,
+//         physicallyCorrectLights: true,
+//       }}
+//       style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh" }}
+//       onCreated={({ gl }) => {
+//         THREE.Cache.enabled = true;
+//         gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+//       }}
+//     >
+//       <GalleryScene />
+//       <Preload all />
+//     </Canvas>
+//   );
+// }
+
+
+
+
+
 export default function Gallery3D() {
+   const [isTouch, setIsTouch] = React.useState(false);
+
+   React.useEffect(() => {
+    setIsTouch(isCoarsePointer());
+  }, []);
+
+    if (isTouch) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#0B1220] text-slate-800 dark:text-slate-100 p-6 shadow-2xl border border-black/5 dark:border-white/10">
+          <div className="flex items-center gap-3 mb-2">
+            <svg width="22" height="22" viewBox="0 0 24 24" className="opacity-80">
+              <path fill="currentColor" d="M11 7h2v6h-2zm0 8h2v2h-2zM1 21h22L12 2z"/>
+            </svg>
+            <h2 className="text-lg font-semibold">Not compatible on mobile</h2>
+          </div>
+          <p className="text-sm opacity-90 leading-relaxed">
+            This 3D Gallery isn’t supported on mobile devices yet.
+            Please open this page on a desktop or laptop.
+          </p>
+          <div className="mt-4 text-xs opacity-70">
+            Tip: Use the latest Chrome/Edge for best performance.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Canvas
       frameloop="demand"
@@ -754,4 +820,3 @@ export default function Gallery3D() {
     </Canvas>
   );
 }
-

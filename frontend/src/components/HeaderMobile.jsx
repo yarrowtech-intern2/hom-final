@@ -1,7 +1,7 @@
 // Header.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import logoImg from "/logo/logo.png";
+import logoImg from "/logo/logo-black.png";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
