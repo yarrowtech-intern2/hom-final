@@ -2,6 +2,57 @@ import nodemailer from 'nodemailer';
 
 let transporter;
 
+
+
+// add inside /email.js
+export async function sendCareerEmail(appDoc) {
+  const t = getTransporter();
+  if (!t) return { ok: false, reason: "SMTP not configured" };
+
+  const to = process.env.HR_TO_EMAIL || process.env.NOTIFY_TO || process.env.SMTP_USER;
+
+  const safe = (s = "") =>
+    s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const html = `
+  <div style="font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif">
+    <h2>New Career Application</h2>
+    <p><b>Role:</b> ${safe(appDoc.role)}</p>
+    <p><b>Name:</b> ${safe(appDoc.name)}</p>
+    <p><b>Email:</b> ${safe(appDoc.email)}</p>
+    ${appDoc.phone ? `<p><b>Phone:</b> ${safe(appDoc.phone)}</p>` : ""}
+    ${appDoc.experienceYears != null ? `<p><b>Experience:</b> ${appDoc.experienceYears} years</p>` : ""}
+    ${appDoc.portfolioUrl ? `<p><b>Portfolio:</b> <a href="${safe(appDoc.portfolioUrl)}">${safe(appDoc.portfolioUrl)}</a></p>` : ""}
+    ${appDoc.linkedin ? `<p><b>LinkedIn:</b> <a href="${safe(appDoc.linkedin)}">${safe(appDoc.linkedin)}</a></p>` : ""}
+    ${appDoc.coverLetter ? `<p><b>Cover Letter:</b><br/>${safe(appDoc.coverLetter).replace(/\n/g, "<br/>")}</p>` : ""}
+    <hr/>
+    <p style="color:#666;font-size:12px">IP: ${safe(appDoc.meta?.ip || "-")} | UA: ${safe(appDoc.meta?.userAgent || "-")}</p>
+  </div>`;
+
+  const attachments = [];
+  if (appDoc.resume?.path) {
+    attachments.push({
+      filename: appDoc.resume.originalName || "resume",
+      path: appDoc.resume.path,
+      contentType: appDoc.resume.mimeType,
+    });
+  }
+
+  const info = await t.sendMail({
+    from: `"Careers Bot" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `🧑‍💻 Career Application — ${appDoc.role} — ${appDoc.name}`,
+    html,
+    attachments,
+  });
+
+  return { ok: true, messageId: info.messageId };
+}
+
+
+
+
+
 /** Create or reuse transporter */
 export function getTransporter() {
   if (transporter) return transporter;

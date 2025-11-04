@@ -11,6 +11,13 @@ import contactRoutes from './routes/contact.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 import careerRoutes from './routes/careers.routes.js';
+import path from "path";
+import { fileURLToPath } from "url";
+
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -38,27 +45,64 @@ app.use(helmet({ crossOriginResourcePolicy: false }));
 
 
 
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       const allowedOrigins = [
+//         'http://localhost:5173',
+//         'https://house-of-musa-gixs.onrender.com',
+//       ];
+
+//       // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         console.log('❌ Blocked by CORS:', origin);
+//         callback(new Error('Not allowed by CORS'));
+//       }
+//     },
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+//     credentials: true,
+//   })
+// );
+
+
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      const allowedOrigins = [
-        'http://localhost:5173',
-        'https://house-of-musa-gixs.onrender.com',
+      const envOrigins = (process.env.CLIENT_ORIGIN || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const defaults = [
+        "http://localhost:5173",
+        "https://house-of-musa-gixs.onrender.com",
       ];
 
-      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log('❌ Blocked by CORS:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
+      const allow = new Set([...defaults, ...envOrigins]);
+
+      if (!origin || allow.has(origin)) return callback(null, true);
+
+      console.log("❌ Blocked by CORS:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-admin-token"],
     credentials: true,
   })
 );
+
+
+app.use(
+  "/uploads/resumes",
+  express.static(path.join(__dirname, "uploads/resumes"))
+);
+
+
+
 
 
 

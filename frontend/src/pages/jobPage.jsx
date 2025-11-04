@@ -1,9 +1,25 @@
+
+
+// // update for backend
 // import React, { useEffect, useMemo, useRef, useState } from "react";
 // import { createPortal } from "react-dom";
 // import gsap from "gsap";
 // import Lenis from "@studio-freight/lenis";
-// import "./jobPage.css"; // <-- import the CSS file
+// import "./jobPage.css"; 
 
+// /* =========================================
+//    Helper: call your careers backend endpoint
+// ========================================= */
+// async function submitCareerApplication({ name, email, phone, role, message, source }) {
+//   const resp = await fetch("/api/careers/apply", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({ name, email, phone, role, message, source }),
+//   });
+//   const data = await resp.json();
+//   if (!resp.ok) throw new Error(data?.message || "Submission failed");
+//   return data;
+// }
 
 // const JOBS = [
 //   {
@@ -56,42 +72,34 @@
 //   const containerRef = useRef(null);
 //   const tlRef = useRef(null);
 
-
-
-
 //   // Smooth scrolling
 //   useEffect(() => {
-//   // If it's a touch device, don't use Lenis—let native scrolling work.
-//   const isTouch =
-//     "ontouchstart" in window ||
-//     navigator.maxTouchPoints > 0 ||
-//     window.matchMedia("(hover: none)").matches;
+//     // If it's a touch device, don't use Lenis—let native scrolling work.
+//     const isTouch =
+//       "ontouchstart" in window ||
+//       navigator.maxTouchPoints > 0 ||
+//       window.matchMedia("(hover: none)").matches;
 
-//   if (isTouch) {
-//     // make sure any classes Lenis may have set are removed
-//     document.documentElement.classList.remove("lenis", "lenis-smooth", "lenis-stopped");
-//     return;
-//   }
+//     if (isTouch) {
+//       document.documentElement.classList.remove("lenis", "lenis-smooth", "lenis-stopped");
+//       return;
+//     }
 
-//   const lenis = new Lenis({
-//     duration: 1.2,
-//     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-//     smoothWheel: true,
-//     smoothTouch: false, // not needed since we're not enabling on touch
-//   });
+//     const lenis = new Lenis({
+//       duration: 1.2,
+//       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+//       smoothWheel: true,
+//       smoothTouch: false,
+//     });
 
-//   function raf(time) {
-//     lenis.raf(time);
+//     function raf(time) {
+//       lenis.raf(time);
+//       requestAnimationFrame(raf);
+//     }
 //     requestAnimationFrame(raf);
-//   }
-//   requestAnimationFrame(raf);
 
-//   return () => lenis.destroy();
-// }, []);
-
-
-
-
+//     return () => lenis.destroy();
+//   }, []);
 
 //   // Fake splash loader
 //   useEffect(() => {
@@ -180,11 +188,6 @@
 //         <ApplyModal
 //           job={JOBS.find((j) => j.id === openJobId)}
 //           onClose={() => setOpenJobId(null)}
-//           onSubmit={(payload) => {
-//             console.log("Apply payload", payload);
-//             setOpenJobId(null);
-//             alert("Application submitted! We'll get back to you soon.");
-//           }}
 //         />
 //       )}
 //     </main>
@@ -262,16 +265,18 @@
 //   );
 // }
 
-// function ApplyModal({ job, onClose, onSubmit }) {
+// function ApplyModal({ job, onClose }) {
 //   const [form, setForm] = useState({ name: "", email: "", phone: "", cover: "" });
 //   const [error, setError] = useState("");
+//   const [submitting, setSubmitting] = useState(false);
+//   const [serverMsg, setServerMsg] = useState(null);
 //   const modalRef = useRef(null);
 
 //   useEffect(() => {
-//     const onKey = (e) => e.key === "Escape" && onClose();
+//     const onKey = (e) => e.key === "Escape" && !submitting && onClose();
 //     window.addEventListener("keydown", onKey);
 //     return () => window.removeEventListener("keydown", onKey);
-//   }, [onClose]);
+//   }, [onClose, submitting]);
 
 //   useEffect(() => {
 //     gsap.fromTo(
@@ -288,17 +293,36 @@
 //     return "";
 //   };
 
-//   const submit = (e) => {
+//   const submit = async (e) => {
 //     e.preventDefault();
 //     const err = validate();
 //     if (err) return setError(err);
 //     setError("");
-//     onSubmit({ jobId: job.id, ...form });
+//     setSubmitting(true);
+//     setServerMsg(null);
+//     try {
+//       const payload = {
+//         name: form.name.trim(),
+//         email: form.email.trim(),
+//         phone: form.phone.trim(),
+//         role: job.title,                // <-- backend expects `role`
+//         message: form.cover || "",      // <-- backend expects `message`
+//         source: `Jobs Page: ${job.id}`, // <-- traceability
+//       };
+//       const resp = await submitCareerApplication(payload);
+//       setServerMsg({ type: "ok", text: resp?.message || "Application submitted" });
+//       // small delay so user sees success
+//       setTimeout(() => onClose(), 900);
+//     } catch (er) {
+//       setServerMsg({ type: "err", text: er.message || "Failed to submit" });
+//     } finally {
+//       setSubmitting(false);
+//     }
 //   };
 
 //   return createPortal(
 //     <div className="modal-root">
-//       <div className="modal-backdrop" onClick={onClose} />
+//       <div className="modal-backdrop" onClick={() => !submitting && onClose()} />
 //       <div ref={modalRef} className="modal-card">
 //         <div className="modal-head">
 //           <h4>Apply for {job.title}</h4>
@@ -312,6 +336,7 @@
 //               value={form.name}
 //               onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
 //               placeholder="Your name"
+//               disabled={submitting}
 //             />
 //           </Field>
 //           <div className="grid-2">
@@ -322,6 +347,7 @@
 //                 value={form.email}
 //                 onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
 //                 placeholder="you@example.com"
+//                 disabled={submitting}
 //               />
 //             </Field>
 //             <Field label="Phone">
@@ -330,6 +356,7 @@
 //                 value={form.phone}
 //                 onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
 //                 placeholder="10-digit mobile"
+//                 disabled={submitting}
 //               />
 //             </Field>
 //           </div>
@@ -340,14 +367,24 @@
 //               value={form.cover}
 //               onChange={(e) => setForm((s) => ({ ...s, cover: e.target.value }))}
 //               placeholder="Why you’re a great fit"
+//               disabled={submitting}
 //             />
 //           </Field>
 
 //           {error ? <p className="error">{error}</p> : null}
+//           {serverMsg ? (
+//             <p className={`server-note ${serverMsg.type === "ok" ? "ok" : "err"}`}>
+//               {serverMsg.text}
+//             </p>
+//           ) : null}
 
 //           <div className="modal-actions">
-//             <button type="button" onClick={onClose} className="btn ghost">Cancel</button>
-//             <button type="submit" className="btn primary">Submit Application</button>
+//             <button type="button" onClick={() => !submitting && onClose()} className="btn ghost">
+//               Cancel
+//             </button>
+//             <button type="submit" className={`btn primary ${submitting ? "loading" : ""}`} disabled={submitting}>
+//               {submitting ? "Submitting…" : "Submit Application"}
+//             </button>
 //           </div>
 //         </form>
 //       </div>
@@ -379,24 +416,80 @@
 
 
 
-// update for backend
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 import Lenis from "@studio-freight/lenis";
-import "./jobPage.css"; 
+import "./jobPage.css";
 
 /* =========================================
-   Helper: call your careers backend endpoint
+   Backend base URL (same-origin by default)
+   Set VITE_API_BASE for cross-origin deploys.
 ========================================= */
-async function submitCareerApplication({ name, email, phone, role, message, source }) {
-  const resp = await fetch("/api/careers/apply", {
+const API_BASE = import.meta?.env?.VITE_API_BASE || "";
+
+/* =========================================
+   Careers API helper (multipart-capable)
+========================================= */
+async function submitCareerApplication({
+  name,
+  email,
+  phone,
+  role,
+  message,     // UI name
+  source,
+  resumeFile,  // optional File
+}) {
+  const fd = new FormData();
+  fd.set("name", name);
+  fd.set("email", email);
+  fd.set("phone", phone);
+  fd.set("role", role);
+  fd.set("coverLetter", message || ""); // backend expects coverLetter
+  if (source) fd.set("source", source); // backend will ignore unknown fields in schema safely
+  if (resumeFile) fd.set("resume", resumeFile);
+
+  const resp = await fetch(`${API_BASE}/api/careers/apply`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, phone, role, message, source }),
+    body: fd, // multipart request (works even without file)
   });
-  const data = await resp.json();
-  if (!resp.ok) throw new Error(data?.message || "Submission failed");
+
+  let data = {};
+  try {
+    data = await resp.json();
+  } catch {
+    // ignore JSON parse issues; show generic error below
+  }
+
+  if (!resp.ok) {
+    const msg =
+      data?.error ||
+      data?.message ||
+      (resp.status === 413
+        ? "File too large (limit ~10MB)"
+        : `Submission failed (HTTP ${resp.status})`);
+    throw new Error(msg);
+  }
   return data;
 }
 
@@ -453,7 +546,6 @@ export default function JobsPage() {
 
   // Smooth scrolling
   useEffect(() => {
-    // If it's a touch device, don't use Lenis—let native scrolling work.
     const isTouch =
       "ontouchstart" in window ||
       navigator.maxTouchPoints > 0 ||
@@ -646,6 +738,7 @@ function JobCard({ job, onApply, innerRef }) {
 
 function ApplyModal({ job, onClose }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", cover: "" });
+  const [resumeFile, setResumeFile] = useState(null); // NEW
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [serverMsg, setServerMsg] = useState(null);
@@ -669,6 +762,7 @@ function ApplyModal({ job, onClose }) {
     if (!form.name.trim()) return "Please enter your name";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return "Enter a valid email";
     if (!/^[6-9]\d{9}$/.test(form.phone.trim())) return "Enter a valid 10-digit phone number";
+    if (resumeFile && resumeFile.size > 10 * 1024 * 1024) return "Résumé must be ≤ 10MB";
     return "";
   };
 
@@ -684,13 +778,13 @@ function ApplyModal({ job, onClose }) {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
-        role: job.title,                // <-- backend expects `role`
-        message: form.cover || "",      // <-- backend expects `message`
-        source: `Jobs Page: ${job.id}`, // <-- traceability
+        role: job.title,                  // backend expects `role`
+        message: form.cover || "",        // mapped to `coverLetter` in helper
+        source: `Jobs Page: ${job.id}`,   // useful trace
+        resumeFile,                       // optional
       };
       const resp = await submitCareerApplication(payload);
       setServerMsg({ type: "ok", text: resp?.message || "Application submitted" });
-      // small delay so user sees success
       setTimeout(() => onClose(), 900);
     } catch (er) {
       setServerMsg({ type: "err", text: er.message || "Failed to submit" });
@@ -739,6 +833,17 @@ function ApplyModal({ job, onClose }) {
               />
             </Field>
           </div>
+
+          <Field label="Résumé (optional)">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              className="input"
+              onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+              disabled={submitting}
+            />
+          </Field>
+
           <Field label="Cover note (optional)">
             <textarea
               rows={4}
@@ -780,3 +885,4 @@ function Field({ label, children }) {
     </label>
   );
 }
+

@@ -16,12 +16,12 @@ import About from "./pages/About";
 import Project from "./pages/story";
 import Contact from "./pages/contact";
 import Baymax from "./pages/baymax";
-import Carrers from "./pages/carrers";
+// import Carrers from "./pages/carrers";
+import Carrers from "./pages/career2";
 import JobPage from "./pages/jobPage";
 
 
-// ......version2...... 
-import About2 from "./pages/version2/about2";
+
 
 
 export default function App() {
@@ -45,8 +45,7 @@ export default function App() {
 
 
 
-          {/* .....version2.....  */}
-          <Route path="/about2" element={<About2/>} />
+         
           
         </Routes>
       </TransitionProvider>
