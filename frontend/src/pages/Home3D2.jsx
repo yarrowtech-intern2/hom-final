@@ -1,263 +1,5 @@
-// import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
-// import * as THREE from "three";
-// import { Canvas, useThree, extend } from "@react-three/fiber";
-// import {
-//   Environment,
-//   OrbitControls,
-//   Html,
-//   ContactShadows,
-//   useGLTF,
-//   Preload,
-//   AdaptiveDpr,
-//   AdaptiveEvents,
-//   PerformanceMonitor,
- 
-// } from "@react-three/drei";
-// import { EffectComposer, Bloom, SSAO, Vignette } from "@react-three/postprocessing";
-// import { DRACOLoader, MeshoptDecoder, GLTFLoader } from "three-stdlib";
-// import { NormalPass } from "postprocessing";
-// extend({ NormalPass });
 
-// import DoorPortal from "../components/DoorPortal";
-// import TutorialHint from "../components/TutorialHint";
-// import { usePageTransition } from "../components/transition";
-// import FloatingAction from "../components/FloatingAction"; 
-
-// /* ----------------------------- Config toggles ----------------------------- */
-// const USE_HDR_BACKGROUND = true;
-// const HDR_FILE = "/hdr/studio.hdr";
-
-// // Initial hero angle (direction camera looks at model center)
-// const HERO_DIR = new THREE.Vector3(46, -10, -94).normalize();
-// const HERO_DISTANCE_MULT = 2.0;
-// const MIN_DISTANCE_MULT = 0.9;
-// const MAX_DISTANCE_MULT = 8.0;
-
-
-// /* --------------------------------- Loader -------------------------------- */
-// function Loader() {
-//   return (
-//     <Html center style={{ color: "#aaa", fontFamily: "Manrope, system-ui", fontSize: 18 }}>
-//       HOUSE OF MUSA Loading…
-//     </Html>
-//   );
-// }
-
-// /* --------------------------------- Model --------------------------------- */
-// function House({ onReady, onPortalEnter, scale = 1, rotation = [0, Math.PI * 0.15, 0], position = [0, -1, 0] }) {
-//   const gltf = useGLTF(
-//     "/models/house5.glb",
-//     (loader) => {
-//       if (loader instanceof GLTFLoader) {
-//         const draco = new DRACOLoader();
-//         draco.setDecoderPath("/draco/");
-//         loader.setDRACOLoader(draco);
-//         if (MeshoptDecoder) loader.setMeshoptDecoder(MeshoptDecoder);
-//       }
-//     }
-//   );
-
-//   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
-//   const group = useRef();
-
-//   useEffect(() => {
-//     if (!group.current) return;
-//     const box = new THREE.Box3().setFromObject(group.current);
-//     const center = box.getCenter(new THREE.Vector3());
-//     const size = box.getSize(new THREE.Vector3());
-//     onReady?.({ center, size });
-//   }, [onReady]);
-
-//   const portalAnchors = useMemo(() => {
-//     const pts = [];
-//     scene.traverse((obj) => {
-//       if (/^DoorPortal/i.test(obj.name)) pts.push(obj.position.clone());
-//     });
-//     return pts;
-//   }, [scene]);
-
-//   // Optimize static meshes
-//   useEffect(() => {
-//     scene.traverse((o) => {
-//       if (o.isMesh) {
-//         o.frustumCulled = true;
-//         o.matrixAutoUpdate = false;
-//         o.updateMatrix();
-//         o.castShadow = false;
-//         o.receiveShadow = false;
-//       }
-//     });
-//   }, [scene]);
-
-//   return (
-//     <group ref={group} position={position} rotation={rotation} scale={scale}>
-//       <primitive object={scene} />
-//       {portalAnchors.length === 0 && 
-//           <DoorPortal position={[4, 1, 0.2]} onEnter={onPortalEnter} />}
-//       {portalAnchors.map((p, i) => (
-//         <DoorPortal key={i} position={[p.x, p.y, p.z]} label="Enter" onEnter={onPortalEnter} />
-//       ))}
-//     </group>
-//   );
-// }
-// useGLTF.preload("/models/house5.glb");
-
-// /* ---------------------------- Inner Scene node --------------------------- */
-// function Scene() {
-//   const { camera, invalidate } = useThree();
-//   const [autoRotate, setAutoRotate] = useState(true);
-//   const controls = useRef();
-//   const [perf, setPerf] = useState(1);
-//   const [envReady, setEnvReady] = useState(false);
-//   const { start } = usePageTransition();
-
-//   const handleReady = ({ center, size }) => {
-//     // const maxDim = Math.max(size.x, size.y, size.z);
-//     // const heroDist = maxDim * HERO_DISTANCE_MULT;
-//     // const heroPos = center.clone().add(HERO_DIR.clone().multiplyScalar(heroDist));
-
-//     // camera.position.copy(heroPos);
-//     // camera.near = Math.max(0.01, heroDist / 200);
-//     // camera.far = heroDist * 50;
-//     // camera.updateProjectionMatrix();
-
-//     if (controls.current) {
-//       // controls.current.target.copy(center);
-//       controls.current.target.set(0, 0, 0);
-//       controls.current.minDistance = 2;   
-//       controls.current.maxDistance = 50;  
-//       controls.current.update();
-//     }
-
-//     setEnvReady(true);
-//     invalidate();
-//   };
-
-//   const effectsOn = perf >= 1;
-
-//   return (
-//     <>
-
-//       {USE_HDR_BACKGROUND && <color attach="background" args={["#fff"]} />}
-//       <hemisphereLight intensity={0.02} groundColor="#222" />
-//       <directionalLight
-//         castShadow
-//         position={[10, 15, 10]}
-//         intensity={0.05}
-//         shadow-mapSize-width={2048}
-//         shadow-mapSize-height={2048}
-//         color="#cbcbcb"
-//       />
-
-//       <Suspense fallback={<Loader />}>
-//         <House
-//           onReady={handleReady} 
-//           // onPortalEnter={() => start("/gallery")}
-//           onPortalEnter={(coords) => start("/gallery", coords)}
-//            />
-
-//         {envReady &&
-//           (USE_HDR_BACKGROUND ? (
-//             <Environment files={HDR_FILE} background={false} />
-//           ) : (
-//             <Environment preset="city" background={false} />
-//           ))}
-
-//         <ContactShadows position={[0, -1.01, 0]} opacity={0.4} scale={16} blur={2.8} far={4} />
-
-//         <EffectComposer multisampling={0}>
-//           <primitive attach="passes" object={new NormalPass()} />
-//           <SSAO normalPass samples={16} radius={0.25} intensity={1.2 * perf} />
-//           <Bloom mipmapBlur intensity={0.6 * perf} luminanceThreshold={0.85} />
-//           <Vignette eskil={false} offset={-0.2} darkness={0.9} />
-//         </EffectComposer>
-//       </Suspense>
-
-//       <PerformanceMonitor onDecline={() => setPerf(0.8)} onIncline={() => setPerf(1)} flipflops={2} />
-//       <AdaptiveDpr pixelated />
-//       <AdaptiveEvents />
-
-//       <OrbitControls
-//         ref={controls}
-//         enablePan={false}
-//         enableZoom
-//         enableRotate
-//         autoRotate={autoRotate}
-//         autoRotateSpeed={0.7}   // keep your value
-//         zoomSpeed={1.2}
-//         rotateSpeed={0.7}
-//         maxPolarAngle={Math.PI * 0.95}
-//         minDistance={2}         // keep your values
-//         maxDistance={32}
-//         onChange={invalidate}
-//         onStart={() => setAutoRotate(false)}
-//         onEnd={invalidate}
-//       />
-
-
-      
-//     </>
-//   );
-// }
-
-// /* ---------------------------------- Page --------------------------------- */
-// export default function Home3D() {
-//   return (
-//     <>
-//       <Canvas
-//         frameloop="demand"
-//         dpr={[1, 1.5]}  // same as your previous
-//         camera={{ position: [28, 4, -40], fov: 45, near: 0.01, far: 1700 }}  //default{8,5,14}
-//         gl={{
-//           antialias: true,
-//           powerPreference: "high-performance",
-//           toneMapping: THREE.ACESFilmicToneMapping,
-//           outputColorSpace: THREE.SRGBColorSpace,
-//           physicallyCorrectLights: true,
-//         }}
-//         style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh" }}
-//         onCreated={({ gl }) => {
-//           THREE.Cache.enabled = true;
-//           gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-//           gl.physicallyCorrectLights = true;
-//         }}
-//       >
-//         <Scene />
-//         <Preload all />
-
-        
-//       </Canvas>
-//       <FloatingAction to="/baymax" ariaLabel="Open contact" />
-
-//       <TutorialHint />
-//     </>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Home3D2.jsx
+// Home3D2.jsx srijon
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { Canvas, useThree, extend } from "@react-three/fiber";
@@ -281,6 +23,11 @@ import DoorPortal from "../components/DoorPortal";
 import TutorialHint from "../components/TutorialHint";
 import { usePageTransition } from "../components/transition";
 // import FloatingAction from "../components/FloatingAction";
+
+import HomeOverlay from "../components/homeOverlay";
+import DecryptedText from "../components/decryptedText";
+
+
 
 /* ----------------------------- Config toggles ----------------------------- */
 const USE_HDR_BACKGROUND = true;
@@ -393,7 +140,7 @@ function Scene({ isMobile }) {
   //   invalidate();
   // };
 
-    const handleReady = ({ center, size }) => {
+  const handleReady = ({ center, size }) => {
     if (!controls.current) return;
     // Fit camera to the model’s bounding box
     const radius = Math.max(size.x, size.y, size.z) * 0.05;
@@ -401,11 +148,11 @@ function Scene({ isMobile }) {
     const dir = new THREE.Vector3(15, 0.3, -16).normalize(); // pleasant 3/4 view
 
     const lookAt = center.clone();              // keep real center (don’t zero it)
-    const camPos  = center.clone().add(dir.multiplyScalar(startDist));
+    const camPos = center.clone().add(dir.multiplyScalar(startDist));
 
     camera.position.copy(camPos);
     camera.near = Math.max(0.01, startDist / 100);
-    camera.far  = startDist * 50;
+    camera.far = startDist * 50;
     camera.updateProjectionMatrix();
 
     controls.current.target.copy(lookAt);
@@ -480,7 +227,7 @@ function Scene({ isMobile }) {
         ref={controls}
         enablePan={!isMobile ? false : false}
         // enableZoom={!isMobile}
-        enableZoom={true}           
+        enableZoom={true}
         enableRotate
         autoRotate={autoRotate}
         autoRotateSpeed={isMobile ? 0.5 : 0.7}
@@ -498,6 +245,60 @@ function Scene({ isMobile }) {
 }
 
 /* ---------------------------------- Page --------------------------------- */
+// export default function Home3D() {
+//   const isMobile = useIsMobile(768);
+
+//   return (
+//     <>
+//       <Canvas
+//         frameloop="demand"
+//         // Lower DPR & wider FOV on mobile for performance and framing
+//         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+//         camera={{
+//           position: isMobile ? [7.5, 3, 9] : [28, 4, -40],
+//           fov: isMobile ? 55 : 45,
+//           near: 0.01,
+//           far: 1700,
+//         }}
+//         gl={{
+//           antialias: !isMobile, // disable AA on mobile for perf
+//           powerPreference: "high-performance",
+//           toneMapping: THREE.ACESFilmicToneMapping,
+//           outputColorSpace: THREE.SRGBColorSpace,
+//           physicallyCorrectLights: true,
+//         }}
+//         style={{
+//           position: "fixed",
+//           inset: 0,
+//           width: "100vw",
+//           height: "100vh",
+//           touchAction: "none", // improves scroll/gesture behavior on mobile canvas
+//         }}
+//         onCreated={({ gl }) => {
+//           THREE.Cache.enabled = true;
+//           gl.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5));
+//           gl.physicallyCorrectLights = true;
+//         }}
+//       >
+//         <Scene isMobile={isMobile} />
+//         <Preload all />
+//       </Canvas>
+
+//       {/* Keep your floating UI; it will naturally stack over the canvas */}
+//       {/* <FloatingAction to="/baymax" ariaLabel="Open contact" /> */}
+//       <HomeOverlay />
+//       <TutorialHint />
+//     </>
+//   );
+// }
+
+
+
+
+
+
+
+
 export default function Home3D() {
   const isMobile = useIsMobile(768);
 
@@ -505,7 +306,6 @@ export default function Home3D() {
     <>
       <Canvas
         frameloop="demand"
-        // Lower DPR & wider FOV on mobile for performance and framing
         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
         camera={{
           position: isMobile ? [7.5, 3, 9] : [28, 4, -40],
@@ -514,7 +314,7 @@ export default function Home3D() {
           far: 1700,
         }}
         gl={{
-          antialias: !isMobile, // disable AA on mobile for perf
+          antialias: !isMobile,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           outputColorSpace: THREE.SRGBColorSpace,
@@ -525,7 +325,7 @@ export default function Home3D() {
           inset: 0,
           width: "100vw",
           height: "100vh",
-          touchAction: "none", // improves scroll/gesture behavior on mobile canvas
+          touchAction: "none",
         }}
         onCreated={({ gl }) => {
           THREE.Cache.enabled = true;
@@ -537,23 +337,100 @@ export default function Home3D() {
         <Preload all />
       </Canvas>
 
-      {/* Keep your floating UI; it will naturally stack over the canvas */}
-      {/* <FloatingAction to="/baymax" ariaLabel="Open contact" /> */}
+      {/* ✅ BOTTOM-LEFT OVERLAY */}
+      <div
+        style={{
+          position: "fixed",
+          left: "3rem",
+          bottom: "3rem",
+          color: "#ffffff",
+          zIndex: 20,
+          pointerEvents: "none",
+          maxWidth: "260px",
+          fontFamily: "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+          lineHeight: 1.3,
+        }}
+      >
+        {/* Label */}
+        <div style={{ fontSize: "22px", fontWeight: 600, marginBottom: 4 }}>
+          <DecryptedText
+            text="Home of Ideas"
+            speed={45}
+            maxIterations={80}
+            sequential
+            revealDirection="start"
+            animateOn="view"
+          />
+        </div>
+
+        {/* Description */}
+        <div style={{ fontSize: "10px", opacity: 0.85 }}>
+          <DecryptedText
+            text="generation and visualization fused into a unified digital architecture, blending creative design with immersive 3D environments that adapt to every experience."
+            speed={45}
+            maxIterations={120}
+            sequential
+            revealDirection="start"
+            animateOn="view"
+          />
+        </div>
+      </div>
+
+      {/* ✅ BOTTOM-RIGHT OVERLAY */}
+      <div
+        style={{
+          position: "fixed",
+          right: "3rem",
+          bottom: "3rem",
+          color: "#ffffff",
+          zIndex: 20,
+          pointerEvents: "none",
+          maxWidth: "360px",
+          fontFamily: "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+          lineHeight: 1.35,
+          textAlign: "right",
+        }}
+      >
+        {/* Title */}
+        <div style={{ fontSize: "30px", fontWeight: 600, marginBottom: 6 }}>
+          <DecryptedText
+            text="House of musa"
+            speed={45}
+            maxIterations={80}
+            sequential
+            revealDirection="center"
+            animateOn="view"
+          />
+        </div>
+
+        {/* Main paragraph */}
+        <div style={{ fontSize: "12px", opacity: 0.9, marginLeft: "auto" }}>
+          <DecryptedText
+            // text="As a new generation image creation model, seedream 4.0 integrattes image generation and editing into a unified architecture with multimodel reasoning."
+            text="as a modular real-time rendering pipeline, the engine handles scene optimization, mesh decimation, "
+            speed={45}
+            maxIterations={140}
+            sequential
+            revealDirection="start"
+            animateOn="view"
+          />
+        </div>
+
+        {/* Tiny line below */}
+        <div style={{ fontSize: "10px", opacity: 0.7, marginLeft: "auto", marginTop: 8 }}>
+          <DecryptedText
+            text="Generation and editing into a unified architecture with flexible multimodel reasoning and up to 4K output."
+            speed={45}
+            maxIterations={120}
+            sequential
+            revealDirection="start"
+            animateOn="view"
+          />
+        </div>
+      </div>
+
+      {/* existing hint */}
       <TutorialHint />
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
