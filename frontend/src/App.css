@@ -70,3 +70,16 @@
   scrollbar-color: #888 #f1f1f1; /* thumb and track colors */
 }
 
+
+
+
+
+/* enable smooth native scrolling on iOS */
+html, body, #root {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* If you want to ensure vertical pans propagate: */
+body {
+  touch-action: pan-y;
+}

@@ -7,13 +7,13 @@
   --accent-2: #000000;
 }
 
-html, body, #root {
+/* html, body, #root {
   height: 100%;
   background: var(--bg);
   color: var(--ink);
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-}
+} */
 
 /* .story-container {
   position: relative;

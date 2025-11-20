@@ -11,7 +11,7 @@
   /* center the card WITHOUT changing <body> */
   display: grid;
   place-items: center;
-  padding: 40px 16px;
+  padding: -1px 16px;
 }
 
 /* Card */
@@ -95,7 +95,8 @@
   cursor: pointer;
   /* box-shadow: 6px 6px 12px #3c5a2a, -6px -6px 12px #bde7a2; */
   transition: box-shadow .25s ease, transform .06s ease;
-  font-family: "manrope"
+  font-family: "manrope";
+  /* margin-top: -3rem; */
 }
 
 .contact-page .btn:hover {
@@ -269,13 +270,46 @@
   margin: 24px 0 16px;
   text-align: center;
 }
-.contact-header h1 {
+/* .contact-header h1 {
   margin: 0 0 8px;
   font-size: clamp(28px, 4vw, 40px);
   font-weight: 700;
   letter-spacing: 0.4px;
   color: #d7a959;
+} */
+
+.contact-header h1 {
+  margin: 0 0 8px;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+
+  /* Gradient */
+  background: linear-gradient(90deg, #0d2955, #6939da, #d3a7ff, #184ea6);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* Glow */
+  text-shadow: 
+    0 0 12px rgba(139, 92, 246, 0.8),
+    0 0 25px rgba(139, 92, 246, 0.7),
+    0 0 45px rgba(139, 92, 246, 0.5);
+
+  /* Animation */
+  animation: gradientMove 4s ease infinite;
 }
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+
+
+
 .contact-header p {
   font-weight: 700;
   letter-spacing: 0.4px;
@@ -290,11 +324,11 @@
 
 /* Form card */
 .contact-form {
-  margin: 24px auto 48px;
+  margin: -18px auto 48px;
   padding: clamp(16px, 3vw, 28px);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(15, 25, 55, 0), rgba(9, 16, 36, 0));
-  backdrop-filter: blur(10px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.282), rgba(9, 16, 36, 0));
+  backdrop-filter: blur(20px);
   /* border: 1px solid rgba(200, 220, 255, 0.12); */
   /* box-shadow: 0 10px 40px rgba(0,0,0,0.35); */
   max-width: 900px;
@@ -323,7 +357,7 @@
 }
 .form-group label {
   font-size: 14px;
-  color: #dfe7ff;
+  color: #000000;
   opacity: 0.9;
 }
 .form-group input,
@@ -379,4 +413,146 @@
   pointer-events: none !important;
   width: 1px;
   height: 1px;
+}
+
+
+.contact-bg-overlay {
+  pointer-events: none;    
+}
+.floating-lines-container {
+  pointer-events: auto;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Make the whole page a stacked layout */
+.contact-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Background layer (Beams + FloatingLines) */
+.contact-bg {
+  position: fixed;       /* stays behind while scrolling */
+  inset: 0;
+  width: 100%;
+  height: 100vh;         /* full viewport height */
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Let beams + floating lines fill the bg */
+.contact-bg canvas,
+.contact-bg .floating-lines-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Gradient overlay must not block pointer events */
+.contact-bg-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;  /* so FloatingLines stays interactive */
+}
+
+/* Foreground content (form etc.) */
+.contact-container {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(6rem, 12vh, 8rem);
+  padding-bottom: 4rem;
+}
+
+/* Slightly adjust spacing on mobile */
+@media (max-width: 768px) {
+  .contact-container {
+    padding-top: 60rem;
+    padding-inline: 1.25rem;
+  }
+  
+}
+
+
+
+.contact-container{
+  position: absolute;
+  top: -20px;
+}
+
+/* From Uiverse.io by Allyhere */ 
+.btn-send {
+  --clr-font-main: hsla(0 0% 20% / 100);
+  --btn-bg-1: rgb(244, 97, 255);
+  --btn-bg-2: rgb(245, 235, 52);
+  --btn-bg-color: hsla(360 100% 100% / 1);
+  --radii: 0.5em;
+  cursor: pointer;
+  padding: 0.9em 1.4em;
+  min-width: 120px;
+  min-height: 44px;
+  font-size: var(--size, 1rem);
+  font-weight: 500;
+  transition: 0.8s;
+  background-size: 280% auto;
+  background-image: linear-gradient(
+    325deg,
+    var(--btn-bg-2) 0%,
+    var(--btn-bg-1) 55%,
+    var(--btn-bg-2) 90%
+  );
+  border: none;
+  border-radius: var(--radii);
+  /* color: var(--btn-bg-color); */
+  color: black;
+  font-weight: 600;
+  box-shadow:
+    0px 0px 20px rgba(234, 255, 71, 0.5),
+    0px 5px 5px -1px rgba(160, 58, 233, 0.25),
+    inset 4px 4px 8px rgba(243, 255, 175, 0.5),
+    inset -4px -4px 8px rgba(167, 19, 216, 0.35);
+}
+
+.btn-donate:hover {
+  background-position: right top;
+}
+
+.btn-donate:is(:focus, :focus-visible, :active) {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--btn-bg-color),
+    0 0 0 6px var(--btn-bg-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-donate {
+    transition: linear;
+  }
+}
+
+
+/* Center the button under the form */
+.submit-row {
+  /* margin-top: 20px; */
+  display: flex;
+  justify-content: center;
+}
+
+/* Optional: keep width natural */
+.btn-send {
+  /* existing styles… */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

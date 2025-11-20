@@ -228,3 +228,79 @@ canvas {
 @media (max-width: 768px){
   .desktop-only{ display:none !important; }
 }
+
+
+
+/* fix for bootm div in mobile  */
+@media (max-width: 768px) {
+  body, html {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  #root,
+  canvas {
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  .home-container {
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  .home-wrapper {
+  height: 100vh;
+  overflow: hidden;
+}
+
+}
+
+
+@media (max-width: 480px){
+   body, html {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  #root,
+  canvas {
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  .home-container {
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  .home-wrapper {
+  height: 100vh;
+  overflow: hidden;
+}
+
+}
+
+
+
+
+
+
+
+
+/* enable smooth native scrolling on iOS */
+html, body, #root {
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+}
+
+/* If you want to ensure vertical pans propagate: */
+body {
+  touch-action: pan-y;
+}
+
+/* Prevent horizontal scroll everywhere */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}

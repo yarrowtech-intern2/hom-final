@@ -456,6 +456,49 @@ function Scene({ isMobile }) {
 export default function Home3D() {
   const isMobile = useIsMobile(768);
 
+
+
+  // Force correct background + no extra scroll on this page
+  // useEffect(() => {
+  //   const prevBodyBg = document.body.style.background;
+  //   const prevBodyOverflow = document.body.style.overflow;
+
+  //   document.body.style.background = "#0b0b0c"; // dark background for home
+  //   document.body.style.overflow = "hidden";
+
+  //   return () => {
+  //     document.body.style.background = prevBodyBg;
+  //     document.body.style.overflow = prevBodyOverflow;
+  //   };
+  // }, []);
+
+
+
+    useEffect(() => {
+    const prevBodyBg = document.body.style.background;
+    const prevBodyOverflow = document.body.style.overflow;
+
+    document.body.style.background = "#0b0b0c"; // dark background for home
+
+    // Only lock overflow on non-mobile so mobile can scroll
+    if (!isMobile) {
+      document.body.style.overflow = "auto";
+    } else {
+      // allow normal mobile scroll behavior
+      document.body.style.overflow = prevBodyOverflow || "auto";
+    }
+
+    return () => {
+      document.body.style.background = prevBodyBg;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, [isMobile]);
+
+
+
+
+
+
   const baseOverlayStyle = {
     position: "fixed",
     color: "#ffffff",
@@ -508,7 +551,8 @@ export default function Home3D() {
           inset: 0,
           width: "100vw",
           height: "100vh",
-          touchAction: "none",
+          // touchAction: "none",
+          touchAction: isMobile ? "pan-y" : "none",
         }}
         onCreated={({ gl }) => {
           THREE.Cache.enabled = true;
@@ -526,7 +570,7 @@ export default function Home3D() {
 
 
 
-      /* ------------------- LEFT OVERLAY ------------------- */
+      {/* ------------------- LEFT OVERLAY ------------------- */}
 <div style={leftOverlayStyle}>
   <div style={{ fontSize: isMobile ? "16px" : "22px", fontWeight: 600 }}>
     <DecryptedText
@@ -557,7 +601,7 @@ export default function Home3D() {
 
 
 
-      /* ------------------- RIGHT OVERLAY ------------------- */
+      {/* ------------------- RIGHT OVERLAY -------------------  */}
 <div style={rightOverlayStyle}>
   <div style={{ fontSize: isMobile ? "22px" : "30px", fontWeight: 600 }}>
     <DecryptedText

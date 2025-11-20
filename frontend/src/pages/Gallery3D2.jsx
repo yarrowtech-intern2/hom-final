@@ -1713,14 +1713,15 @@ function Painting({ id, title, img, position, rotation, size, desc }) {
         position={[0, -size[1] * 0.65, 0]}
         center
         style={{
-          padding: "6px 10px",
+          padding: "8px 10px",
           borderRadius: 10,
-          background: "rgba(0, 0, 0, 0.11)",
-          color: "#fff",
-          fontSize: 8,
+          background: "rgba(255, 252, 255, 0.29)",
+          color: "#000",
+          fontSize: 13,
           border: "1px solid rgba(255, 255, 255, 0.1)",
           pointerEvents: "none",
           whiteSpace: "nowrap",
+          fontWeight: "bold",
         }}
       >
         {title} • Press <b>E</b> / Click
@@ -2039,6 +2040,11 @@ export default function GalleryPage() {
 
       <KeyboardControls map={KEYMAP}>
         <Canvas
+         style={{
+    width: "100vw",
+    height: "100vh", 
+    display: "block",
+  }}
           gl={{
             antialias: true,
             alpha: true,
