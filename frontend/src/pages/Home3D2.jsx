@@ -143,9 +143,9 @@ function Scene({ isMobile }) {
   const handleReady = ({ center, size }) => {
     if (!controls.current) return;
     // Fit camera to the model’s bounding box
-    const radius = Math.max(size.x, size.y, size.z) * 0.05;
+    const radius = Math.max(size.x, size.y, size.z) * 0.063;
     const startDist = Math.max(radius * (isMobile ? 3.0 : 2.2), 6);
-    const dir = new THREE.Vector3(15, 0.3, -16).normalize(); // pleasant 3/4 view
+    const dir = new THREE.Vector3(15, 0.3, -56).normalize(); // pleasant 3/4 view
 
     const lookAt = center.clone();              // keep real center (don’t zero it)
     const camPos = center.clone().add(dir.multiplyScalar(startDist));
@@ -299,8 +299,191 @@ function Scene({ isMobile }) {
 
 
 
+
+
+
+
+
+
+
+// export default function Home3D() {
+//   const isMobile = useIsMobile(768);
+
+//   return (
+//     <>
+//       <Canvas
+//         frameloop="demand"
+//         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+//         camera={{
+//           position: isMobile ? [7.5, 3, 9] : [28, 4, -40],
+//           fov: isMobile ? 55 : 45,
+//           near: 0.01,
+//           far: 1700,
+//         }}
+//         gl={{
+//           antialias: !isMobile,
+//           powerPreference: "high-performance",
+//           toneMapping: THREE.ACESFilmicToneMapping,
+//           outputColorSpace: THREE.SRGBColorSpace,
+//           physicallyCorrectLights: true,
+//         }}
+//         style={{
+//           position: "fixed",
+//           inset: 0,
+//           width: "100vw",
+//           height: "100vh",
+//           touchAction: "none",
+//         }}
+//         onCreated={({ gl }) => {
+//           THREE.Cache.enabled = true;
+//           gl.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5));
+//           gl.physicallyCorrectLights = true;
+//         }}
+//       >
+//         <Scene isMobile={isMobile} />
+//         <Preload all />
+//       </Canvas>
+
+//       {/* ✅ BOTTOM-LEFT OVERLAY */}
+//       <div
+//         style={{
+//           position: "fixed",
+//           left: "3rem",
+//           bottom: "3rem",
+//           color: "#ffffff",
+//           zIndex: 20,
+//           pointerEvents: "none",
+//           maxWidth: "260px",
+//           fontFamily: "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+//           lineHeight: 1.3,
+//         }}
+//       >
+//         {/* Label */}
+//         <div style={{ fontSize: "22px", fontWeight: 600, marginBottom: 4 }}>
+//           <DecryptedText
+//             text="Home of Ideas"
+//             speed={45}
+//             maxIterations={80}
+//             sequential
+//             revealDirection="start"
+//             animateOn="view"
+//           />
+//         </div>
+
+//         {/* Description */}
+//         <div style={{ fontSize: "10px", opacity: 0.85 }}>
+//           <DecryptedText
+//             text="generation and visualization fused into a unified digital architecture, blending creative design with immersive 3D environments that adapt to every experience."
+//             speed={45}
+//             maxIterations={120}
+//             sequential
+//             revealDirection="start"
+//             animateOn="view"
+//           />
+//         </div>
+//       </div>
+
+//       {/* ✅ BOTTOM-RIGHT OVERLAY */}
+//       <div
+//         style={{
+//           position: "fixed",
+//           right: "3rem",
+//           bottom: "3rem",
+//           color: "#ffffff",
+//           zIndex: 20,
+//           pointerEvents: "none",
+//           maxWidth: "360px",
+//           fontFamily: "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+//           lineHeight: 1.35,
+//           textAlign: "right",
+//         }}
+//       >
+//         {/* Title */}
+//         <div style={{ fontSize: "30px", fontWeight: 600, marginBottom: 6 }}>
+//           <DecryptedText
+//             text="House of musa"
+//             speed={45}
+//             maxIterations={80}
+//             sequential
+//             revealDirection="center"
+//             animateOn="view"
+//           />
+//         </div>
+
+//         {/* Main paragraph */}
+//         <div style={{ fontSize: "12px", opacity: 0.9, marginLeft: "auto" }}>
+//           <DecryptedText
+//             // text="As a new generation image creation model, seedream 4.0 integrattes image generation and editing into a unified architecture with multimodel reasoning."
+//             text="as a modular real-time rendering pipeline, the engine handles scene optimization, mesh decimation, "
+//             speed={45}
+//             maxIterations={140}
+//             sequential
+//             revealDirection="start"
+//             animateOn="view"
+//           />
+//         </div>
+
+//         {/* Tiny line below */}
+//         <div style={{ fontSize: "10px", opacity: 0.7, marginLeft: "auto", marginTop: 8 }}>
+//           <DecryptedText
+//             text="Generation and editing into a unified architecture with flexible multimodel reasoning and up to 4K output."
+//             speed={45}
+//             maxIterations={120}
+//             sequential
+//             revealDirection="start"
+//             animateOn="view"
+//           />
+//         </div>
+//       </div>
+
+//       {/* existing hint */}
+//       <TutorialHint />
+//     </>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
 export default function Home3D() {
   const isMobile = useIsMobile(768);
+
+  const baseOverlayStyle = {
+    position: "fixed",
+    color: "#ffffff",
+    zIndex: 20,
+    pointerEvents: "none",
+    fontFamily:
+      "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+  };
+
+  const leftOverlayStyle = {
+    ...baseOverlayStyle,
+    left: isMobile ? "1.25rem" : "3rem",
+    right: isMobile ? "1.25rem" : "auto",
+    bottom: isMobile ? "5.5rem" : "3rem",
+    maxWidth: isMobile ? "calc(100vw - 2.5rem)" : "260px",
+    lineHeight: 1.3,
+    textAlign: "left",
+  };
+
+  const rightOverlayStyle = {
+    ...baseOverlayStyle,
+    right: isMobile ? "1.25rem" : "3rem",
+    left: isMobile ? "1.25rem" : "auto",
+    bottom: isMobile ? "1.5rem" : "3rem",
+    maxWidth: isMobile ? "calc(100vw - 2.5rem)" : "360px",
+    lineHeight: 1.35,
+    textAlign: isMobile ? "left" : "right",
+  };
 
   return (
     <>
@@ -329,7 +512,9 @@ export default function Home3D() {
         }}
         onCreated={({ gl }) => {
           THREE.Cache.enabled = true;
-          gl.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5));
+          gl.setPixelRatio(
+            Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5)
+          );
           gl.physicallyCorrectLights = true;
         }}
       >
@@ -337,99 +522,77 @@ export default function Home3D() {
         <Preload all />
       </Canvas>
 
-      {/* ✅ BOTTOM-LEFT OVERLAY */}
-      <div
-        style={{
-          position: "fixed",
-          left: "3rem",
-          bottom: "3rem",
-          color: "#ffffff",
-          zIndex: 20,
-          pointerEvents: "none",
-          maxWidth: "260px",
-          fontFamily: "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-          lineHeight: 1.3,
-        }}
-      >
-        {/* Label */}
-        <div style={{ fontSize: "22px", fontWeight: 600, marginBottom: 4 }}>
-          <DecryptedText
-            text="Home of Ideas"
-            speed={45}
-            maxIterations={80}
-            sequential
-            revealDirection="start"
-            animateOn="view"
-          />
-        </div>
+  
 
-        {/* Description */}
-        <div style={{ fontSize: "10px", opacity: 0.85 }}>
-          <DecryptedText
-            text="generation and visualization fused into a unified digital architecture, blending creative design with immersive 3D environments that adapt to every experience."
-            speed={45}
-            maxIterations={120}
-            sequential
-            revealDirection="start"
-            animateOn="view"
-          />
-        </div>
-      </div>
 
-      {/* ✅ BOTTOM-RIGHT OVERLAY */}
-      <div
-        style={{
-          position: "fixed",
-          right: "3rem",
-          bottom: "3rem",
-          color: "#ffffff",
-          zIndex: 20,
-          pointerEvents: "none",
-          maxWidth: "360px",
-          fontFamily: "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-          lineHeight: 1.35,
-          textAlign: "right",
-        }}
-      >
-        {/* Title */}
-        <div style={{ fontSize: "30px", fontWeight: 600, marginBottom: 6 }}>
-          <DecryptedText
-            text="House of musa"
-            speed={45}
-            maxIterations={80}
-            sequential
-            revealDirection="center"
-            animateOn="view"
-          />
-        </div>
 
-        {/* Main paragraph */}
-        <div style={{ fontSize: "12px", opacity: 0.9, marginLeft: "auto" }}>
-          <DecryptedText
-            // text="As a new generation image creation model, seedream 4.0 integrattes image generation and editing into a unified architecture with multimodel reasoning."
-            text="as a modular real-time rendering pipeline, the engine handles scene optimization, mesh decimation, "
-            speed={45}
-            maxIterations={140}
-            sequential
-            revealDirection="start"
-            animateOn="view"
-          />
-        </div>
+      /* ------------------- LEFT OVERLAY ------------------- */
+<div style={leftOverlayStyle}>
+  <div style={{ fontSize: isMobile ? "16px" : "22px", fontWeight: 600 }}>
+    <DecryptedText
+      text="Home of Ideas"
+      speed={45}
+      maxIterations={80}
+      sequential
+      revealDirection="start"
+      animateOn="view"
+    />
+  </div>
 
-        {/* Tiny line below */}
-        <div style={{ fontSize: "10px", opacity: 0.7, marginLeft: "auto", marginTop: 8 }}>
-          <DecryptedText
-            text="Generation and editing into a unified architecture with flexible multimodel reasoning and up to 4K output."
-            speed={45}
-            maxIterations={120}
-            sequential
-            revealDirection="start"
-            animateOn="view"
-          />
-        </div>
-      </div>
+  <div style={{ fontSize: isMobile ? "9px" : "10px", opacity: 0.85 }}>
+    <DecryptedText
+      text="generation and visualization fused into a unified digital architecture..."
+      speed={45}
+      maxIterations={120}
+      sequential
+      revealDirection="start"
+      animateOn="view"
+    />
+  </div>
+</div>
 
-      {/* existing hint */}
+
+
+
+
+
+
+      /* ------------------- RIGHT OVERLAY ------------------- */
+<div style={rightOverlayStyle}>
+  <div style={{ fontSize: isMobile ? "22px" : "30px", fontWeight: 600 }}>
+    <DecryptedText
+      text="House of musa"
+      speed={45}
+      maxIterations={80}
+      sequential
+      revealDirection="center"
+      animateOn="view"
+    />
+  </div>
+
+  <div style={{ fontSize: isMobile ? "10px" : "12px", opacity: 0.9 }}>
+    <DecryptedText
+      text="as a modular real-time rendering pipeline..."
+      speed={45}
+      maxIterations={140}
+      sequential
+      revealDirection="start"
+      animateOn="view"
+    />
+  </div>
+
+  <div style={{ fontSize: isMobile ? "9px" : "10px", opacity: 0.7, marginTop: 8 }}>
+    <DecryptedText
+      text="Generation and editing into a unified architecture..."
+      speed={45}
+      maxIterations={120}
+      sequential
+      revealDirection="start"
+      animateOn="view"
+    />
+  </div>
+</div>
+
       <TutorialHint />
     </>
   );

@@ -14,7 +14,7 @@ const ORANGE = "#9D6800";
 const ORANGE_CENTER = "#9D6800";
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
-function RobotGLB({ url = "/models/bayma.glb", pointer, enableTilt = true }) {
+function RobotGLB({ url = "/models/bayma2.glb", pointer, enableTilt = true }) {
   const { scene } = useGLTF(url);
   const bodyRef = useRef(null);
   const headRef = useRef(null);
@@ -196,4 +196,4 @@ export default function BaymaksHome() {
   );
 }
 
-useGLTF.preload("/models/bayma.glb");
+useGLTF.preload("/models/bayma2.glb");
