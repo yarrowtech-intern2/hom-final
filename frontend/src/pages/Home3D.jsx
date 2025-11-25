@@ -26,7 +26,13 @@ extend({ NormalPass });
 /* ----------------------------- Config toggles ----------------------------- */
 // const [autoRotate, setAutoRotate] = useState(true);
 // Enable HDRI as visible background for Blender Cycles look
+
+
 const USE_HDR_BACKGROUND = true;
+
+
+
+
 // Use a high-quality HDRI (change to your preferred file)
 const HDR_FILE = "/hdr/rural-road.exr";
 
