@@ -172,7 +172,7 @@ function Scene({ isMobile }) {
 
   return (
     <>
-      {USE_HDR_BACKGROUND && <color attach="background" args={["#fff"]} />}
+      {USE_HDR_BACKGROUND && <color attach="background" args={["#ffff"]} />}
 
       {/* Softer lights on mobile */}
       <hemisphereLight intensity={isMobile ? 0.015 : 0.02} groundColor="#222" />

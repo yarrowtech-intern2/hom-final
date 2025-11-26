@@ -562,10 +562,11 @@ export default function DoorPortal({
   const hitSize = radius * hitScale * 2;
 
   return (
-    <group position={position} renderOrder={999}>
+    <group position={position} renderOrder={9999} frustumCulled={false}>
       <Billboard>
         {/* invisible click hitbox */}
         <mesh
+        frustumCulled={false} 
           onPointerOver={() => {
             hover.current = true;
             document.body.style.cursor = "pointer";
@@ -584,13 +585,19 @@ export default function DoorPortal({
         <group ref={ringRef}>
 
           {/* outer pulsing halo */}
-          <mesh>
-            <planeGeometry args={[radius * 3.0, radius * 3.0]} />
+          <mesh
+           frustumCulled={false} 
+           renderOrder={10000} >
+            {/* <planeGeometry args={[radius * 3.0, radius * 3.0]} /> */}
+            <planeGeometry args={[radius * 4.5, radius * 4.5]} />
+
             <primitive object={haloMat} ref={haloMatRef} />
           </mesh>
 
           {/* transparent ring */}
-          <mesh>
+          <mesh
+          frustumCulled={false}
+          renderOrder={10001}>
             <planeGeometry args={[radius * 2.6, radius * 2.6, 64, 64]} />
             <primitive object={ringMat} ref={matRef} />
           </mesh>
@@ -599,6 +606,8 @@ export default function DoorPortal({
           {Array.from({ length: 3 }).map((_, i) => (
             <mesh
               key={i}
+              frustumCulled={false} 
+              renderOrder={10002}
               ref={(el) => (rippleRefs.current[i] = el)}
             >
               <ringGeometry args={[radius * 0.75, radius * 0.8, 64]} />

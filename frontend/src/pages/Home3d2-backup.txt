@@ -1,5 +1,5 @@
 
-// Home3D2.jsx
+// Home3D2.jsx srijon
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { Canvas, useThree, extend } from "@react-three/fiber";
@@ -25,6 +25,7 @@ import { usePageTransition } from "../components/transition";
 // import FloatingAction from "../components/FloatingAction";
 
 import HomeOverlay from "../components/homeOverlay";
+import DecryptedText from "../components/decryptedText";
 
 
 
@@ -139,19 +140,19 @@ function Scene({ isMobile }) {
   //   invalidate();
   // };
 
-    const handleReady = ({ center, size }) => {
+  const handleReady = ({ center, size }) => {
     if (!controls.current) return;
     // Fit camera to the model’s bounding box
-    const radius = Math.max(size.x, size.y, size.z) * 0.05;
+    const radius = Math.max(size.x, size.y, size.z) * 0.063;
     const startDist = Math.max(radius * (isMobile ? 3.0 : 2.2), 6);
-    const dir = new THREE.Vector3(15, 0.3, -16).normalize(); // pleasant 3/4 view
+    const dir = new THREE.Vector3(15, 0.3, -56).normalize(); // pleasant 3/4 view
 
     const lookAt = center.clone();              // keep real center (don’t zero it)
-    const camPos  = center.clone().add(dir.multiplyScalar(startDist));
+    const camPos = center.clone().add(dir.multiplyScalar(startDist));
 
     camera.position.copy(camPos);
     camera.near = Math.max(0.01, startDist / 100);
-    camera.far  = startDist * 50;
+    camera.far = startDist * 50;
     camera.updateProjectionMatrix();
 
     controls.current.target.copy(lookAt);
@@ -226,7 +227,7 @@ function Scene({ isMobile }) {
         ref={controls}
         enablePan={!isMobile ? false : false}
         // enableZoom={!isMobile}
-        enableZoom={true}           
+        enableZoom={true}
         enableRotate
         autoRotate={autoRotate}
         autoRotateSpeed={isMobile ? 0.5 : 0.7}
@@ -244,14 +245,293 @@ function Scene({ isMobile }) {
 }
 
 /* ---------------------------------- Page --------------------------------- */
+// export default function Home3D() {
+//   const isMobile = useIsMobile(768);
+
+//   return (
+//     <>
+//       <Canvas
+//         frameloop="demand"
+//         // Lower DPR & wider FOV on mobile for performance and framing
+//         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+//         camera={{
+//           position: isMobile ? [7.5, 3, 9] : [28, 4, -40],
+//           fov: isMobile ? 55 : 45,
+//           near: 0.01,
+//           far: 1700,
+//         }}
+//         gl={{
+//           antialias: !isMobile, // disable AA on mobile for perf
+//           powerPreference: "high-performance",
+//           toneMapping: THREE.ACESFilmicToneMapping,
+//           outputColorSpace: THREE.SRGBColorSpace,
+//           physicallyCorrectLights: true,
+//         }}
+//         style={{
+//           position: "fixed",
+//           inset: 0,
+//           width: "100vw",
+//           height: "100vh",
+//           touchAction: "none", // improves scroll/gesture behavior on mobile canvas
+//         }}
+//         onCreated={({ gl }) => {
+//           THREE.Cache.enabled = true;
+//           gl.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5));
+//           gl.physicallyCorrectLights = true;
+//         }}
+//       >
+//         <Scene isMobile={isMobile} />
+//         <Preload all />
+//       </Canvas>
+
+//       {/* Keep your floating UI; it will naturally stack over the canvas */}
+//       {/* <FloatingAction to="/baymax" ariaLabel="Open contact" /> */}
+//       <HomeOverlay />
+//       <TutorialHint />
+//     </>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// export default function Home3D() {
+//   const isMobile = useIsMobile(768);
+
+//   return (
+//     <>
+//       <Canvas
+//         frameloop="demand"
+//         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+//         camera={{
+//           position: isMobile ? [7.5, 3, 9] : [28, 4, -40],
+//           fov: isMobile ? 55 : 45,
+//           near: 0.01,
+//           far: 1700,
+//         }}
+//         gl={{
+//           antialias: !isMobile,
+//           powerPreference: "high-performance",
+//           toneMapping: THREE.ACESFilmicToneMapping,
+//           outputColorSpace: THREE.SRGBColorSpace,
+//           physicallyCorrectLights: true,
+//         }}
+//         style={{
+//           position: "fixed",
+//           inset: 0,
+//           width: "100vw",
+//           height: "100vh",
+//           touchAction: "none",
+//         }}
+//         onCreated={({ gl }) => {
+//           THREE.Cache.enabled = true;
+//           gl.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5));
+//           gl.physicallyCorrectLights = true;
+//         }}
+//       >
+//         <Scene isMobile={isMobile} />
+//         <Preload all />
+//       </Canvas>
+
+//       {/* ✅ BOTTOM-LEFT OVERLAY */}
+//       <div
+//         style={{
+//           position: "fixed",
+//           left: "3rem",
+//           bottom: "3rem",
+//           color: "#ffffff",
+//           zIndex: 20,
+//           pointerEvents: "none",
+//           maxWidth: "260px",
+//           fontFamily: "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+//           lineHeight: 1.3,
+//         }}
+//       >
+//         {/* Label */}
+//         <div style={{ fontSize: "22px", fontWeight: 600, marginBottom: 4 }}>
+//           <DecryptedText
+//             text="Home of Ideas"
+//             speed={45}
+//             maxIterations={80}
+//             sequential
+//             revealDirection="start"
+//             animateOn="view"
+//           />
+//         </div>
+
+//         {/* Description */}
+//         <div style={{ fontSize: "10px", opacity: 0.85 }}>
+//           <DecryptedText
+//             text="generation and visualization fused into a unified digital architecture, blending creative design with immersive 3D environments that adapt to every experience."
+//             speed={45}
+//             maxIterations={120}
+//             sequential
+//             revealDirection="start"
+//             animateOn="view"
+//           />
+//         </div>
+//       </div>
+
+//       {/* ✅ BOTTOM-RIGHT OVERLAY */}
+//       <div
+//         style={{
+//           position: "fixed",
+//           right: "3rem",
+//           bottom: "3rem",
+//           color: "#ffffff",
+//           zIndex: 20,
+//           pointerEvents: "none",
+//           maxWidth: "360px",
+//           fontFamily: "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+//           lineHeight: 1.35,
+//           textAlign: "right",
+//         }}
+//       >
+//         {/* Title */}
+//         <div style={{ fontSize: "30px", fontWeight: 600, marginBottom: 6 }}>
+//           <DecryptedText
+//             text="House of musa"
+//             speed={45}
+//             maxIterations={80}
+//             sequential
+//             revealDirection="center"
+//             animateOn="view"
+//           />
+//         </div>
+
+//         {/* Main paragraph */}
+//         <div style={{ fontSize: "12px", opacity: 0.9, marginLeft: "auto" }}>
+//           <DecryptedText
+//             // text="As a new generation image creation model, seedream 4.0 integrattes image generation and editing into a unified architecture with multimodel reasoning."
+//             text="as a modular real-time rendering pipeline, the engine handles scene optimization, mesh decimation, "
+//             speed={45}
+//             maxIterations={140}
+//             sequential
+//             revealDirection="start"
+//             animateOn="view"
+//           />
+//         </div>
+
+//         {/* Tiny line below */}
+//         <div style={{ fontSize: "10px", opacity: 0.7, marginLeft: "auto", marginTop: 8 }}>
+//           <DecryptedText
+//             text="Generation and editing into a unified architecture with flexible multimodel reasoning and up to 4K output."
+//             speed={45}
+//             maxIterations={120}
+//             sequential
+//             revealDirection="start"
+//             animateOn="view"
+//           />
+//         </div>
+//       </div>
+
+//       {/* existing hint */}
+//       <TutorialHint />
+//     </>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
 export default function Home3D() {
   const isMobile = useIsMobile(768);
+
+
+
+  // Force correct background + no extra scroll on this page
+  // useEffect(() => {
+  //   const prevBodyBg = document.body.style.background;
+  //   const prevBodyOverflow = document.body.style.overflow;
+
+  //   document.body.style.background = "#0b0b0c"; // dark background for home
+  //   document.body.style.overflow = "hidden";
+
+  //   return () => {
+  //     document.body.style.background = prevBodyBg;
+  //     document.body.style.overflow = prevBodyOverflow;
+  //   };
+  // }, []);
+
+
+
+    useEffect(() => {
+    const prevBodyBg = document.body.style.background;
+    const prevBodyOverflow = document.body.style.overflow;
+
+    document.body.style.background = "#0b0b0c"; // dark background for home
+
+    // Only lock overflow on non-mobile so mobile can scroll
+    if (!isMobile) {
+      document.body.style.overflow = "auto";
+    } else {
+      // allow normal mobile scroll behavior
+      document.body.style.overflow = prevBodyOverflow || "auto";
+    }
+
+    return () => {
+      document.body.style.background = prevBodyBg;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, [isMobile]);
+
+
+
+
+
+
+  const baseOverlayStyle = {
+    position: "fixed",
+    color: "#ffffff",
+    zIndex: 20,
+    pointerEvents: "none",
+    fontFamily:
+      "Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+  };
+
+  const leftOverlayStyle = {
+    ...baseOverlayStyle,
+    left: isMobile ? "1.25rem" : "3rem",
+    right: isMobile ? "1.25rem" : "auto",
+    bottom: isMobile ? "5.5rem" : "3rem",
+    maxWidth: isMobile ? "calc(100vw - 2.5rem)" : "260px",
+    lineHeight: 1.3,
+    textAlign: "left",
+  };
+
+  const rightOverlayStyle = {
+    ...baseOverlayStyle,
+    right: isMobile ? "1.25rem" : "3rem",
+    left: isMobile ? "1.25rem" : "auto",
+    bottom: isMobile ? "1.5rem" : "3rem",
+    maxWidth: isMobile ? "calc(100vw - 2.5rem)" : "360px",
+    lineHeight: 1.35,
+    textAlign: isMobile ? "left" : "right",
+  };
 
   return (
     <>
       <Canvas
         frameloop="demand"
-        // Lower DPR & wider FOV on mobile for performance and framing
         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
         camera={{
           position: isMobile ? [7.5, 3, 9] : [28, 4, -40],
@@ -260,7 +540,7 @@ export default function Home3D() {
           far: 1700,
         }}
         gl={{
-          antialias: !isMobile, // disable AA on mobile for perf
+          antialias: !isMobile,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           outputColorSpace: THREE.SRGBColorSpace,
@@ -271,11 +551,14 @@ export default function Home3D() {
           inset: 0,
           width: "100vw",
           height: "100vh",
-          touchAction: "none", // improves scroll/gesture behavior on mobile canvas
+          // touchAction: "none",
+          touchAction: isMobile ? "pan-y" : "none",
         }}
         onCreated={({ gl }) => {
           THREE.Cache.enabled = true;
-          gl.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5));
+          gl.setPixelRatio(
+            Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5)
+          );
           gl.physicallyCorrectLights = true;
         }}
       >
@@ -283,24 +566,78 @@ export default function Home3D() {
         <Preload all />
       </Canvas>
 
-      {/* Keep your floating UI; it will naturally stack over the canvas */}
-      {/* <FloatingAction to="/baymax" ariaLabel="Open contact" /> */}
-      <HomeOverlay />
+  
+
+
+
+      {/* ------------------- LEFT OVERLAY ------------------- */}
+<div style={leftOverlayStyle}>
+  <div style={{ fontSize: isMobile ? "16px" : "22px", fontWeight: 600 }}>
+    <DecryptedText
+      text="Home of Ideas"
+      speed={45}
+      maxIterations={80}
+      sequential
+      revealDirection="start"
+      animateOn="view"
+    />
+  </div>
+
+  <div style={{ fontSize: isMobile ? "9px" : "10px", opacity: 0.85 }}>
+    <DecryptedText
+      text="generation and visualization fused into a unified digital architecture..."
+      speed={45}
+      maxIterations={120}
+      sequential
+      revealDirection="start"
+      animateOn="view"
+    />
+  </div>
+</div>
+
+
+
+
+
+
+
+      {/* ------------------- RIGHT OVERLAY -------------------  */}
+<div style={rightOverlayStyle}>
+  <div style={{ fontSize: isMobile ? "22px" : "30px", fontWeight: 600 }}>
+    <DecryptedText
+      text="House of musa"
+      speed={45}
+      maxIterations={80}
+      sequential
+      revealDirection="center"
+      animateOn="view"
+    />
+  </div>
+
+  <div style={{ fontSize: isMobile ? "10px" : "12px", opacity: 0.9 }}>
+    <DecryptedText
+      text="as a modular real-time rendering pipeline..."
+      speed={45}
+      maxIterations={140}
+      sequential
+      revealDirection="start"
+      animateOn="view"
+    />
+  </div>
+
+  <div style={{ fontSize: isMobile ? "9px" : "10px", opacity: 0.7, marginTop: 8 }}>
+    <DecryptedText
+      text="Generation and editing into a unified architecture..."
+      speed={45}
+      maxIterations={120}
+      sequential
+      revealDirection="start"
+      animateOn="view"
+    />
+  </div>
+</div>
+
       <TutorialHint />
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

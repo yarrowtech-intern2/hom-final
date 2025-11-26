@@ -21,6 +21,9 @@ canvas {
   border: none !important;
   outline: none !important;
   display: block;
+  touch-action: none !important; 
+  -ms-touch-action: none;
+   pointer-events: auto !important;
 }
 
 /* Transparent header overlay */
@@ -36,6 +39,17 @@ canvas {
   z-index: 10;
   background: transparent;
 }
+/* Let the 3D canvas receive drags behind the glass header */
+.header-overlay {
+  pointer-events: none;
+}
+
+.header-overlay .nav,
+.header-overlay .menu-btn,
+.header-overlay a {
+  pointer-events: auto; /* still clickable nav/menu */
+}
+
 
 .nav {
   margin-left: auto;
@@ -232,7 +246,7 @@ canvas {
 
 
 /* fix for bootm div in mobile  */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   body, html {
     overflow: hidden;
     height: 100%;
@@ -277,7 +291,55 @@ canvas {
   overflow: hidden;
 }
 
+} */
+
+
+
+
+
+
+
+
+
+
+
+
+/* Mobile: keep app fullscreen but don't re-style the canvas again */
+@media (max-width: 768px) {
+  body, html {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  #root {
+    height: 100vh;
+  }
+
+  .home-container,
+  .home-wrapper {
+    height: 100vh;
+    overflow: hidden;
+  }
 }
+
+/* For extra-small phones we do the same */
+@media (max-width: 480px) {
+  body, html {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  #root {
+    height: 100vh;
+  }
+
+  .home-container,
+  .home-wrapper {
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
 
 
 
@@ -294,7 +356,7 @@ html, body, #root {
 
 /* If you want to ensure vertical pans propagate: */
 body {
-  touch-action: pan-y;
+  touch-action: auto !important;
 }
 
 /* Prevent horizontal scroll everywhere */
