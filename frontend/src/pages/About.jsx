@@ -112,8 +112,8 @@ function Scene() {
 
       {/* animated  */}
       {/* <AnimatedGLTF url="/models/aboutPage/buble.glb" scale={1.2} position={[0, 0, 0]} /> */}
-      <AnimatedGLTF url="/models/aboutPage/golden-atom.glb" scale={0.8} position={[5, 0, 3]} />
-      <AnimatedGLTF url="/models/aboutPage/planet.glb" scale={1.2} position={[10, 0, 8]} />
+      <AnimatedGLTF url="/models/aboutPage/golden-atom10.glb" scale={0.8} position={[5, 0, 3]} />
+      <AnimatedGLTF url="/models/aboutPage/planet10.glb" scale={1.2} position={[10, 0, 8]} />
 
       {/* default */}
       {/* <AnimatedGLTF url="/models/aboutPage/golden-atom.glb" scale={0.8} position={[3.5, 0, -2]} />
@@ -247,6 +247,6 @@ export default function StoryWorld() {
 }
 
 // Optional: Preload your models for snappier transitions
-useGLTF.preload("/models/aboutPage/planet.glb");
-useGLTF.preload("/models/aboutPage/golden-atom.glb");
+useGLTF.preload("/models/aboutPage/planet10.glb");
+useGLTF.preload("/models/aboutPage/golden-atom10.glb");
 // useGLTF.preload("/models/aboutPage/monkey.glb");

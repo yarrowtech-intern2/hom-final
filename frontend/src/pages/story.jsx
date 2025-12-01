@@ -227,7 +227,7 @@ function World() {
       </group> */}
 
       <group ref={planetRef} position={[10, 0, 8]}>
-        <AnimatedGLTF url="/models/aboutPage/planet.glb" scale={1.2} />
+        <AnimatedGLTF url="/models/aboutPage/planet10.glb" scale={1.2} />
       </group>
 
       {/* A small “orb” for transitions (can be any GLB) */}
@@ -378,5 +378,5 @@ export default function StoryWorld() {
 }
 
 /* Preload your models */
-useGLTF.preload("/models/aboutPage/planet.glb");
+useGLTF.preload("/models/aboutPage/planet10.glb");
 // useGLTF.preload("/models/aboutPage/golden-atom.glb");

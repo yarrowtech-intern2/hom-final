@@ -7,6 +7,8 @@ import { EffectComposer, Vignette } from "@react-three/postprocessing";
 import { Link } from "react-router-dom";
 import Waves from "../components/waves";               // ⬅️ your fixed Waves component
 import "./career2.css";
+import { usePageTransition } from "../components/transition";
+
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
@@ -156,6 +158,21 @@ function Scene({ pointer }) {
 
 export default function BaymaksHome() {
   const pointer = useRef({ x: 0, y: 0 });
+  const { start } = usePageTransition();
+
+  const handleExplore = (e) => {
+  e.preventDefault();
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+
+  start("/jobs", {
+    x,
+    y,
+    duration: 0.65,
+    ease: "power4.inOut",
+  });
+};
 
   const handlePointer = (e) => {
     const x = (e.clientX ?? (e.touches?.[0]?.clientX ?? 0)) / window.innerWidth;
@@ -205,7 +222,7 @@ export default function BaymaksHome() {
       <section className="carrers-sec-cta">
         <div className="txt">
           <div id="cta-up">We are Hiring</div>
-          <Link to="/jobs" className="carrers-btn">Explore Now</Link>
+          <Link to="/jobs" className="carrers-btn" onClick={handleExplore}>Explore Now</Link>
         </div>
       </section>
     </div>

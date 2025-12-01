@@ -838,9 +838,9 @@ function EnvironmentController({ enabled }) {
 
   return enabled ? (
     <Environment
-      files="/hdr/jungle.hdr"
+      files="/hdr/alps.hdr"
       background
-      blur={0.7}          // ⭐ softer, GI-like reflections
+      blur={0}          // ⭐ softer, GI-like reflections
     />
   ) : null;
 }
@@ -962,7 +962,7 @@ const PLAYER_RADIUS = 0.35;
 
 /* =========================== Scene =============================== */
 function BalconyScene({ onSpawn }) {
-  const { scene } = useGLTF("/models/gallery4.glb");
+  const { scene } = useGLTF("/models/gallery10.glb");
 
   useEffect(() => {
     const spawn =
@@ -1925,4 +1925,4 @@ export default function GalleryPage() {
   );
 }
 
-useGLTF.preload("/models/gallery4.glb");
+useGLTF.preload("/models/gallery10.glb");

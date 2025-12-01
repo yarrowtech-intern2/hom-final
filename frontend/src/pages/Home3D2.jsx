@@ -66,7 +66,7 @@ function House({
   position = [0, -1, 0],
 }) {
   const gltf = useGLTF(
-    "/models/house8.glb",
+    "/models/house10.glb",
     (loader) => {
       if (loader instanceof GLTFLoader) {
         const draco = new DRACOLoader();
@@ -118,7 +118,7 @@ function House({
     </group>
   );
 }
-useGLTF.preload("/models/house8.glb");
+useGLTF.preload("/models/house10.glb");
 
 /* ---------------------------- Inner Scene node --------------------------- */
 function Scene({ isMobile }) {
