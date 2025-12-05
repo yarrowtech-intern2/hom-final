@@ -90,7 +90,7 @@ function Scene() {
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
       />
-      <Environment preset="sunset" />
+      <Environment preset="studio" />
 
       {/* Ground contact softness */}
       <ContactShadows

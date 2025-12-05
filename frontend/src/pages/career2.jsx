@@ -12,7 +12,7 @@ import { usePageTransition } from "../components/transition";
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
-function RobotGLB({ url = "/models/bayma.glb", pointer, enableTilt = true }) {
+function RobotGLB({ url = "/models/bayma10.glb", pointer, enableTilt = true }) {
   const { scene } = useGLTF(url);
   const bodyRef = useRef(null);
   const headRef = useRef(null);
@@ -146,7 +146,7 @@ function Scene({ pointer }) {
       </group>
 
       {/* Subtle post effect */}
-      <Environment preset="sunset" intensity={0.2} />
+      <Environment preset="studio" intensity={0.6} rotation={[0, Math.PI / 4, 0]} />
       <EffectComposer>
         <Vignette eskil={false} offset={0.35} darkness={0.65} />
       </EffectComposer>
@@ -229,4 +229,4 @@ export default function BaymaksHome() {
   );
 }
 
-useGLTF.preload("/models/bayma.glb");
+useGLTF.preload("/models/bayma10.glb");

@@ -1287,7 +1287,7 @@ function WorldBounds() {
 /* ===================== Ball + Shooter ======================= */
 const MAX_BALLS = 60;
 const BALL_RADIUS = 0.18;
-const BALL_POWER = 50;
+const BALL_POWER = 10;
 const BALL_SPAWN_OFFSET = 0.6;
 const BALL_TTL_MS = 20000;
 
