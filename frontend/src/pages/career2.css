@@ -55,13 +55,13 @@ body { overflow: hidden; }
 
 /* Title (desktop) */
 .carrers-title {
-  top: 90px;
+  top: 200px;
   left: 54px;
   user-select: none;
   letter-spacing: 2px;
 }
 .carrers-title .big {
-  font-size: 138px;
+  font-size: 90px;
   color: #fff;
   font-weight: 600;
   line-height: 1;
@@ -163,7 +163,7 @@ body { overflow: hidden; }
     width: 100%;
     margin-top: 4rem;
   }
-  .carrers-title .big { font-size: 56px; letter-spacing: 1px; }
+  .carrers-title .big { font-size: 46px; letter-spacing: 1px; }
   .carrers-sec {
     left: 50%;
     bottom: 220px;
@@ -184,5 +184,10 @@ body { overflow: hidden; }
     padding: 0 1rem;
   }
   .carrers-sec-cta .txt { font-size: 14px; }
-  .carrers-btn { padding: 6px 14px; font-size: 13px; }
+  .carrers-btn { 
+    padding: 6px 14px; 
+    font-size: 13px;
+    background-color: #9D6800; 
+    color: #ffd181;
+  }
 }

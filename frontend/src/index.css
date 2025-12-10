@@ -62,9 +62,17 @@ canvas {
   backdrop-filter: blur(10px);
   height: 3rem;
   width: 28rem;
-  justify-content: center;  /* centers horizontally */
+  justify-content: center;
   align-items: center;  
 }
+
+
+
+
+
+
+
+
 
 .nav a {
   font-family: "manrope";
