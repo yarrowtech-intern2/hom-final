@@ -962,7 +962,7 @@ const PLAYER_RADIUS = 0.35;
 
 /* =========================== Scene =============================== */
 function BalconyScene({ onSpawn }) {
-  const { scene } = useGLTF("/models/gallery10.glb");
+  const { scene } = useGLTF("/models/gallery4.compressed.glb");
 
   useEffect(() => {
     const spawn =
@@ -1925,4 +1925,4 @@ export default function GalleryPage() {
   );
 }
 
-useGLTF.preload("/models/gallery10.glb");
+useGLTF.preload("/models/gallery4.compressed.glb");

@@ -66,7 +66,8 @@ function House({
   position = [0, -1, 0],
 }) {
   const gltf = useGLTF(
-    "/models/house8.glb",
+    // "/models/house10.glb",
+    "/models/house-model.glb",
     (loader) => {
       if (loader instanceof GLTFLoader) {
         const draco = new DRACOLoader();
@@ -118,7 +119,8 @@ function House({
     </group>
   );
 }
-useGLTF.preload("/models/house8.glb");
+// useGLTF.preload("/models/house10.glb");
+useGLTF.preload("/models/house-model.glb");
 
 /* ---------------------------- Inner Scene node --------------------------- */
 function Scene({ isMobile }) {
@@ -172,7 +174,7 @@ function Scene({ isMobile }) {
 
   return (
     <>
-      {USE_HDR_BACKGROUND && <color attach="background" args={["#fff"]} />}
+      {USE_HDR_BACKGROUND && <color attach="background" args={["#ffff"]} />}
 
       {/* Softer lights on mobile */}
       <hemisphereLight intensity={isMobile ? 0.015 : 0.02} groundColor="#222" />

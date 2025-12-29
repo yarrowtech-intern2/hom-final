@@ -66,7 +66,9 @@ function House({
   position = [0, -1, 0],
 }) {
   const gltf = useGLTF(
-    "/models/house10.glb",
+    // "/models/house10.glb",
+    // "/models/house-model.glb",
+    "/models/house3.glb",
     (loader) => {
       if (loader instanceof GLTFLoader) {
         const draco = new DRACOLoader();
@@ -111,14 +113,16 @@ function House({
   return (
     <group ref={group} position={position} rotation={rotation} scale={scale}>
       <primitive object={scene} />
-      {portalAnchors.length === 0 && <DoorPortal position={[4, 1, 0.2]} onEnter={onPortalEnter} />}
+      {portalAnchors.length === 0 && <DoorPortal position={[4, 1, 27]} onEnter={onPortalEnter} />}
       {portalAnchors.map((p, i) => (
         <DoorPortal key={i} position={[p.x, p.y, p.z]} label="Enter" onEnter={onPortalEnter} />
       ))}
     </group>
   );
 }
-useGLTF.preload("/models/house10.glb");
+// useGLTF.preload("/models/house10.glb");
+// useGLTF.preload("/models/house-model.glb");
+useGLTF.preload("/models/house3.glb");
 
 /* ---------------------------- Inner Scene node --------------------------- */
 function Scene({ isMobile }) {
