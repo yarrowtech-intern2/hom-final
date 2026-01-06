@@ -1,3 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -224,7 +229,9 @@ canvas {
 
 /* --- Mobile overrides (≤768px) --- */
 @media (max-width: 768px){
-  .logo-img{ height:148px; }          /* smaller logo on mobile */
+  .logo-img{ 
+    height:68px; 
+  }          
   .nav{ display:none; }              /* hide desktop nav */
   .menu-btn{ display:inline-flex; }  /* show hamburger */
 

@@ -95,3 +95,9 @@ html, body, #root {
 /* body {
   touch-action: pan-y;
 } */
+
+
+
+.page-transition-wrapper {
+  overflow: visible !important;
+}

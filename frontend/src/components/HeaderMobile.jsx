@@ -91,6 +91,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logoImg from "/logo/logo-black.png";
 import { usePageTransition } from "./transition";
+import "./HeaderMobile.css";
 
 export default function HeaderMobile() {
   const [open, setOpen] = useState(false);

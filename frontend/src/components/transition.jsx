@@ -3,7 +3,7 @@
 // components/TransitionProvider.jsx
 import React, { createContext, useContext, useRef, useState, useCallback, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import gsap from "gsap";
 
 const TransitionCtx = createContext({ start: (_to, _opts) => {} });
@@ -11,6 +11,7 @@ export const usePageTransition = () => useContext(TransitionCtx);
 
 export default function TransitionProvider({ children }) {
   const navigate = useNavigate();
+  const location = useLocation(); 
   const [active, setActive] = useState(false);
 
   const rootRef = useRef(null);      // overlay root (captures pointer during anim)
@@ -25,6 +26,23 @@ export default function TransitionProvider({ children }) {
       tlRef.current = null;
     };
   }, []);
+
+  useLayoutEffect(() => {
+  if (location.pathname === "/contact") {
+    // ✅ Enable native scroll for contact page
+    document.documentElement.style.overflow = "auto";
+    document.body.style.overflow = "auto";
+  } else {
+    // ✅ Other pages can stay controlled
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+  }
+
+  return () => {
+    document.documentElement.style.overflow = "auto";
+    document.body.style.overflow = "auto";
+  };
+}, [location.pathname]);
 
   const start = useCallback((to, opts = {}) => {
     const { x, y, duration = 0.65, ease = "power4.inOut" } = opts;

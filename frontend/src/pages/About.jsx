@@ -17,16 +17,7 @@ import "../styles/about.css";
 import AnimatedGLTF from "../components/AnimatedGLTF.jsx";
 
 /* ----------------------------- Loader UI ----------------------------- */
-function Loader() {
-  return (
-    <Html center className="loader">
-      <div className="loader-box">
-        <div className="loader-bar" />
-        <p className="loader-text">Loading scene…</p>
-      </div>
-    </Html>
-  );
-}
+
 
 
 
@@ -158,7 +149,7 @@ export default function StoryWorld() {
 
 
 
-        <Suspense fallback={<Loader />}>
+        <Suspense fallback>
           {/* 4 pages => 4 full-screen scroll sections */}
           <ScrollControls pages={6} damping={0.18}>
             <CameraRig />

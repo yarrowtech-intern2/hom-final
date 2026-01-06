@@ -15,6 +15,8 @@ import Baymax from "./pages/baymax";
 import Carrers from "./pages/career2";
 import JobPage from "./pages/jobPage";
 
+import NeonPage from "./pages/neonDemo";
+
 export default function App() {
   return (
     <TransitionProvider>
@@ -29,6 +31,8 @@ export default function App() {
         <Route path="/baymax" element={<Baymax />} />
         <Route path="/carrers" element={<Carrers />} />
         <Route path="/jobs" element={<JobPage />} />
+
+        <Route path="/neon" element={<NeonPage/>} />
       </Routes>
     </TransitionProvider>
   );

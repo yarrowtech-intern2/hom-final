@@ -1,352 +1,116 @@
-/* Scope EVERYTHING to the contact page to avoid leaking to other routes */
-*,
-*::before,
-*::after { box-sizing: border-box; }
+/* ================================
+   CONTACT PAGE (CLEAN)
+   ================================ */
 
-.contact-page {
-  min-height: 100vh;
-  width: 100%;
-  /* your brown theme background */
-  background: #9d690000;
-  /* center the card WITHOUT changing <body> */
-  display: grid;
-  place-items: center;
-  padding: -1px 16px;
+/* Keep box-sizing sane without leaking too much */
+.contact-page,
+.contact-page * ,
+.contact-page *::before,
+.contact-page *::after {
+  box-sizing: border-box;
 }
 
-/* Card */
-.contact-page .contact-container {
-  width: 100%;
-  max-width: 600px;
-  background: #b6862600;
-  padding: 40px 50px;
-  border-radius: 25px;
-  /* neumorphic raised */
-  /* box-shadow: 10px 10px 20px #593e0c, -10px -10px 20px #ffb42a9e; */
+/* Root sizing */
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }
 
-.contact-page h1 {
-  text-align: center;
-  font: 600 2rem/1.2 "Poppins", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  color: #1f1f1f;
-  margin: 0 0 10px;
-  font-family: "manrope"
-}
-
-.contact-page .subtitle {
-  text-align: center;
-  color: #000000;
-  margin: 0 0 30px;
-  font-family: "manrope"
-}
-
-/* Form grid */
-.contact-page .contact-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.contact-page .form-group {
-  flex: 1 1 45%;
-  display: flex;
-  flex-direction: column;
-}
-
-.contact-page .form-group.full { flex: 1 1 100%; }
-
-.contact-page label {
-  font-size: 0.9rem;
-  color: #3b2a0a;
-  margin-bottom: 6px;
-  font-weight: 700;
-  font-family: "manrope";
-}
-
-/* Inputs (inset neo) */
-.contact-page input,
-.contact-page textarea {
-  border: none;
-  outline: none;
-  border-radius: 15px;
-  background: #e8d1a300;                  /* lighter surface for contrast on brown */
-  /* box-shadow: inset 6px 6px 12px #c0a87a, inset -6px -6px 12px #ffffffb4; */
-  padding: 12px 16px;
-  font-size: 0.95rem;
-  color: #1e1e1e;
-  transition: box-shadow .25s ease, transform .06s ease;
-}
-
-.contact-page input:focus,
-.contact-page textarea:focus {
-  box-shadow: inset 4px 4px 10px #b4935c, inset -4px -4px 10px #ffe9ba, 0 0 0 2px rgba(255,255,255,.18);
-}
-
-/* Button (raised neo) */
-.contact-page .btn {
-  width: 100%;
-  padding: 14px;
-  font-size: 1rem;
-  font-weight: 700;
-  border: none;
-  border-radius: 15px;
-  background: #c76d12;
-  color: #0f160c;
-  cursor: pointer;
-  /* box-shadow: 6px 6px 12px #3c5a2a, -6px -6px 12px #bde7a2; */
-  transition: box-shadow .25s ease, transform .06s ease;
-  font-family: "manrope";
-  /* margin-top: -3rem; */
-}
-
-.contact-page .btn:hover {
-  box-shadow: inset 6px 6px 12px #49733a00, inset -6px -6px 12px #c8f0b600;
-}
-
-@media (max-width: 600px) {
-  .contact-page .form-group { flex: 1 1 100%; }
-}
-
-
-
-
-
-
-
-
-
-/* =======================================
-   MOBILE RESPONSIVENESS (≤768px)
-   ======================================= */
-@media (max-width: 768px) {
-  .contact-page {
-    padding: 24px 12px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    /* margin-top: 3.5rem; */
-  }
-
-  .contact-page .contact-container {
-    max-width: 95%;
-    padding: 24px 20px;
-    border-radius: 18px;
-    box-shadow: 6px 6px 14px #5c420d00, -6px -6px 14px #f8bd4700;
-    margin-top: 4rem;
-  }
-
-  .contact-page h1 {
-    font-size: 1.6rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .contact-page .subtitle {
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    padding: 0 0.5rem;
-  }
-
-  .contact-page .contact-form {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .contact-page .form-group {
-    flex: 1 1 100%;
-  }
-
-  .contact-page label {
-    font-size: 0.85rem;
-  }
-
-  .contact-page input,
-  .contact-page textarea {
-    font-size: 0.9rem;
-    padding: 10px 14px;
-    border-radius: 12px;
-  }
-
-  .contact-page textarea {
-    min-height: 140px;
-  }
-
-  .contact-page .btn {
-    padding: 12px;
-    font-size: 0.95rem;
-    border-radius: 12px;
-  }
-}
-
-/* ---------------------------------------
-   SMALL DEVICES (≤480px)
-   --------------------------------------- */
-@media (max-width: 480px) {
-  .contact-page .contact-container {
-    padding: 20px 16px;
-  }
-
-  .contact-page h1 {
-    font-size: 1.4rem;
-  }
-
-  .contact-page .subtitle {
-    font-size: 0.85rem;
-  }
-
-  .contact-page input,
-  .contact-page textarea {
-    font-size: 0.85rem;
-    padding: 8px 12px;
-  }
-
-  .contact-page .btn {
-    font-size: 0.9rem;
-    padding: 10px;
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Layout shell */
+/* ---------- PAGE LAYOUT ---------- */
 .contact-page {
   position: relative;
-  min-height: calc(100dvh - 0px);
+  min-height: 100svh;
   width: 100%;
-  overflow: hidden;
-  color: #eaf2ff;
+  overflow-x: hidden;
+
+  /* desktop: centered card */
+  display: grid;
+  place-items: center;
+
+  /* breathing space */
+  padding: 16px;
 }
 
-/* Background layer */
+/* ---------- BACKGROUND (Shader Scene) ---------- */
 .contact-bg {
-  position: fixed;      /* stick to viewport */
-  inset: 0;             /* full screen */
+  position: fixed;
+  inset: 0;
   z-index: 0;
-  pointer-events: none; /* let users interact with the form */
+  pointer-events: none; /* never block form */
 }
+
 .contact-bg canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
 }
-.contact-bg-overlay {
+
+/* Optional overlay if you want readability later */
+/* .contact-bg-overlay {
   position: absolute;
   inset: 0;
   background: radial-gradient(1200px 600px at 70% 20%, rgba(0,0,0,0.15), transparent 60%),
               radial-gradient(900px 400px at 30% 80%, rgba(0,0,0,0.25), transparent 65%),
-              linear-gradient(to bottom, rgba(5,10,25,0.4), rgba(5,10,25,0.75));
-}
+              linear-gradient(to bottom, rgba(5,10,25,0.15), rgba(5,10,25,0.45));
+  pointer-events: none;
+} */
 
-/* Foreground container */
+/* ---------- FOREGROUND CONTAINER (CARD WRAPPER) ---------- */
 .contact-container {
   position: relative;
   z-index: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: clamp(20px, 4vw, 48px) 16px;
+
+  width: 100%;
+  max-width: 600px;
+
+  /* glass-ish */
+  border-radius: 22px;
+  padding: 34px 36px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0.10)
+  );
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
+/* ---------- HEADER ---------- */
 .contact-header {
-  margin: 24px 0 16px;
   text-align: center;
+  margin-bottom: 18px;
 }
-/* .contact-header h1 {
-  margin: 0 0 8px;
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  color: #d7a959;
-} */
 
 .contact-header h1 {
-  margin: 0 0 8px;
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 700;
-  letter-spacing: 0.4px;
-
-  /* Gradient */
-  background: linear-gradient(90deg, #0d2955, #6939da, #d3a7ff, #184ea6);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  /* Glow */
-  text-shadow: 
-    0 0 12px rgba(139, 92, 246, 0.8),
-    0 0 25px rgba(139, 92, 246, 0.7),
-    0 0 45px rgba(139, 92, 246, 0.5);
-
-  /* Animation */
-  animation: gradientMove 4s ease infinite;
+  margin: 0 0 6px;
+  font: 700 clamp(22px, 3.2vw, 40px) / 1.2 "Manrope", system-ui, -apple-system,
+    Segoe UI, Roboto, sans-serif;
+  color: #000;
 }
 
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-
-
-
-
-.contact-header p {
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  color: #b3b3b3 !important;
-}
-.subtitle {
+.contact-header .subtitle,
+.contact-header p.subtitle {
   margin: 0 auto;
-  max-width: 580px;
-  color: #cfd8ff;
-  opacity: 0.9;
+  max-width: 520px;
+  font: 600 14px/1.35 "Manrope", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: rgba(0, 0, 0, 0.75);
 }
 
-/* Form card */
+/* ---------- FORM CARD ---------- */
 .contact-form {
-  margin: -18px auto 48px;
-  padding: clamp(16px, 3vw, 28px);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.282), rgba(9, 16, 36, 0));
-  backdrop-filter: blur(20px);
-  /* border: 1px solid rgba(200, 220, 255, 0.12); */
-  /* box-shadow: 0 10px 40px rgba(0,0,0,0.35); */
-  max-width: 900px;
+  margin-top: 18px;
 }
 
-/* Grid */
+/* Grid: desktop 2 cols, mobile 1 col */
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
-@media (min-width: 720px) {
-  .grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .grid .full {
-    grid-column: 1 / -1;
-  }
+
+.grid .full {
+  grid-column: 1 / -1;
 }
 
 /* Fields */
@@ -355,56 +119,48 @@
   flex-direction: column;
   gap: 6px;
 }
+
 .form-group label {
-  font-size: 14px;
-  color: #000000;
-  opacity: 0.9;
+  font: 700 13px/1.2 "Manrope", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: rgba(0,0,0,0.85);
 }
-.form-group input,
-.form-group textarea {
-  border: 1px solid rgba(200, 220, 255, 0.18);
-  background: rgba(8, 12, 26, 0.55);
-  color: #eaf2ff;
-  padding: 12px 14px;
-  border-radius: 12px;
+
+/* Inputs */
+.contact-page input,
+.contact-page textarea {
+  width: 100%;
+  border: 1px solid rgba(0,0,0,0.12);
   outline: none;
+  border-radius: 12px;
+
+  background: rgba(10, 12, 18, 0.55);
+  color: #eaf2ff;
+
+  padding: 12px 14px;
+  font-size: 14px;
+
   transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-  color: #b7c6ff;
-  opacity: 0.7;
-}
-.form-group input:focus,
-.form-group textarea:focus {
-  border-color: #5ea0ff;
-  box-shadow: 0 0 0 3px rgba(94, 160, 255, 0.2);
-  background: rgba(10, 14, 28, 0.7);
+
+.contact-page input::placeholder,
+.contact-page textarea::placeholder {
+  color: rgba(220, 230, 255, 0.65);
 }
 
-/* Button */
-.btn {
-  margin-top: 16px;
-  width: 100%;
-  padding: 12px 16px;
-  font-weight: 600;
-  color: #0c1733;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #ffd884, #d4af37);
-  border: none;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-}
-.btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-.btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(212, 175, 55, 0.35);
+.contact-page input:focus,
+.contact-page textarea:focus {
+  border-color: rgba(94, 160, 255, 0.85);
+  box-shadow: 0 0 0 3px rgba(94, 160, 255, 0.22);
+  background: rgba(10, 12, 18, 0.70);
 }
 
-/* Honeypot (hidden) */
+/* Textarea */
+.contact-page textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+/* Honeypot */
 .hp {
   position: absolute !important;
   left: -9999px !important;
@@ -415,96 +171,28 @@
   height: 1px;
 }
 
-
-.contact-bg-overlay {
-  pointer-events: none;    
-}
-.floating-lines-container {
-  pointer-events: auto;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Make the whole page a stacked layout */
-.contact-page {
-  position: relative;
-  min-height: 100vh;
-  overflow: hidden;
+/* Submit row */
+.submit-row {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
 }
 
-/* Background layer (Beams + FloatingLines) */
-.contact-bg {
-  position: fixed;       /* stays behind while scrolling */
-  inset: 0;
-  width: 100%;
-  height: 100vh;         /* full viewport height */
-  z-index: 0;
-  overflow: hidden;
-}
-
-/* Let beams + floating lines fill the bg */
-.contact-bg canvas,
-.contact-bg .floating-lines-container {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* Gradient overlay must not block pointer events */
-.contact-bg-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;  /* so FloatingLines stays interactive */
-}
-
-/* Foreground content (form etc.) */
-.contact-container {
-  position: relative;
-  z-index: 1;
-  padding-top: clamp(6rem, 12vh, 8rem);
-  padding-bottom: 4rem;
-}
-
-/* Slightly adjust spacing on mobile */
-@media (max-width: 768px) {
-  .contact-container {
-    padding-top: 60rem;
-    padding-inline: 1.25rem;
-  }
-  
-}
-
-
-
-.contact-container{
-  position: absolute;
-  top: -20px;
-}
-
-/* From Uiverse.io by Allyhere */ 
+/* Your Uiverse button (kept) */
 .btn-send {
-  --clr-font-main: hsla(0 0% 20% / 100);
-  --btn-bg-1: rgb(244, 97, 255);
+  --btn-bg-1: rgb(15, 154, 0);
   --btn-bg-2: rgb(245, 235, 52);
-  --btn-bg-color: hsla(360 100% 100% / 1);
   --radii: 0.5em;
+
   cursor: pointer;
   padding: 0.9em 1.4em;
-  min-width: 120px;
+  min-width: 160px;
   min-height: 44px;
-  font-size: var(--size, 1rem);
-  font-weight: 500;
+
+  font-size: 1rem;
+  font-weight: 700;
   transition: 0.8s;
+
   background-size: 280% auto;
   background-image: linear-gradient(
     325deg,
@@ -512,47 +200,82 @@
     var(--btn-bg-1) 55%,
     var(--btn-bg-2) 90%
   );
+
   border: none;
   border-radius: var(--radii);
-  /* color: var(--btn-bg-color); */
   color: black;
-  font-weight: 600;
+
   box-shadow:
-    0px 0px 20px rgba(234, 255, 71, 0.5),
-    0px 5px 5px -1px rgba(160, 58, 233, 0.25),
-    inset 4px 4px 8px rgba(243, 255, 175, 0.5),
-    inset -4px -4px 8px rgba(167, 19, 216, 0.35);
+    0px 0px 20px rgba(234, 255, 71, 0.45),
+    0px 5px 5px -1px rgba(160, 58, 233, 0.20),
+    inset 4px 4px 8px rgba(243, 255, 175, 0.45),
+    inset -4px -4px 8px rgba(167, 19, 216, 0.30);
 }
 
-.btn-donate:hover {
+.btn-send:hover {
   background-position: right top;
 }
 
-.btn-donate:is(:focus, :focus-visible, :active) {
-  outline: none;
-  box-shadow:
-    0 0 0 3px var(--btn-bg-color),
-    0 0 0 6px var(--btn-bg-2);
+.btn-send:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .btn-donate {
-    transition: linear;
+/* ---------- MOBILE: FIT INSIDE VIEWPORT + HIDE SCROLLBAR ---------- */
+@media (max-width: 768px) {
+  .contact-page {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .contact-container {
+    width: calc(100vw - 24px);
+    max-width: 520px;
+
+    /* space for navbar */
+    margin-top: 68px;
+
+    padding: 18px 16px;
+    border-radius: 18px;
+
+    /* ✅ card fits inside viewport and scrolls */
+    max-height: calc(100svh - 92px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* hide scrollbar but keep scroll */
+  .contact-container::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+  .contact-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .contact-page textarea {
+    min-height: 120px;
+    resize: none;
   }
 }
 
+/* Smaller phones */
+@media (max-width: 480px) {
+  .contact-container {
+    margin-top: 60px;
+    max-height: calc(100svh - 84px);
+    padding: 16px 14px;
+  }
 
-/* Center the button under the form */
-.submit-row {
-  /* margin-top: 20px; */
-  display: flex;
-  justify-content: center;
-}
-
-/* Optional: keep width natural */
-.btn-send {
-  /* existing styles… */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  .btn-send {
+    min-width: 140px;
+  }
 }
