@@ -9,11 +9,13 @@ import InsideHouse from "./pages/InsideHouse";
 import Gallery3D from "./pages/Gallery3D2";
 import TransitionProvider from "./components/transition";
 import About from "./pages/About";
+import About2 from "./pages/about2";
 import Project from "./pages/story";
 import Contact from "./pages/contact";
 import Baymax from "./pages/baymax";
 import Carrers from "./pages/career2";
 import JobPage from "./pages/jobPage";
+// import Projects from "./pages/projects";
 
 import NeonPage from "./pages/neonDemo";
 
@@ -26,11 +28,13 @@ export default function App() {
         <Route path="/inside" element={<InsideHouse />} />
         <Route path="/gallery" element={<Gallery3D />} />
         <Route path="/about" element={<About />} />
+        <Route path="/about2" element={<About2 />} />
         <Route path="/project" element={<Project />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/baymax" element={<Baymax />} />
         <Route path="/carrers" element={<Carrers />} />
         <Route path="/jobs" element={<JobPage />} />
+        {/* <Route path="/projects" element={<Projects />} /> */}
 
         <Route path="/neon" element={<NeonPage/>} />
       </Routes>

@@ -1,3 +1,6 @@
+
+
+
 // // src/components/Header.jsx
 // import React, { useEffect, useState } from "react";
 // import HeaderDesktop from "./HeaderDesktop";
@@ -36,10 +39,19 @@
 
 
 
-// src/components/Header.jsx
+
+
+
+
+
+
+
+
+
 import React, { useEffect, useState } from "react";
 import HeaderDesktop from "./HeaderDesktop";
 import HeaderMobile from "./HeaderMobile";
+import ContactModal from "./ContactModal";
 
 function useMediaQuery(query) {
   const [matches, setMatches] = useState(() =>
@@ -57,5 +69,20 @@ function useMediaQuery(query) {
 
 export default function Header() {
   const isMobile = useMediaQuery("(max-width: 768px)");
-  return isMobile ? <HeaderMobile /> : <HeaderDesktop />;
+  const [contactOpen, setContactOpen] = useState(false);
+
+  const openContact = () => setContactOpen(true);
+  const closeContact = () => setContactOpen(false);
+
+  return (
+    <>
+      {isMobile ? (
+        <HeaderMobile onOpenContact={openContact} />
+      ) : (
+        <HeaderDesktop onOpenContact={openContact} />
+      )}
+
+      <ContactModal open={contactOpen} onClose={closeContact} />
+    </>
+  );
 }

@@ -1,0 +1,150 @@
+/* Professional Storytelling Styles */
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #9d6800, #d4a574);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #d4a574, #ffd700);
+}
+
+/* Button ripple effect */
+.btn-ripple {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.8), transparent);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+/* Project section animations */
+.project-section {
+  position: relative;
+}
+
+.project-content {
+  will-change: transform, opacity;
+}
+
+/* Text selection styling */
+::selection {
+  background-color: rgba(157, 104, 0, 0.3);
+  color: #ffd700;
+}
+
+/* Button hover states */
+.story-btn {
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.story-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.story-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Smooth text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Focus states */
+.story-btn:focus-visible {
+  outline: 2px solid rgba(255, 215, 0, 0.5);
+  outline-offset: 4px;
+}
+
+/* Loading state */
+.loading-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1410, #2d2416);
+  z-index: 9999;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(157, 104, 0, 0.2);
+  border-top-color: #ffd700;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive typography */
+@media (max-width: 768px) {
+  .project-content h2 {
+    font-size: 2.5rem;
+  }
+  
+  .project-content p {
+    font-size: 1rem;
+  }
+}
+
+/* Performance optimizations */
+.project-section,
+.story-btn {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .story-btn,
+  .btn-ripple {
+    display: none;
+  }
+}

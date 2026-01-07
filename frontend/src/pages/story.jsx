@@ -1,460 +1,3 @@
-// import React, { Suspense, useMemo, useRef, useEffect } from "react";
-// import { Canvas, useFrame } from "@react-three/fiber";
-// import {
-//   Environment,
-//   ScrollControls,
-//   Scroll,
-//   Html,
-//   ContactShadows,
-//   useGLTF,
-//   Preload,
-//   useScroll,
-// } from "@react-three/drei";
-// import * as THREE from "three";
-// import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
-// import AnimatedGLTF from "../components/AnimatedGLTF.jsx";
-// import "../styles/about.css";
-// import "./story.css";
-
-
-// /* ----------------------------- Loader UI ----------------------------- */
-// function Loader() {
-//   return (
-//     <Html center className="loader">
-//       <div className="loader-box">
-//         <div className="loader-bar" />
-//         <p className="loader-text">Loading scene…</p>
-//       </div>
-//     </Html>
-//   );
-// }
-
-// /* ----------------------------- Utils -------------------------------- */
-// const clamp01 = (t) => Math.min(1, Math.max(0, t));
-// const easeOut = (t) => 1 - Math.pow(1 - clamp01(t), 3);
-// const easeInOut = (t) =>
-//   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-// /* ----------------------------- Camera Rig ---------------------------- */
-// /* Scroll-driven camera, with light parallax on mouse */
-// function CameraRig() {
-//   const scroll = useScroll();
-//   const curve = useMemo(
-//     () =>
-//       new THREE.CatmullRomCurve3(
-//         [
-//           new THREE.Vector3(0, 1.3, 12),
-//           new THREE.Vector3(4, 1.1, 6),
-//           new THREE.Vector3(0, 1.2, 0),
-//           new THREE.Vector3(-3, 1.4, -5),
-//           new THREE.Vector3(0, 2.0, -10),
-//           new THREE.Vector3(0.5, 2.2, -13),
-//         ],
-//         false,
-//         "catmullrom",
-//         0.55
-//       ),
-//     []
-//   );
-
-//   const target = new THREE.Vector3();
-//   const look = new THREE.Vector3();
-
-//   useFrame((state, delta) => {
-//     const t = clamp01(scroll.offset);
-//     curve.getPointAt(t, target);
-//     const ahead = clamp01(t + 0.006);
-//     curve.getPointAt(ahead, look);
-
-//     // mouse parallax
-//     const mx = state.pointer.x;
-//     const my = state.pointer.y;
-//     target.x += mx * 0.45;
-//     target.y += my * 0.2;
-
-//     state.camera.position.lerp(target, 1 - Math.pow(0.001, delta));
-//     state.camera.lookAt(look);
-//   });
-
-//   return null;
-// }
-
-// /* ------------------------------ 3D World ----------------------------- */
-// function World() {
-//   const scroll = useScroll();
-//   const lightRef = useRef();
-//   const groupRef = useRef(); // mouse tilt group
-
-//   // mouse-tilt the entire stage slightly
-//   useFrame((state, delta) => {
-//     if (!groupRef.current) return;
-//     const tX = -state.pointer.y * 0.1;
-//     const tY = state.pointer.x * 0.15;
-//     groupRef.current.rotation.x = THREE.MathUtils.damp(
-//       groupRef.current.rotation.x,
-//       tX,
-//       4,
-//       delta
-//     );
-//     groupRef.current.rotation.y = THREE.MathUtils.damp(
-//       groupRef.current.rotation.y,
-//       tY,
-//       4,
-//       delta
-//     );
-//   });
-
-//   // light color/energy shift per chapter
-//   useFrame((_, delta) => {
-//     if (!lightRef.current) return;
-//     const ch1 = scroll.range(0 / 6, 1 / 6);
-//     const ch2 = scroll.range(1 / 6, 1 / 6);
-//     const ch3 = scroll.range(2 / 6, 1 / 6);
-//     const ch4 = scroll.range(3 / 6, 1 / 6);
-//     const ch5 = scroll.range(4 / 6, 1 / 6);
-//     const energy =
-//       0.8 +
-//       0.5 * easeOut(ch1) +
-//       0.4 * easeOut(ch3) +
-//       0.6 * easeOut(ch5); // pulse on a few chapters
-//     lightRef.current.intensity = THREE.MathUtils.damp(
-//       lightRef.current.intensity,
-//       energy,
-//       3,
-//       delta
-//     );
-//     // subtle hue shift
-//     const hue =
-//       0.6 * easeOut(ch2) + 0.0 * easeOut(ch3) + 0.9 * easeOut(ch4) + 0.2 * easeOut(ch5);
-//     lightRef.current.color.setHSL(0.6 * hue, 0.6, 0.6);
-//   });
-
-//   /* --- Per-actor scroll choreography (ranges in 6 pages) --- */
-//   const atomRef = useRef();
-//   const planetRef = useRef();
-//   const orbRef = useRef();
-
-//   useFrame((_, delta) => {
-//     const r1 = scroll.range(0 / 6, 1 / 6); // chapter 1
-//     const r2 = scroll.range(1 / 6, 1 / 6); // chapter 2
-//     const r3 = scroll.range(2 / 6, 1 / 6); // chapter 3
-//     const r4 = scroll.range(3 / 6, 1 / 6); // chapter 4
-//     const r5 = scroll.range(4 / 6, 1 / 6); // chapter 5
-//     const r6 = scroll.range(5 / 6, 1 / 6); // chapter 6
-
-//     // Golden Atom: enter from left, scale up, then orbit
-//     if (atomRef.current) {
-//       const enter = easeOut(r1);
-//       const hold = r2;
-//       const exit = r3;
-//       atomRef.current.position.x = THREE.MathUtils.damp(
-//         atomRef.current.position.x,
-//         THREE.MathUtils.lerp(-5, 0, enter) + THREE.MathUtils.lerp(0, 1.2, hold),
-//         6,
-//         delta
-//       );
-//       atomRef.current.position.z = THREE.MathUtils.damp(
-//         atomRef.current.position.z,
-//         THREE.MathUtils.lerp(5, 0, enter),
-//         6,
-//         delta
-//       );
-//       const s =
-//         THREE.MathUtils.lerp(0.6, 1, enter) *
-//         THREE.MathUtils.lerp(1, 1.15, hold) *
-//         THREE.MathUtils.lerp(1, 0.8, exit);
-//       atomRef.current.scale.setScalar(THREE.MathUtils.damp(atomRef.current.scale.x, s, 4, delta));
-//       atomRef.current.rotation.y += delta * (0.2 + hold * 0.8);
-//     }
-
-//     // Planet: descend from above, then “breath” with scroll
-//     if (planetRef.current) {
-//       const enter = easeInOut(r2);
-//       const feature = r3;
-//       planetRef.current.position.y = THREE.MathUtils.damp(
-//         planetRef.current.position.y,
-//         THREE.MathUtils.lerp(3, 0, enter),
-//         6,
-//         delta
-//       );
-//       planetRef.current.position.x = THREE.MathUtils.damp(
-//         planetRef.current.position.x,
-//         THREE.MathUtils.lerp(1, 0, enter),
-//         6,
-//         delta
-//       );
-//       const pulse = 1 + Math.sin(feature * Math.PI * 2) * 0.05;
-//       const s = THREE.MathUtils.lerp(0.8, 1.1, enter) * pulse;
-//       planetRef.current.scale.setScalar(
-//         THREE.MathUtils.damp(planetRef.current.scale.x, s, 5, delta)
-//       );
-//       planetRef.current.rotation.y += delta * (0.35 + feature * 0.4);
-//     }
-
-//     // Orb: exits towards depth as finale
-//     if (orbRef.current) {
-//       const show = easeInOut(r4);
-//       const outro = easeOut(r6);
-//       orbRef.current.position.z = THREE.MathUtils.damp(
-//         orbRef.current.position.z,
-//         THREE.MathUtils.lerp(6, -2, show) + THREE.MathUtils.lerp(0, -4, outro),
-//         4,
-//         delta
-//       );
-//       orbRef.current.rotation.x += delta * 0.25;
-//       orbRef.current.rotation.y -= delta * 0.35;
-//     }
-//   });
-
-//   return (
-//     <group ref={groupRef}>
-//       {/* Lights / env */}
-//       <ambientLight intensity={0.4} />
-//       <directionalLight
-//         ref={lightRef}
-//         position={[6, 8, 4]}
-//         intensity={1.1}
-//         castShadow
-//         shadow-mapSize-width={1024}
-//         shadow-mapSize-height={1024}
-//       />
-//       <Environment preset="sunset" />
-
-//       <ContactShadows opacity={0.15} scale={24} blur={3} far={12} resolution={1024} />
-
-//       {/* 3D Actors (animated GLBs) */}
-//       {/* <group ref={atomRef} position={[5, 0, 3]}>
-//         <AnimatedGLTF url="/models/aboutPage/golden-atom.glb" scale={0.9} />
-//       </group> */}
-
-//       <group ref={planetRef} position={[10, 0, 8]}>
-//         <AnimatedGLTF url="/models/aboutPage/planet10.glb" scale={1.2} />
-//       </group>
-
-//       {/* A small “orb” for transitions (can be any GLB) */}
-//       <group ref={orbRef} position={[-2, 0.6, 6]}>
-//         {/* <mesh castShadow receiveShadow>
-//           <icosahedronGeometry args={[0.8, 2]} />
-//           <meshPhysicalMaterial
-//             transmission={0.9}
-//             roughness={0.1}
-//             thickness={0.4}
-//             clearcoat={1}
-//             clearcoatRoughness={0.05}
-//             ior={1.45}
-//           />
-//         </mesh> */}
-//       </group>
-//     </group>
-//   );
-// }
-
-// /* ------------------------- HUD: Progress + Jump ---------------------- */
-// function ProgressBar() {
-//   const scroll = useScroll();
-//   const ref = useRef(null);
-//   useFrame(() => {
-//     if (ref.current) ref.current.style.transform = `scaleX(${scroll.offset})`;
-//   });
-//   return (
-//     <div className="prog">
-//       <span className="prog__bar" ref={ref} />
-//     </div>
-//   );
-// }
-
-// function JumpNav() {
-//   const scroll = useScroll();
-//   const go = (i) => {
-//     const el = scroll.el; // ScrollControls container
-//     const h = el.clientHeight;
-//     el.scrollTo({ top: i * h, behavior: "smooth" });
-//   };
-//   return (
-//     <div className="jumpnav">
-//       {["Prologue", "Awakening", "Passage", "Discovery", "Bridge", "Finale"].map(
-//         (label, i) => (
-//           <button key={label} className="chip" onClick={() => go(i)}>
-//             {label}
-//           </button>
-//         )
-//       )}
-//     </div>
-//   );
-// }
-
-// /* ---------------------------- The Page View -------------------------- */
-// export default function StoryWorld() {
-//   return (
-//     <div className="story-container">
-//       <Canvas
-//         frameloop="always"
-//         shadows
-//         style={{ background: "transparent" }}
-//         gl={{
-//           antialias: true,
-//           alpha: true,
-//           powerPreference: "high-performance",
-//           toneMapping: THREE.ACESFilmicToneMapping,
-//           outputColorSpace: THREE.SRGBColorSpace,
-//         }}
-//         camera={{ position: [0, 1.3, 12], fov: 50, near: 0.1, far: 200 }}
-//         onCreated={({ gl }) => gl.setClearAlpha(0)}
-//       >
-//         <Suspense fallback={<Loader />}>
-//           {/* 6 pages now for more story beats */}
-//           <ScrollControls pages={6} damping={0.16}>
-//             <CameraRig />
-
-//             {/* 3D stage that reacts to scroll & mouse */}
-//             <World />
-
-//             {/* Subtle post FX */}
-//             <EffectComposer disableNormalPass>
-//               <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.25} luminanceSmoothing={0.2} />
-//               <Vignette eskil={false} offset={0.1} darkness={0.3} />
-//             </EffectComposer>
-
-//             <Preload all />
-
-//             {/* Overlay HTML */}
-//             <Scroll html>
-//               <ProgressBar />
-//               {/* <JumpNav /> */}
-
-
-//               <div className="story-overlay">
-//                 <section className="story-section">
-//                   <h1 className="story-title">House of Musa — Prologue</h1>
-//                   <p className="story-p">
-//                     Scroll to begin the journey. The camera glides while artifacts respond to your
-//                     movement and cursor.
-//                   </p>
-//                 </section>
-
-//                 {/* <section className="story-section">
-//                   <h2 className="story-subtitle">Project 1 — Yarrowtech</h2>
-//                   <p className="story-p">
-//                     YarrowTech are a next-generation software development
-//                     company dedicated to transforming ideas into intelligent, high-impact digital solutions.
-//                     Our expertise spans custom software development, ERP systems, AI-driven applications,
-//                     and full-stack web and mobile development—built to support the evolving needs
-//                     of modern businesses.
-//                   </p>
-
-//                 </section> */}
-
-//                 <section className="story-section">
-//   <h2 className="story-subtitle">Project 1 — Yarrowtech</h2>
-
-//   <p className="story-p">
-//     YarrowTech are a next-generation software development
-//     company dedicated to transforming ideas into intelligent, high-impact digital solutions.
-//     Our expertise spans custom software development, ERP systems, AI-driven applications,
-//     and full-stack web and mobile development—built to support the evolving needs
-//     of modern businesses.
-//   </p>
-
-//   <a
-//     href="https://yarrowtech.com"
-//     target="_blank"
-//     rel="noopener noreferrer"
-//     className="story-btn"
-//   >
-//     View Project
-//   </a>
-// </section>
-
-
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Project 2 — Sportbit</h2>
-//                   <p className="story-p">
-//                     SportBit is an AI-driven sports management platform that streamlines player, club, and manager operations in one unified system. It provides performance analytics, fitness tracking, and intelligent insights to enhance player development and team strategy. With role-based dashboards and automated data management, SportBit simplifies decision-making for coaches, managers, and athletes alike.
-//                   </p>
-//                 </section>
-
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Project 3 — F&B</h2>
-//                   <p className="story-p">
-//                     F&B is an AI-powered restaurant management system designed to optimize daily operations, from order processing to inventory control. It uses intelligent forecasting to manage demand, reduce waste, and improve customer satisfaction. With smart analytics and automated reporting, F&B helps restaurant owners make data-driven decisions for smoother, more profitable operations.
-//                   </p>
-//                 </section>
-
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Project 4 — Tour Guide</h2>
-//                   <p className="story-p">
-//                     Tour Guide is an intelligent tour management system that simplifies travel planning and coordination for agencies and travelers. It offers features like itinerary creation, booking management, and real-time tracking. With automated scheduling and smart recommendations, Tour Guide enhances the travel experience while improving efficiency for tour operators.
-//                   </p>
-//                 </section>
-
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Yarrowtech</h2>
-//                   <p className="story-p">
-//                     Yarrowtech is a forward-thinking technology company committed to creating intelligent, AI-powered solutions that redefine how people learn, work, and connect. As the driving force behind products like Electronic Educare, SportBit, F&B, and Tour Guide, we specialize in blending innovation with practicality. Our mission is to harness the power of artificial intelligence to simplify complex challenges, empower industries, and shape a smarter, more efficient digital future.
-//                   </p>
-//                   <a className="story-cta" href="/">Return Home</a>
-//                 </section>
-//               </div>
-
-
-//             </Scroll>
-//           </ScrollControls>
-//         </Suspense>
-//       </Canvas>
-//     </div>
-//   );
-// }
-
-// /* Preload your models */
-// useGLTF.preload("/models/aboutPage/planet10.glb");
-// // useGLTF.preload("/models/aboutPage/golden-atom.glb");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // import React, { Suspense, useMemo, useRef, useEffect } from "react";
@@ -463,8 +6,6 @@
 //   Environment,
 //   ScrollControls,
 //   Scroll,
-//   Html,
-//   // ContactShadows,
 //   useGLTF,
 //   Preload,
 //   useScroll,
@@ -472,34 +13,20 @@
 // import * as THREE from "three";
 // import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 // import AnimatedGLTF from "../components/AnimatedGLTF.jsx";
-// import "../styles/about.css";
-// import "./story.css";
 // import gsap from "gsap";
+// import ScrollTrigger from "gsap/ScrollTrigger";
+// import "../styles/about.css";
 
-
-
-// /* ----------------------------- Loader UI ----------------------------- */
-// function Loader() {
-//   return (
-//     <Html center className="loader">
-//       <div className="loader-box">
-//         <div className="loader-bar" />
-//         <p className="loader-text">Loading scene…</p>
-//       </div>
-//     </Html>
-//   );
-// }
+// gsap.registerPlugin(ScrollTrigger);
 
 // /* ----------------------------- Utils -------------------------------- */
 // const clamp01 = (t) => Math.min(1, Math.max(0, t));
-// const easeOut = (t) => 1 - Math.pow(1 - clamp01(t), 3);
-// const easeInOut = (t) =>
-//   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+// const easeOut = (t) => 1 - Math.pow(1 - clamp01(t), 3); // (kept, even if unused)
 
 // /* ----------------------------- Camera Rig ---------------------------- */
-// /* Scroll-driven camera, with light parallax on mouse */
 // function CameraRig() {
 //   const scroll = useScroll();
+
 //   const curve = useMemo(
 //     () =>
 //       new THREE.CatmullRomCurve3(
@@ -524,14 +51,10 @@
 //   useFrame((state, delta) => {
 //     const t = clamp01(scroll.offset);
 //     curve.getPointAt(t, target);
-//     const ahead = clamp01(t + 0.006);
-//     curve.getPointAt(ahead, look);
+//     curve.getPointAt(clamp01(t + 0.006), look);
 
-//     // mouse parallax
-//     const mx = state.pointer.x;
-//     const my = state.pointer.y;
-//     target.x += mx * 0.45;
-//     target.y += my * 0.2;
+//     target.x += state.pointer.x * 0.45;
+//     target.y += state.pointer.y * 0.2;
 
 //     state.camera.position.lerp(target, 1 - Math.pow(0.001, delta));
 //     state.camera.lookAt(look);
@@ -544,442 +67,281 @@
 // function World() {
 //   const scroll = useScroll();
 //   const lightRef = useRef();
-//   const groupRef = useRef(); // mouse tilt group
+//   const groupRef = useRef();
+//   const planetRef = useRef();
 
-//   // mouse-tilt the entire stage slightly
 //   useFrame((state, delta) => {
 //     if (!groupRef.current) return;
-//     const tX = -state.pointer.y * 0.1;
-//     const tY = state.pointer.x * 0.15;
+
 //     groupRef.current.rotation.x = THREE.MathUtils.damp(
 //       groupRef.current.rotation.x,
-//       tX,
+//       -state.pointer.y * 0.1,
 //       4,
 //       delta
 //     );
 //     groupRef.current.rotation.y = THREE.MathUtils.damp(
 //       groupRef.current.rotation.y,
-//       tY,
+//       state.pointer.x * 0.15,
 //       4,
 //       delta
 //     );
 //   });
 
-//   // light color/energy shift per chapter
 //   useFrame((_, delta) => {
 //     if (!lightRef.current) return;
-//     const ch1 = scroll.range(0 / 6, 1 / 6);
-//     const ch2 = scroll.range(1 / 6, 1 / 6);
-//     const ch3 = scroll.range(2 / 6, 1 / 6);
-//     const ch4 = scroll.range(3 / 6, 1 / 6);
-//     const ch5 = scroll.range(4 / 6, 1 / 6);
-//     const energy =
-//       0.8 +
-//       0.5 * easeOut(ch1) +
-//       0.4 * easeOut(ch3) +
-//       0.6 * easeOut(ch5); // pulse on a few chapters
+//     const ch = scroll.range(2 / 6, 1 / 6);
 //     lightRef.current.intensity = THREE.MathUtils.damp(
 //       lightRef.current.intensity,
-//       energy,
+//       1 + ch,
 //       3,
 //       delta
 //     );
-//     // subtle hue shift
-//     const hue =
-//       0.6 * easeOut(ch2) + 0.0 * easeOut(ch3) + 0.9 * easeOut(ch4) + 0.2 * easeOut(ch5);
-//     lightRef.current.color.setHSL(0.6 * hue, 0.6, 0.6);
-//   });
-
-//   /* --- Per-actor scroll choreography (ranges in 6 pages) --- */
-//   const atomRef = useRef();
-//   const planetRef = useRef();
-//   const orbRef = useRef();
-
-//   useFrame((_, delta) => {
-//     const r1 = scroll.range(0 / 6, 1 / 6); // chapter 1
-//     const r2 = scroll.range(1 / 6, 1 / 6); // chapter 2
-//     const r3 = scroll.range(2 / 6, 1 / 6); // chapter 3
-//     const r4 = scroll.range(3 / 6, 1 / 6); // chapter 4
-//     const r5 = scroll.range(4 / 6, 1 / 6); // chapter 5
-//     const r6 = scroll.range(5 / 6, 1 / 6); // chapter 6
-
-//     // Golden Atom: enter from left, scale up, then orbit
-//     if (atomRef.current) {
-//       const enter = easeOut(r1);
-//       const hold = r2;
-//       const exit = r3;
-//       atomRef.current.position.x = THREE.MathUtils.damp(
-//         atomRef.current.position.x,
-//         THREE.MathUtils.lerp(-5, 0, enter) + THREE.MathUtils.lerp(0, 1.2, hold),
-//         6,
-//         delta
-//       );
-//       atomRef.current.position.z = THREE.MathUtils.damp(
-//         atomRef.current.position.z,
-//         THREE.MathUtils.lerp(5, 0, enter),
-//         6,
-//         delta
-//       );
-//       const s =
-//         THREE.MathUtils.lerp(0.6, 1, enter) *
-//         THREE.MathUtils.lerp(1, 1.15, hold) *
-//         THREE.MathUtils.lerp(1, 0.8, exit);
-//       atomRef.current.scale.setScalar(THREE.MathUtils.damp(atomRef.current.scale.x, s, 4, delta));
-//       atomRef.current.rotation.y += delta * (0.2 + hold * 0.8);
-//     }
-
-//     // Planet: descend from above, then “breath” with scroll
-//     if (planetRef.current) {
-//       const enter = easeInOut(r2);
-//       const feature = r3;
-//       planetRef.current.position.y = THREE.MathUtils.damp(
-//         planetRef.current.position.y,
-//         THREE.MathUtils.lerp(3, 0, enter),
-//         6,
-//         delta
-//       );
-//       planetRef.current.position.x = THREE.MathUtils.damp(
-//         planetRef.current.position.x,
-//         THREE.MathUtils.lerp(1, 0, enter),
-//         6,
-//         delta
-//       );
-//       const pulse = 1 + Math.sin(feature * Math.PI * 2) * 0.05;
-//       const s = THREE.MathUtils.lerp(0.8, 1.1, enter) * pulse;
-//       planetRef.current.scale.setScalar(
-//         THREE.MathUtils.damp(planetRef.current.scale.x, s, 5, delta)
-//       );
-//       planetRef.current.rotation.y += delta * (0.35 + feature * 0.4);
-//     }
-
-//     // Orb: exits towards depth as finale
-//     if (orbRef.current) {
-//       const show = easeInOut(r4);
-//       const outro = easeOut(r6);
-//       orbRef.current.position.z = THREE.MathUtils.damp(
-//         orbRef.current.position.z,
-//         THREE.MathUtils.lerp(6, -2, show) + THREE.MathUtils.lerp(0, -4, outro),
-//         4,
-//         delta
-//       );
-//       orbRef.current.rotation.x += delta * 0.25;
-//       orbRef.current.rotation.y -= delta * 0.35;
-//     }
 //   });
 
 //   return (
 //     <group ref={groupRef}>
-//       {/* Lights / env */}
 //       <ambientLight intensity={0.4} />
-//       <directionalLight
-//         ref={lightRef}
-//         position={[6, 8, 4]}
-//         intensity={1.1}
-//         castShadow
-//         shadow-mapSize-width={1024}
-//         shadow-mapSize-height={1024}
-//       />
+//       <directionalLight ref={lightRef} position={[6, 8, 4]} intensity={1.1} />
 //       <Environment preset="sunset" />
-
-//       {/* <ContactShadows opacity={0.15} scale={24} blur={3} far={12} resolution={1024} /> */}
-
-//       {/* 3D Actors (animated GLBs) */}
-//       {/* <group ref={atomRef} position={[5, 0, 3]}>
-//         <AnimatedGLTF url="/models/aboutPage/golden-atom.glb" scale={0.9} />
-//       </group> */}
 
 //       <group ref={planetRef} position={[10, 0, 8]}>
 //         <AnimatedGLTF url="/models/aboutPage/planet10.glb" scale={1.2} />
-//       </group>
-
-//       {/* A small “orb” for transitions (can be any GLB) */}
-//       <group ref={orbRef} position={[-2, 0.6, 6]}>
-//         {/* <mesh castShadow receiveShadow>
-//           <icosahedronGeometry args={[0.8, 2]} />
-//           <meshPhysicalMaterial
-//             transmission={0.9}
-//             roughness={0.1}
-//             thickness={0.4}
-//             clearcoat={1}
-//             clearcoatRoughness={0.05}
-//             ior={1.45}
-//           />
-//         </mesh> */}
 //       </group>
 //     </group>
 //   );
 // }
 
-// /* ------------------------- HUD: Progress + Jump ---------------------- */
+// /* ---------------------------- Progress Bar --------------------------- */
 // function ProgressBar() {
 //   const scroll = useScroll();
 //   const ref = useRef(null);
+
 //   useFrame(() => {
 //     if (ref.current) ref.current.style.transform = `scaleX(${scroll.offset})`;
 //   });
+
 //   return (
-//     <div className="prog">
-//       <span className="prog__bar" ref={ref} />
+//     <div className="pointer-events-none fixed left-0 top-0 z-[60] h-[3px] w-screen bg-[#9d6800]">
+//       <span
+//         ref={ref}
+//         className="block h-full w-full origin-left scale-x-0 bg-[#9d6800]"
+//       />
 //     </div>
 //   );
+
 // }
 
-// function JumpNav() {
-//   const scroll = useScroll();
-//   const go = (i) => {
-//     const el = scroll.el; // ScrollControls container
-//     const h = el.clientHeight;
-//     el.scrollTo({ top: i * h, behavior: "smooth" });
-//   };
-//   return (
-//     <div className="jumpnav">
-//       {["Prologue", "Awakening", "Passage", "Discovery", "Bridge", "Finale"].map(
-//         (label, i) => (
-//           <button key={label} className="chip" onClick={() => go(i)}>
-//             {label}
-//           </button>
-//         )
-//       )}
-//     </div>
-//   );
-// }
+// /* ✅ EDIT THESE: Descriptions + Links */
+// const PROJECTS = [
+//   {
+//     title: "Yarrowtech",
+//     description:
+//       "YarrowTech is a next-generation software development company dedicated to transforming ideas into intelligent, high-impact digital solutions.Our expertise spans custom software development, ERP systems, AI-driven applications,and full-stack web and mobile development—built to support the evolving needs of modern businesses.",
+//     url: "https://yarrowtech.com",
+//     cta: "Visit Website",
+//   },
+//   {
+//     title: "Building",
+//     description:
+//       " This project involves building a secure, regulated crowdfunding platform for early-stage startups, designed to connect vetted founders with retail investors through a transparent and compliant digital marketplace. The platform enables startups to raise capital efficiently while allowing investors to discover, evaluate, and invest in curated opportunities with confidence.The system incorporates KYC/AML compliance, campaign management, ensuring trust, regulatory alignment, and long-term platform sustainability. Revenue is generated through a commission-based model on successfully funded campaigns, supporting scalable growth and recurring income.With a phased rollout approach, the platform is built for high performance, security, and scalability, targeting strong user adoption, efficient fundraising outcomes, and leadership in the regulated crowdfunding space.  ",
+//     url: "https://sportbit.app",
+//     cta: "View Platform",
+//   },
+//   {
+//     title: "Hire-Me",
+//     description:
+//       "Hire Me is a subscription-driven HR ecosystem that unites partner companies, their HR teams, and the employees they steward. We streamline workforce intake, tracking, and compliance for partner organisations while maintaining a secure, always-on environment administered by our in-house team. HR managers gain an intuitive portal to register, verify, and support their employees; admins oversee partnerships and platform integrity; employees enjoy stability through transparent monitoring; and guests can explore the platform’s value at a glance. Built for scalability, data protection, and round-the-clock Availability, Hire Me delivers a dependable bridge between modern employers and the talent they nurture.",
+//     url: "https://fb.yarrowtech.com",
+//     cta: "Explore Product",
+//   },
+//   {
+//     title: "Art-Block",
+//     description:
+//       "ArtBlock is an innovative online social platform that empowers independent artists and creators to showcase, share, and monetize their work through a subscription-based model. It bridges the gap between creators and their audiences by offering tools for exclusive content sharing, tiered memberships, community engagement, and direct financial support. Artists can upload diverse content — such as videos, podcasts, or AR/VR experiences — and manage their supporters through personalized dashboards. Patrons (supporters) can subscribe to different membership tiers to access exclusive content, interact with creators, and support their favorite artists directly. The platform integrates secure payment gateways, real-time notifications, and an analytics dashboard to track engagement and earnings. Admins oversee content moderation, user management, and system analytics through an admin dashboard.Technically, ArtBlock is designed as a modular, scalable, and secure web application, featuring responsive design, API-driven architecture, and cloud-based infrastructure. Its mission is to foster artistic independence and sustainable creator income, building a thriving digital ecosystem where creativity and community flourish together.",
+//     url: "https://myguide.yarrowtech.com",
+//     cta: "See Solution",
+//   },
+//   {
+//     title: "Green-bar",
+//     description:
+//       "Green-bar is a web-based platform designed for ordering fresh groceries and farm produce online. It allows users to browse products, place orders, and manage purchases easily. The system includes admin and seller modules for product, order, and inventory management. BuyFresh provides a smooth checkout experience with real-time order tracking.",
+//     url: "https://electroniceducare.com",
+//     cta: "View Product",
+//   },
+//   {
+//     title: "Better-Pass",
+//     description:
+//       "The Better Pass is a social travel platform where tour companies and tourists can connect, post tours, and make bookings. Designed with an experience similar to Instagram or LinkedIn, the app supports four user roles: Tour Companies, Tourists/Travellers, Influencers, and Activity Instructors. Tour companies can share and promote their tour offerings, influencers can help amplify these tours, and activity instructors can showcase engaging nearby activities. Tourists can browse, book, and participate in both tours and activities — all with the goal of enhancing and enriching their travel experience.",
+//     url: "https://electroniceducare.com",
+//     cta: "View Product",
+//   },
+// ];
 
-// /* ---------------------------- The Page View -------------------------- */
+// /* ---------------------------- Page View ------------------------------ */
 // export default function StoryWorld() {
-
-//   const btnRef = useRef(null);
-
+//   /* 🔥 SHARED MAGNETIC + SCROLL + RIPPLE SYSTEM */
 //   useEffect(() => {
-//     const btn = btnRef.current;
-//     if (!btn) return;
+//     const buttons = document.querySelectorAll(".story-btn");
+//     const cleanups = [];
 
-//     // Magnetic effect
-//     const strength = 40;
+//     buttons.forEach((btn) => {
+//       const strength = 40;
 
-//     const move = (e) => {
-//       const rect = btn.getBoundingClientRect();
-//       const x = e.clientX - rect.left - rect.width / 2;
-//       const y = e.clientY - rect.top - rect.height / 2;
+//       const move = (e) => {
+//         const r = btn.getBoundingClientRect();
+//         const x = e.clientX - r.left - r.width / 2;
+//         const y = e.clientY - r.top - r.height / 2;
 
-//       gsap.to(btn, {
-//         x: x / strength,
-//         y: y / strength,
-//         duration: 0.3,
-//         ease: "power3.out",
+//         gsap.to(btn, {
+//           x: x / strength,
+//           y: y / strength,
+//           duration: 0.3,
+//           ease: "power3.out",
+//         });
+//       };
+
+//       const reset = () => gsap.to(btn, { x: 0, y: 0, duration: 0.4 });
+
+//       btn.addEventListener("mousemove", move);
+//       btn.addEventListener("mouseleave", reset);
+
+//       gsap.from(btn, {
+//         opacity: 0,
+//         y: 30,
+//         duration: 0.8,
+//         scrollTrigger: {
+//           trigger: btn,
+//           start: "top 85%",
+//         },
 //       });
-//     };
 
-//     const reset = () => {
-//       gsap.to(btn, {
-//         x: 0,
-//         y: 0,
-//         duration: 0.4,
-//         ease: "power3.out",
+//       const click = (e) => {
+//         e.preventDefault();
+//         const url = btn.href;
+
+//         const old = btn.querySelector(".btn-ripple");
+//         if (old) old.remove();
+
+//         const ripple = document.createElement("span");
+//         ripple.className = "btn-ripple";
+//         btn.appendChild(ripple);
+
+//         gsap.fromTo(
+//           ripple,
+//           { scale: 0, opacity: 0.6 },
+//           {
+//             scale: 8,
+//             opacity: 0,
+//             duration: 0.6,
+//             ease: "power3.out",
+//             onComplete: () => window.open(url, "_blank", "noopener,noreferrer"),
+//           }
+//         );
+//       };
+
+//       btn.addEventListener("click", click);
+
+//       cleanups.push(() => {
+//         btn.removeEventListener("mousemove", move);
+//         btn.removeEventListener("mouseleave", reset);
+//         btn.removeEventListener("click", click);
 //       });
-//     };
-
-//     btn.addEventListener("mousemove", move);
-//     btn.addEventListener("mouseleave", reset);
-
-//     // Scroll reveal
-//     gsap.from(btn, {
-//       opacity: 0,
-//       y: 30,
-//       duration: 0.8,
-//       ease: "power4.out",
-//       scrollTrigger: {
-//         trigger: btn,
-//         start: "top 85%",
-//       },
 //     });
 
-//     return () => {
-//       btn.removeEventListener("mousemove", move);
-//       btn.removeEventListener("mouseleave", reset);
-//     };
+//     return () => cleanups.forEach((fn) => fn());
 //   }, []);
 
-
-
 //   return (
-//     <div className="story-container">
+//     <div className="relative w-full h-screen overflow-hidden bg-[#9d6800]">
+
 //       <Canvas
-//         frameloop="always"
-//         shadows
-//         style={{ background: "transparent" }}
-//         gl={{
-//           antialias: true,
-//           alpha: true,
-//           powerPreference: "high-performance",
-//           toneMapping: THREE.ACESFilmicToneMapping,
-//           outputColorSpace: THREE.SRGBColorSpace,
-//         }}
-//         camera={{ position: [0, 1.3, 12], fov: 50, near: 0.1, far: 200 }}
-//         onCreated={({ gl }) => gl.setClearAlpha(0)}
+//         camera={{ position: [0, 1.3, 12], fov: 50 }}
+//         gl={{ alpha: true, antialias: true }}
 //       >
-//         <Suspense fallback={<Loader />}>
-//           {/* 6 pages now for more story beats */}
+//         <Suspense fallback={null}>
 //           <ScrollControls pages={6} damping={0.16}>
 //             <CameraRig />
-
-//             {/* 3D stage that reacts to scroll & mouse */}
 //             <World />
 
-//             {/* Subtle post FX */}
-//             <EffectComposer disableNormalPass>
-//               <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.25} luminanceSmoothing={0.2} />
-//               <Vignette eskil={false} offset={0.1} darkness={0.3} />
+//             <EffectComposer>
+//               <Bloom intensity={0.7} />
+//               <Vignette darkness={0.3} />
 //             </EffectComposer>
 
-//             <Preload all />
 
-//             {/* Overlay HTML */}
-//             <Scroll html>
+
+//             <Scroll html style={{ width: "100vw", pointerEvents: "auto" }}>
 //               <ProgressBar />
-//               {/* <JumpNav /> */}
 
+//               {/* ✅ Full viewport width container (this fixes the "highlighted div") */}
+//               <div className="pointer-events-auto w-screen">
+//                 {/* ✅ Center everything inside */}
+//                 <div className="mx-auto w-full max-w-5xl px-4">
+//                   {PROJECTS.map((p) => (
+//                     <section
+//                       key={p.title}
+//                       className="flex min-h-screen w-full flex-col items-center justify-center gap-6 text-center text-[#ccc6a9]"
+//                     >
+//                       <h2 className="text-3xl font-extrabold tracking-tight text-[#ccc6a9] md:text-5xl">
+//                         {p.title}
+//                       </h2>
 
-//               <div className="story-overlay">
-//                 <section className="story-section">
-//                   <h1 className="story-title">House of Musa — Prologue</h1>
-//                   <p className="story-p">
-//                     Scroll to begin the journey. The camera glides while artifacts respond to your
-//                     movement and cursor.
-//                   </p>
-//                 </section>
+//                       <p className="mx-auto max-w-[75ch] text-base leading-7 text-[#ccc6a9] md:text-lg md:leading-8 font-semibold">
+//                         {p.description}
+//                       </p>
 
-//                 {/* <section className="story-section">
-//                   <h2 className="story-subtitle">Project 1 — Yarrowtech</h2>
-//                   <p className="story-p">
-//                     YarrowTech are a next-generation software development
-//                     company dedicated to transforming ideas into intelligent, high-impact digital solutions.
-//                     Our expertise spans custom software development, ERP systems, AI-driven applications,
-//                     and full-stack web and mobile development—built to support the evolving needs
-//                     of modern businesses.
-//                   </p>
+//                       <a
+//                         href={p.url}
+//                         target="_blank"
+//                         rel="noopener noreferrer"
+//                         className="
+//   story-btn pointer-events-auto relative inline-flex items-center gap-3
+//   select-none rounded-2xl px-7 py-3.5
+//   bg-[#ccc6a9]/30 backdrop-blur-xl
+//   text-black font-semibold
+//   border border-black/10
+//   shadow-[8px_8px_18px_rgba(0,0,0,0.28),_-8px_-8px_18px_rgba(255,255,255,0.10)]
+//   transition-all duration-200 ease-out
+//   hover:-translate-y-0.5 hover:shadow-[10px_10px_22px_rgba(0,0,0,0.30),_-10px_-10px_22px_rgba(255,255,255,0.12)]
+//   active:translate-y-0 active:scale-[0.99]
+//   active:shadow-[inset_8px_8px_16px_rgba(0,0,0,0.28),inset_-8px_-8px_16px_rgba(255,255,255,0.10)]
+//   focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30
+//   overflow-hidden
+// "
 
-//                 </section> */}
+//                       >
+//                         <span className="btn-text">{p.cta ?? "View Project"}</span>
+//                         <span className="btn-arrow">→</span>
+//                       </a>
+//                     </section>
+//                   ))}
 
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Project 1 — Yarrowtech</h2>
-//                   <p className="story-p">
-//                     YarrowTech are a next-generation software development
-//                     company dedicated to transforming ideas into intelligent, high-impact digital solutions.
-//                     Our expertise spans custom software development, ERP systems, AI-driven applications,
-//                     and full-stack web and mobile development—built to support the evolving needs
-//                     of modern businesses.
-//                   </p>
-//                   <a
-//                     ref={btnRef}
-//                     href="https://yarrowtech.com"
-//                     target="_blank"
-//                     rel="noopener noreferrer"
-//                     className="story-btn"
-//                   >
-//                     <span className="btn-text">View Project</span>
-//                     <span className="btn-arrow">→</span>
-//                   </a>
-//                 </section>
-
-
-
-
-
-
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Project 2 — Sportbit</h2>
-//                   <p className="story-p">
-//                     SportBit is an AI-driven sports management platform that streamlines player, club, and manager operations in one unified system. It provides performance analytics, fitness tracking, and intelligent insights to enhance player development and team strategy. With role-based dashboards and automated data management, SportBit simplifies decision-making for coaches, managers, and athletes alike.
-//                   </p>
-//                   <a
-//                     ref={btnRef}
-//                     href="https://yarrowtech.com"
-//                     target="_blank"
-//                     rel="noopener noreferrer"
-//                     className="story-btn"
-//                   >
-//                     <span className="btn-text">View Project</span>
-//                     <span className="btn-arrow">→</span>
-//                   </a>
-//                 </section>
-
-
-
-
-
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Project 3 — F&B</h2>
-//                   <p className="story-p">
-//                     F&B is an AI-powered restaurant management system designed to optimize daily operations, from order processing to inventory control. It uses intelligent forecasting to manage demand, reduce waste, and improve customer satisfaction. With smart analytics and automated reporting, F&B helps restaurant owners make data-driven decisions for smoother, more profitable operations.
-//                   </p>
-//                   <a
-//                     ref={btnRef}
-//                     href="https://yarrowtech.com"
-//                     target="_blank"
-//                     rel="noopener noreferrer"
-//                     className="story-btn"
-//                   >
-//                     <span className="btn-text">View Project</span>
-//                     <span className="btn-arrow">→</span>
-//                   </a>
-//                 </section>
-
-
-
-
-
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Project 4 — Tour Guide</h2>
-//                   <p className="story-p">
-//                     Tour Guide is an intelligent tour management system that simplifies travel planning and coordination for agencies and travelers. It offers features like itinerary creation, booking management, and real-time tracking. With automated scheduling and smart recommendations, Tour Guide enhances the travel experience while improving efficiency for tour operators.
-//                   </p>
-//                   <a
-//                     ref={btnRef}
-//                     href="https://yarrowtech.com"
-//                     target="_blank"
-//                     rel="noopener noreferrer"
-//                     className="story-btn"
-//                   >
-//                     <span className="btn-text">View Project</span>
-//                     <span className="btn-arrow">→</span>
-//                   </a>
-//                 </section>
-
-
-
-//                 <section className="story-section">
-//                   <h2 className="story-subtitle">Yarrowtech</h2>
-//                   <p className="story-p">
-//                     Yarrowtech is a forward-thinking technology company committed to creating intelligent, AI-powered solutions that redefine how people learn, work, and connect. As the driving force behind products like Electronic Educare, SportBit, F&B, and Tour Guide, we specialize in blending innovation with practicality. Our mission is to harness the power of artificial intelligence to simplify complex challenges, empower industries, and shape a smarter, more efficient digital future.
-//                   </p>
-//                   <a
-//                     ref={btnRef}
-//                     href="https://yarrowtech.com"
-//                     target="_blank"
-//                     rel="noopener noreferrer"
-//                     className="story-btn"
-//                   >
-//                     <span className="btn-text">View Project</span>
-//                     <span className="btn-arrow">→</span>
-//                   </a>
-
-
-//                   <a className="story-cta" href="/">Return Home</a>
-//                 </section>
+//                   <section className="flex min-h-screen w-full items-center justify-center">
+//                     <a
+//                       className="pointer-events-auto inline-flex items-center justify-center rounded-xl border border-black/20 bg-black/10 px-6 py-3 text-sm font-semibold text-black backdrop-blur transition hover:-translate-y-0.5 hover:bg-black/15"
+//                       href="/"
+//                     >
+//                       Return Home
+//                     </a>
+//                   </section>
+//                 </div>
 //               </div>
-
-
 //             </Scroll>
+
+
+
+
 //           </ScrollControls>
+
+//           <Preload all />
 //         </Suspense>
 //       </Canvas>
 //     </div>
 //   );
 // }
 
-// /* Preload your models */
+// /* Preload */
 // useGLTF.preload("/models/aboutPage/planet10.glb");
-// // useGLTF.preload("/models/aboutPage/golden-atom.glb");
 
 
 
@@ -1013,13 +375,694 @@
 
 
 
-import React, { Suspense, useMemo, useRef, useEffect } from "react";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // cld 
+// import React, { Suspense, useMemo, useRef, useEffect } from "react";
+// import { Canvas, useFrame } from "@react-three/fiber";
+// import {
+//   Environment,
+//   ScrollControls,
+//   Scroll,
+//   useGLTF,
+//   Preload,
+//   useScroll,
+//   Float,
+//   Stars,
+// } from "@react-three/drei";
+// import * as THREE from "three";
+// import { EffectComposer, Bloom, Vignette, ChromaticAberration } from "@react-three/postprocessing";
+// import { BlendFunction } from "postprocessing";
+// import AnimatedGLTF from "../components/AnimatedGLTF.jsx";
+// import gsap from "gsap";
+// import ScrollTrigger from "gsap/ScrollTrigger";
+// import "../styles/story.css";
+
+// gsap.registerPlugin(ScrollTrigger);
+
+// /* ----------------------------- Utils -------------------------------- */
+// const clamp01 = (t) => Math.min(1, Math.max(0, t));
+// const smoothstep = (t) => t * t * (3 - 2 * t);
+// const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+// /* ----------------------------- Camera Rig ---------------------------- */
+// function CameraRig() {
+//   const scroll = useScroll();
+
+//   // Professional camera path with cinematic transitions
+//   const curve = useMemo(
+//     () =>
+//       new THREE.CatmullRomCurve3(
+//         [
+//           new THREE.Vector3(0, 2, 15),      // Opening - Wide establishing shot
+//           new THREE.Vector3(6, 1.8, 10),    // Sweep right
+//           new THREE.Vector3(8, 1.5, 5),     // Continue arc
+//           new THREE.Vector3(4, 1.2, 0),     // Center approach
+//           new THREE.Vector3(-2, 1.5, -4),   // Cross to left
+//           new THREE.Vector3(-5, 2, -8),     // Pull back left
+//           new THREE.Vector3(0, 2.5, -12),   // Center dramatic
+//           new THREE.Vector3(3, 3, -15),     // Ascend and push
+//           new THREE.Vector3(0, 3.5, -18),   // Final elevated view
+//         ],
+//         false,
+//         "catmullrom",
+//         0.4 // Smoother tension
+//       ),
+//     []
+//   );
+
+//   const targetPos = useMemo(() => new THREE.Vector3(), []);
+//   const lookPos = useMemo(() => new THREE.Vector3(), []);
+//   const currentLook = useMemo(() => new THREE.Vector3(), []);
+
+//   useFrame((state, delta) => {
+//     const t = clamp01(scroll.offset);
+//     const smoothT = easeInOutCubic(t);
+    
+//     // Get camera position and look-ahead point
+//     curve.getPointAt(smoothT, targetPos);
+//     curve.getPointAt(clamp01(smoothT + 0.008), lookPos);
+
+//     // Subtle parallax based on mouse position
+//     const parallaxStrength = THREE.MathUtils.lerp(0.5, 0.2, smoothT);
+//     targetPos.x += state.pointer.x * parallaxStrength;
+//     targetPos.y += state.pointer.y * (parallaxStrength * 0.5);
+
+//     // Smooth camera movement with professional damping
+//     state.camera.position.lerp(targetPos, 1 - Math.pow(0.0008, delta));
+    
+//     // Smooth look-at with slight lag for cinematic feel
+//     currentLook.lerp(lookPos, 1 - Math.pow(0.001, delta));
+//     state.camera.lookAt(currentLook);
+
+//     // Dynamic FOV adjustment for depth perception
+//     const targetFOV = THREE.MathUtils.lerp(50, 45, smoothT);
+//     state.camera.fov = THREE.MathUtils.lerp(state.camera.fov, targetFOV, delta * 2);
+//     state.camera.updateProjectionMatrix();
+//   });
+
+//   return null;
+// }
+
+// /* ------------------------------ 3D World ----------------------------- */
+// function World() {
+//   const scroll = useScroll();
+//   const lightRef = useRef();
+//   const groupRef = useRef();
+//   const planetRef = useRef();
+//   const ambientRef = useRef();
+//   const rimLightRef = useRef();
+
+//   // Parallax rotation based on mouse
+//   useFrame((state, delta) => {
+//     if (!groupRef.current) return;
+
+//     const targetRotX = -state.pointer.y * 0.08;
+//     const targetRotY = state.pointer.x * 0.12;
+
+//     groupRef.current.rotation.x = THREE.MathUtils.damp(
+//       groupRef.current.rotation.x,
+//       targetRotX,
+//       3,
+//       delta
+//     );
+//     groupRef.current.rotation.y = THREE.MathUtils.damp(
+//       groupRef.current.rotation.y,
+//       targetRotY,
+//       3,
+//       delta
+//     );
+//   });
+
+//   // Dynamic lighting based on scroll
+//   useFrame((_, delta) => {
+//     const t = scroll.offset;
+    
+//     if (lightRef.current) {
+//       const intensity = THREE.MathUtils.lerp(1.2, 2.5, smoothstep(t));
+//       lightRef.current.intensity = THREE.MathUtils.damp(
+//         lightRef.current.intensity,
+//         intensity,
+//         4,
+//         delta
+//       );
+//     }
+
+//     if (ambientRef.current) {
+//       const ambient = THREE.MathUtils.lerp(0.3, 0.6, t);
+//       ambientRef.current.intensity = THREE.MathUtils.damp(
+//         ambientRef.current.intensity,
+//         ambient,
+//         3,
+//         delta
+//       );
+//     }
+
+//     if (rimLightRef.current) {
+//       const rim = THREE.MathUtils.lerp(0.8, 1.5, Math.sin(t * Math.PI));
+//       rimLightRef.current.intensity = THREE.MathUtils.damp(
+//         rimLightRef.current.intensity,
+//         rim,
+//         5,
+//         delta
+//       );
+//     }
+//   });
+
+//   // Planet animation
+//   useFrame((state, delta) => {
+//     if (!planetRef.current) return;
+    
+//     const t = scroll.offset;
+    
+//     // Smooth orbital movement
+//     const orbitRadius = 12;
+//     const orbitSpeed = t * Math.PI * 2;
+    
+//     planetRef.current.position.x = Math.cos(orbitSpeed) * orbitRadius + 2;
+//     planetRef.current.position.z = Math.sin(orbitSpeed) * orbitRadius;
+//     planetRef.current.position.y = Math.sin(t * Math.PI) * 3 - 1;
+    
+//     // Gentle rotation
+//     planetRef.current.rotation.y += delta * 0.3;
+//     planetRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
+//   });
+
+//   return (
+//     <>
+//       {/* Atmospheric stars */}
+//       <Stars
+//         radius={100}
+//         depth={50}
+//         count={3000}
+//         factor={4}
+//         saturation={0.5}
+//         fade
+//         speed={0.5}
+//       />
+
+//       <group ref={groupRef}>
+//         {/* Lighting setup */}
+//         <ambientLight ref={ambientRef} intensity={0.3} color="#e8dcc0" />
+        
+//         <directionalLight
+//           ref={lightRef}
+//           position={[8, 10, 6]}
+//           intensity={1.2}
+//           color="#ffeaa7"
+//           castShadow
+//         />
+        
+//         <directionalLight
+//           ref={rimLightRef}
+//           position={[-6, 2, -8]}
+//           intensity={0.8}
+//           color="#74b9ff"
+//         />
+
+//         <spotLight
+//           position={[0, 15, 0]}
+//           angle={0.5}
+//           penumbra={1}
+//           intensity={0.5}
+//           color="#dfe6e9"
+//         />
+
+//         <Environment preset="sunset" environmentIntensity={0.6} />
+
+//         {/* Planet with floating animation */}
+//         <Float
+//           speed={1.5}
+//           rotationIntensity={0.3}
+//           floatIntensity={0.8}
+//         >
+//           <group ref={planetRef} position={[10, 0, 8]}>
+//             <AnimatedGLTF url="/models/aboutPage/planet10.glb" scale={1.4} />
+            
+//             {/* Atmospheric glow */}
+//             <mesh scale={1.6}>
+//               <sphereGeometry args={[1, 32, 32]} />
+//               <meshBasicMaterial
+//                 color="#9d6800"
+//                 transparent
+//                 opacity={0.15}
+//                 blending={THREE.AdditiveBlending}
+//               />
+//             </mesh>
+//           </group>
+//         </Float>
+
+//         {/* Ambient particles */}
+//         <mesh position={[0, 0, -5]}>
+//           <sphereGeometry args={[30, 32, 32]} />
+//           <meshBasicMaterial
+//             color="#9d6800"
+//             wireframe
+//             transparent
+//             opacity={0.03}
+//           />
+//         </mesh>
+//       </group>
+//     </>
+//   );
+// }
+
+// /* ---------------------------- Progress Bar --------------------------- */
+// function ProgressBar() {
+//   const scroll = useScroll();
+//   const barRef = useRef(null);
+//   const glowRef = useRef(null);
+
+//   useFrame(() => {
+//     if (barRef.current) {
+//       const progress = scroll.offset;
+//       barRef.current.style.transform = `scaleX(${progress})`;
+      
+//       if (glowRef.current) {
+//         glowRef.current.style.opacity = progress * 0.8;
+//       }
+//     }
+//   });
+
+//   return (
+//     <div className="pointer-events-none fixed left-0 top-0 z-[60] h-1 w-screen bg-black/20">
+//       <div
+//         ref={glowRef}
+//         className="absolute inset-0 bg-gradient-to-r from-transparent via-[#ffd700] to-transparent blur-xl"
+//         style={{ opacity: 0 }}
+//       />
+//       <span
+//         ref={barRef}
+//         className="block h-full w-full origin-left scale-x-0 bg-gradient-to-r from-[#9d6800] via-[#d4a574] to-[#ffd700] shadow-lg shadow-[#9d6800]/50"
+//       />
+//     </div>
+//   );
+// }
+
+// /* ✅ PROJECT DATA */
+// const PROJECTS = [
+//   {
+//     title: "Yarrowtech",
+//     description:
+//       "YarrowTech is a next-generation software development company dedicated to transforming ideas into intelligent, high-impact digital solutions. Our expertise spans custom software development, ERP systems, AI-driven applications, and full-stack web and mobile development—built to support the evolving needs of modern businesses.",
+//     url: "https://yarrowtech.com",
+//     cta: "Visit Website",
+//   },
+//   {
+//     title: "Building",
+//     description:
+//       "This project involves building a secure, regulated crowdfunding platform for early-stage startups, designed to connect vetted founders with retail investors through a transparent and compliant digital marketplace. The platform enables startups to raise capital efficiently while allowing investors to discover, evaluate, and invest in curated opportunities with confidence. The system incorporates KYC/AML compliance, campaign management, ensuring trust, regulatory alignment, and long-term platform sustainability.",
+//     url: "https://sportbit.app",
+//     cta: "View Platform",
+//   },
+//   {
+//     title: "Hire-Me",
+//     description:
+//       "Hire Me is a subscription-driven HR ecosystem that unites partner companies, their HR teams, and the employees they steward. We streamline workforce intake, tracking, and compliance for partner organisations while maintaining a secure, always-on environment administered by our in-house team. Built for scalability, data protection, and round-the-clock availability, Hire Me delivers a dependable bridge between modern employers and the talent they nurture.",
+//     url: "https://fb.yarrowtech.com",
+//     cta: "Explore Product",
+//   },
+//   {
+//     title: "Art-Block",
+//     description:
+//       "ArtBlock is an innovative online social platform that empowers independent artists and creators to showcase, share, and monetize their work through a subscription-based model. It bridges the gap between creators and their audiences by offering tools for exclusive content sharing, tiered memberships, community engagement, and direct financial support. The platform integrates secure payment gateways, real-time notifications, and an analytics dashboard to track engagement and earnings.",
+//     url: "https://myguide.yarrowtech.com",
+//     cta: "See Solution",
+//   },
+//   {
+//     title: "Green-bar",
+//     description:
+//       "Green-bar is a web-based platform designed for ordering fresh groceries and farm produce online. It allows users to browse products, place orders, and manage purchases easily. The system includes admin and seller modules for product, order, and inventory management. BuyFresh provides a smooth checkout experience with real-time order tracking.",
+//     url: "https://electroniceducare.com",
+//     cta: "View Product",
+//   },
+//   {
+//     title: "Better-Pass",
+//     description:
+//       "The Better Pass is a social travel platform where tour companies and tourists can connect, post tours, and make bookings. Designed with an experience similar to Instagram or LinkedIn, the app supports four user roles: Tour Companies, Tourists/Travellers, Influencers, and Activity Instructors. Tour companies can share and promote their tour offerings, influencers can help amplify these tours, and activity instructors can showcase engaging nearby activities.",
+//     url: "https://electroniceducare.com",
+//     cta: "View Product",
+//   },
+// ];
+
+// /* ---------------------------- Page View ------------------------------ */
+// export default function StoryWorld() {
+//   /* Professional magnetic buttons with ripple effects */
+//   useEffect(() => {
+//     const buttons = document.querySelectorAll(".story-btn");
+//     const cleanups = [];
+
+//     buttons.forEach((btn) => {
+//       const magneticStrength = 35;
+//       let isHovering = false;
+
+//       const move = (e) => {
+//         if (!isHovering) return;
+//         const rect = btn.getBoundingClientRect();
+//         const centerX = rect.left + rect.width / 2;
+//         const centerY = rect.top + rect.height / 2;
+//         const deltaX = (e.clientX - centerX) / magneticStrength;
+//         const deltaY = (e.clientY - centerY) / magneticStrength;
+
+//         gsap.to(btn, {
+//           x: deltaX,
+//           y: deltaY,
+//           duration: 0.4,
+//           ease: "power2.out",
+//         });
+//       };
+
+//       const enter = () => {
+//         isHovering = true;
+//         gsap.to(btn, {
+//           scale: 1.05,
+//           duration: 0.3,
+//           ease: "power2.out",
+//         });
+//       };
+
+//       const leave = () => {
+//         isHovering = false;
+//         gsap.to(btn, {
+//           x: 0,
+//           y: 0,
+//           scale: 1,
+//           duration: 0.5,
+//           ease: "elastic.out(1, 0.5)",
+//         });
+//       };
+
+//       // Scroll-triggered entrance animation
+//       gsap.from(btn, {
+//         opacity: 0,
+//         y: 50,
+//         duration: 1,
+//         ease: "power3.out",
+//         scrollTrigger: {
+//           trigger: btn,
+//           start: "top 90%",
+//           toggleActions: "play none none reverse",
+//         },
+//       });
+
+//       // Ripple effect on click
+//       const handleClick = (e) => {
+//         e.preventDefault();
+//         const url = btn.href;
+
+//         const rect = btn.getBoundingClientRect();
+//         const x = e.clientX - rect.left;
+//         const y = e.clientY - rect.top;
+
+//         const ripple = document.createElement("span");
+//         ripple.className = "btn-ripple";
+//         ripple.style.left = `${x}px`;
+//         ripple.style.top = `${y}px`;
+//         btn.appendChild(ripple);
+
+//         gsap.fromTo(
+//           ripple,
+//           { scale: 0, opacity: 1 },
+//           {
+//             scale: 10,
+//             opacity: 0,
+//             duration: 0.8,
+//             ease: "power3.out",
+//             onComplete: () => {
+//               ripple.remove();
+//               window.open(url, "_blank", "noopener,noreferrer");
+//             },
+//           }
+//         );
+//       };
+
+//       btn.addEventListener("mousemove", move);
+//       btn.addEventListener("mouseenter", enter);
+//       btn.addEventListener("mouseleave", leave);
+//       btn.addEventListener("click", handleClick);
+
+//       cleanups.push(() => {
+//         btn.removeEventListener("mousemove", move);
+//         btn.removeEventListener("mouseenter", enter);
+//         btn.removeEventListener("mouseleave", leave);
+//         btn.removeEventListener("click", handleClick);
+//       });
+//     });
+
+//     return () => cleanups.forEach((fn) => fn());
+//   }, []);
+
+//   /* Smooth section transitions */
+//   useEffect(() => {
+//     const sections = document.querySelectorAll(".project-section");
+    
+//     sections.forEach((section) => {
+//       gsap.from(section.querySelector(".project-content"), {
+//         opacity: 0,
+//         y: 80,
+//         duration: 1.2,
+//         ease: "power3.out",
+//         scrollTrigger: {
+//           trigger: section,
+//           start: "top 70%",
+//           toggleActions: "play none none reverse",
+//         },
+//       });
+//     });
+//   }, []);
+
+//   return (
+//     <div className="relative w-full h-screen overflow-hidden bg-gradient-to-b from-[#1a1410] via-[#2d2416] to-[#1a1410]">
+//       <Canvas
+//         camera={{ position: [0, 2, 15], fov: 50, near: 0.1, far: 1000 }}
+//         gl={{
+//           alpha: true,
+//           antialias: true,
+//           powerPreference: "high-performance",
+//           toneMapping: THREE.ACESFilmicToneMapping,
+//           toneMappingExposure: 1.2,
+//         }}
+//         shadows
+//       >
+//         <Suspense fallback={null}>
+//           <ScrollControls pages={7} damping={0.2} distance={1}>
+//             <CameraRig />
+//             <World />
+
+//             <EffectComposer>
+//               <Bloom
+//                 intensity={0.8}
+//                 luminanceThreshold={0.2}
+//                 luminanceSmoothing={0.9}
+//                 blendFunction={BlendFunction.ADD}
+//               />
+//               <Vignette
+//                 darkness={0.4}
+//                 offset={0.3}
+//                 blendFunction={BlendFunction.NORMAL}
+//               />
+//               <ChromaticAberration
+//                 offset={[0.0005, 0.0005]}
+//                 blendFunction={BlendFunction.NORMAL}
+//               />
+//             </EffectComposer>
+
+//             <Scroll html style={{ width: "100vw", pointerEvents: "auto" }}>
+//               <ProgressBar />
+
+//               <div className="pointer-events-auto w-screen">
+//                 <div className="mx-auto w-full max-w-6xl px-6 lg:px-8">
+//                   {PROJECTS.map((project, index) => (
+//                     <section
+//                       key={project.title}
+//                       className="project-section flex min-h-screen w-full items-center justify-center py-20"
+//                     >
+//                       <div className="project-content flex flex-col items-center gap-8 text-center">
+//                         {/* Project number indicator */}
+//                         <div className="text-[#9d6800]/40 text-sm font-mono tracking-wider">
+//                           {String(index + 1).padStart(2, '0')} / {String(PROJECTS.length).padStart(2, '0')}
+//                         </div>
+
+//                         {/* Title with gradient */}
+//                         <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-br from-[#ffd700] via-[#d4a574] to-[#9d6800] bg-clip-text text-transparent drop-shadow-2xl">
+//                           {project.title}
+//                         </h2>
+
+//                         {/* Description */}
+//                         <p className="mx-auto max-w-[65ch] text-base md:text-lg lg:text-xl leading-relaxed text-[#e8dcc0]/90 font-light">
+//                           {project.description}
+//                         </p>
+
+//                         {/* CTA Button */}
+//                         <a
+//                           href={project.url}
+//                           target="_blank"
+//                           rel="noopener noreferrer"
+//                           className="story-btn group pointer-events-auto relative inline-flex items-center gap-4 mt-6 select-none rounded-full px-10 py-4 bg-gradient-to-r from-[#9d6800] to-[#d4a574] text-white font-semibold text-lg shadow-[0_10px_40px_rgba(157,104,0,0.4)] transition-all duration-300 hover:shadow-[0_15px_50px_rgba(157,104,0,0.6)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd700] overflow-hidden"
+//                         >
+//                           <span className="absolute inset-0 bg-gradient-to-r from-[#ffd700] to-[#d4a574] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+//                           <span className="btn-text relative z-10">{project.cta}</span>
+//                           <span className="btn-arrow relative z-10 transition-transform duration-300 group-hover:translate-x-1">
+//                             →
+//                           </span>
+//                         </a>
+//                       </div>
+//                     </section>
+//                   ))}
+
+//                   {/* Return home section */}
+//                   <section className="flex min-h-screen w-full items-center justify-center">
+//                     <div className="text-center space-y-6">
+//                       <p className="text-[#e8dcc0]/70 text-lg">
+//                         Ready to start your journey?
+//                       </p>
+//                       <a
+//                         className="pointer-events-auto inline-flex items-center justify-center gap-3 rounded-full border-2 border-[#9d6800] bg-transparent px-8 py-4 text-base font-semibold text-[#ffd700] backdrop-blur-sm transition-all duration-300 hover:bg-[#9d6800] hover:text-white hover:border-[#ffd700] hover:shadow-[0_10px_30px_rgba(157,104,0,0.4)]"
+//                         href="/"
+//                       >
+//                         <span>Return Home</span>
+//                         <span className="text-xl">↩</span>
+//                       </a>
+//                     </div>
+//                   </section>
+//                 </div>
+//               </div>
+//             </Scroll>
+//           </ScrollControls>
+
+//           <Preload all />
+//         </Suspense>
+//       </Canvas>
+
+//       {/* Atmospheric overlay */}
+//       <div className="pointer-events-none fixed inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30" />
+//     </div>
+//   );
+// }
+
+// /* Preload assets */
+// useGLTF.preload("/models/aboutPage/planet10.glb");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// cgpt 
+// StoryWorld.jsx
+// Professional / industry-level storytelling page:
+// - cleaner structure
+// - cinematic camera + parallax
+// - “chapter” based scroll narrative
+// - nicer 3D behavior: subtle orbit, breathing scale, pointer tilt, scroll-based reveals
+// - improved GSAP: section entrance + magnetic CTA + ripple (cleaned + safe)
+// - better accessibility + mobile friendliness
+
+import React, { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Environment,
   ScrollControls,
   Scroll,
-  Html,
   useGLTF,
   Preload,
   useScroll,
@@ -1027,8 +1070,6 @@ import {
 import * as THREE from "three";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import AnimatedGLTF from "../components/AnimatedGLTF.jsx";
-import "../styles/about.css";
-import "./story.css";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 
@@ -1036,9 +1077,67 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ----------------------------- Utils -------------------------------- */
 const clamp01 = (t) => Math.min(1, Math.max(0, t));
-const easeOut = (t) => 1 - Math.pow(1 - clamp01(t), 3);
+const damp = THREE.MathUtils.damp;
+
+/* ----------------------- Narrative / Chapters ------------------------ */
+const PROJECTS = [
+  {
+    title: "Yarrowtech",
+    tagline: "Engineering intelligent digital products.",
+    description:
+      "YarrowTech is a next-generation software development company dedicated to transforming ideas into intelligent, high-impact digital solutions. Our expertise spans custom software development, ERP systems, AI-driven applications, and full-stack web & mobile development—built to support the evolving needs of modern businesses.",
+    url: "https://yarrowtech.com",
+    cta: "Visit Website",
+  },
+  {
+    title: "Building",
+    tagline: "Regulated crowdfunding, built for trust.",
+    description:
+      "A secure, regulated crowdfunding platform for early-stage startups—connecting vetted founders with retail investors through a transparent and compliant marketplace. Includes KYC/AML, campaign management, and a commission-based revenue model designed for scalable growth and long-term sustainability.",
+    url: "https://sportbit.app",
+    cta: "View Platform",
+  },
+  {
+    title: "Hire-Me",
+    tagline: "Subscription HR ecosystem for partners.",
+    description:
+      "Hire Me is a subscription-driven HR ecosystem for partner companies, HR teams, and employees—streamlining workforce intake, tracking, and compliance with a secure, always-on admin environment. Built for scale, data protection, and operational reliability.",
+    url: "https://fb.yarrowtech.com",
+    cta: "Explore Product",
+  },
+  {
+    title: "Art-Block",
+    tagline: "Creators monetize through community.",
+    description:
+      "A creator-first social platform for artists to showcase, share, and monetize work via subscriptions—tiered memberships, exclusive content, engagement tools, analytics, secure payments, real-time notifications, and admin moderation—built as a modular, scalable web app.",
+    url: "https://myguide.yarrowtech.com",
+    cta: "See Solution",
+  },
+  {
+    title: "Green-bar",
+    tagline: "Fresh groceries, smoother operations.",
+    description:
+      "A web platform for ordering fresh groceries and farm produce—browse products, place orders, and manage purchases. Includes admin and seller modules for inventory and order management with a smooth checkout and tracking flow.",
+    url: "https://electroniceducare.com",
+    cta: "View Product",
+  },
+  {
+    title: "Better-Pass",
+    tagline: "A social travel network for bookings.",
+    description:
+      "A social travel platform where tour companies and travelers connect, post tours, and book experiences. Supports Tour Companies, Travelers, Influencers, and Activity Instructors—designed like an Instagram/LinkedIn hybrid for modern travel discovery.",
+    url: "https://electroniceducare.com",
+    cta: "View Product",
+  },
+];
 
 /* ----------------------------- Camera Rig ---------------------------- */
+/**
+ * Cinematic camera:
+ * - uses a smooth curve path
+ * - small pointer parallax
+ * - scroll-based FOV + micro-lean
+ */
 function CameraRig() {
   const scroll = useScroll();
 
@@ -1046,32 +1145,41 @@ function CameraRig() {
     () =>
       new THREE.CatmullRomCurve3(
         [
-          new THREE.Vector3(0, 1.3, 12),
-          new THREE.Vector3(4, 1.1, 6),
-          new THREE.Vector3(0, 1.2, 0),
-          new THREE.Vector3(-3, 1.4, -5),
-          new THREE.Vector3(0, 2.0, -10),
-          new THREE.Vector3(0.5, 2.2, -13),
+          new THREE.Vector3(0, 1.35, 13.5),
+          new THREE.Vector3(3.6, 1.1, 7.2),
+          new THREE.Vector3(0.6, 1.2, 1.2),
+          new THREE.Vector3(-3.2, 1.55, -4.8),
+          new THREE.Vector3(-0.2, 2.05, -10.8),
+          new THREE.Vector3(0.8, 2.25, -14.2),
         ],
         false,
         "catmullrom",
-        0.55
+        0.6
       ),
     []
   );
 
-  const target = new THREE.Vector3();
-  const look = new THREE.Vector3();
+  const pos = useMemo(() => new THREE.Vector3(), []);
+  const look = useMemo(() => new THREE.Vector3(), []);
+  const tmp = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state, delta) => {
     const t = clamp01(scroll.offset);
-    curve.getPointAt(t, target);
-    curve.getPointAt(clamp01(t + 0.006), look);
 
-    target.x += state.pointer.x * 0.45;
-    target.y += state.pointer.y * 0.2;
+    curve.getPointAt(t, pos);
+    curve.getPointAt(clamp01(t + 0.008), look);
 
-    state.camera.position.lerp(target, 1 - Math.pow(0.001, delta));
+    // Pointer parallax (subtle, premium)
+    tmp.set(state.pointer.x * 0.65, state.pointer.y * 0.28, 0);
+    pos.add(tmp);
+
+    // Cinematic FOV breathing through scroll
+    const targetFov = 48 + (1 - Math.abs(0.5 - t) * 2) * 4; // peaks around middle
+    state.camera.fov = damp(state.camera.fov, targetFov, 3.5, delta);
+    state.camera.updateProjectionMatrix();
+
+    // Smooth camera settle
+    state.camera.position.lerp(pos, 1 - Math.pow(0.0015, delta));
     state.camera.lookAt(look);
   });
 
@@ -1079,48 +1187,79 @@ function CameraRig() {
 }
 
 /* ------------------------------ 3D World ----------------------------- */
+/**
+ * 3D behavior:
+ * - planet: orbit drift + rotation + subtle “breath”
+ * - scene group: pointer tilt (damped)
+ * - light: scroll driven intensity shift (chapter reveal feel)
+ */
 function World() {
   const scroll = useScroll();
-  const lightRef = useRef();
-  const groupRef = useRef();
-  const planetRef = useRef();
+  const groupRef = useRef(null);
+  const planetRef = useRef(null);
+  const keyLight = useRef(null);
 
   useFrame((state, delta) => {
-    if (!groupRef.current) return;
+    const g = groupRef.current;
+    if (!g) return;
 
-    groupRef.current.rotation.x = THREE.MathUtils.damp(
-      groupRef.current.rotation.x,
-      -state.pointer.y * 0.1,
-      4,
+    g.rotation.x = damp(g.rotation.x, -state.pointer.y * 0.12, 5, delta);
+    g.rotation.y = damp(g.rotation.y, state.pointer.x * 0.18, 5, delta);
+  });
+
+  useFrame((state, delta) => {
+    const planet = planetRef.current;
+    if (!planet) return;
+
+    const t = clamp01(scroll.offset);
+
+    // Slow orbit drift
+    const time = state.clock.elapsedTime;
+    const orbit = 0.65 + t * 0.75;
+
+    planet.position.x = damp(
+      planet.position.x,
+      7.8 * Math.cos(time * 0.18) * orbit,
+      2.5,
       delta
     );
-    groupRef.current.rotation.y = THREE.MathUtils.damp(
-      groupRef.current.rotation.y,
-      state.pointer.x * 0.15,
-      4,
+    planet.position.y = damp(
+      planet.position.y,
+      0.25 + Math.sin(time * 0.22) * 0.35,
+      2.5,
       delta
     );
+    planet.position.z = damp(
+      planet.position.z,
+      6.8 + Math.sin(time * 0.16) * 0.8 - t * 1.8,
+      2.5,
+      delta
+    );
+
+    // Rotation & “breathing” scale
+    planet.rotation.y += delta * 0.18;
+    const s = 1.1 + Math.sin(time * 0.7) * 0.025;
+    planet.scale.setScalar(damp(planet.scale.x, s, 3.5, delta));
   });
 
   useFrame((_, delta) => {
-    if (!lightRef.current) return;
-    const ch = scroll.range(2 / 6, 1 / 6);
-    lightRef.current.intensity = THREE.MathUtils.damp(
-      lightRef.current.intensity,
-      1 + ch,
-      3,
-      delta
-    );
+    if (!keyLight.current) return;
+
+    // Chapter boost around middle chapters
+    const midBoost = scroll.range(2 / 6, 2 / 6); // from page 2 -> 4
+    const target = 1.0 + midBoost * 1.0;
+
+    keyLight.current.intensity = damp(keyLight.current.intensity, target, 3, delta);
   });
 
   return (
     <group ref={groupRef}>
-      <ambientLight intensity={0.4} />
-      <directionalLight ref={lightRef} position={[6, 8, 4]} intensity={1.1} />
+      <ambientLight intensity={0.35} />
+      <directionalLight ref={keyLight} position={[7, 9, 5]} intensity={1.0} />
       <Environment preset="sunset" />
 
-      <group ref={planetRef} position={[10, 0, 8]}>
-        <AnimatedGLTF url="/models/aboutPage/planet10.glb" scale={1.2} />
+      <group ref={planetRef}>
+        <AnimatedGLTF url="/models/aboutPage/planet10.glb" scale={1.1} />
       </group>
     </group>
   );
@@ -1129,75 +1268,76 @@ function World() {
 /* ---------------------------- Progress Bar --------------------------- */
 function ProgressBar() {
   const scroll = useScroll();
-  const ref = useRef(null);
+  const barRef = useRef(null);
 
   useFrame(() => {
-    if (ref.current) ref.current.style.transform = `scaleX(${scroll.offset})`;
+    if (barRef.current) barRef.current.style.transform = `scaleX(${scroll.offset})`;
   });
 
   return (
-    <div className="prog">
-      <span className="prog__bar" ref={ref} />
+    <div className="pointer-events-none fixed left-0 top-0 z-[80] h-[3px] w-screen bg-black/10">
+      <span
+        ref={barRef}
+        className="block h-full w-full origin-left scale-x-0 bg-[#f2d38a]"
+      />
     </div>
   );
 }
 
-/* ✅ EDIT THESE: Descriptions + Links */
-const PROJECTS = [
-  {
-    title: "Yarrowtech",
-    description:
-      "YarrowTech are a next-generation software development company dedicated to transforming ideas into intelligent, high-impact digital solutions.Our expertise spans custom software development, ERP systems, AI-driven applications,and full-stack web and mobile development—built to support the evolving needs of modern businesses.",
-    url: "https://yarrowtech.com",
-    cta: "Visit Website",
-  },
-  {
-    title: "Building",
-    description:
-      " This project involves building a secure, regulated crowdfunding platform for early-stage startups, designed to connect vetted founders with retail investors through a transparent and compliant digital marketplace. The platform enables startups to raise capital efficiently while allowing investors to discover, evaluate, and invest in curated opportunities with confidence.The system incorporates KYC/AML compliance, campaign management, ensuring trust, regulatory alignment, and long-term platform sustainability. Revenue is generated through a commission-based model on successfully funded campaigns, supporting scalable growth and recurring income.With a phased rollout approach, the platform is built for high performance, security, and scalability, targeting strong user adoption, efficient fundraising outcomes, and leadership in the regulated crowdfunding space.  ",
-    url: "https://sportbit.app", // <-- change to your real link
-    cta: "View Platform",
-  },
-  {
-    title: "Hire-Me",
-    description:
-      "Hire Me is a subscription-driven HR ecosystem that unites partner companies, their HR teams, and the employees they steward. We streamline workforce intake, tracking, and compliance for partner organisations while maintaining a secure, always-on environment administered by our in-house team. HR managers gain an intuitive portal to register, verify, and support their employees; admins oversee partnerships and platform integrity; employees enjoy stability through transparent monitoring; and guests can explore the platform’s value at a glance. Built for scalability, data protection, and round-the-clock Availability, Hire Me delivers a dependable bridge between modern employers and the talent they nurture.",
-    url: "https://fb.yarrowtech.com", // <-- change to your real link
-    cta: "Explore Product",
-  },
-  {
-    title: "Art-Block",
-    description:
-      "ArtBlock is an innovative online social platform that empowers independent artists and creators to showcase, share, and monetize their work through a subscription-based model. It bridges the gap between creators and their audiences by offering tools for exclusive content sharing, tiered memberships, community engagement, and direct financial support. Artists can upload diverse content — such as videos, podcasts, or AR/VR experiences — and manage their supporters through personalized dashboards. Patrons (supporters) can subscribe to different membership tiers to access exclusive content, interact with creators, and support their favorite artists directly. The platform integrates secure payment gateways, real-time notifications, and an analytics dashboard to track engagement and earnings. Admins oversee content moderation, user management, and system analytics through an admin dashboard.Technically, ArtBlock is designed as a modular, scalable, and secure web application, featuring responsive design, API-driven architecture, and cloud-based infrastructure. Its mission is to foster artistic independence and sustainable creator income, building a thriving digital ecosystem where creativity and community flourish together.",
-    url: "https://myguide.yarrowtech.com", // <-- change to your real link
-    cta: "See Solution",
-  },
-  {
-    title: "Green-bar",
-    description:
-      "Green-bar is a web-based platform designed for ordering fresh groceries and farm produce online. It allows users to browse products, place orders, and manage purchases easily. The system includes admin and seller modules for product, order, and inventory management. BuyFresh provides a smooth checkout experience with real-time order tracking.",
-    url: "https://electroniceducare.com", // <-- change to your real link
-    cta: "View Product",
-  },
+/* ----------------------- Section / Story Block ----------------------- */
+function StorySection({ title, tagline, description, url, cta }) {
+  return (
+    <section className="story-section flex min-h-screen w-full flex-col items-center justify-center px-4 text-center">
+      <div className="max-w-4xl">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.35em] text-[#f2d38a]/90">
+          {tagline}
+        </p>
 
-  {
-    title: "Better-Pass",
-    description:
-      "The Better Pass is a social travel platform where tour companies and tourists can connect, post tours, and make bookings. Designed with an experience similar to Instagram or LinkedIn, the app supports four user roles: Tour Companies, Tourists/Travellers, Influencers, and Activity Instructors. Tour companies can share and promote their tour offerings, influencers can help amplify these tours, and activity instructors can showcase engaging nearby activities. Tourists can browse, book, and participate in both tours and activities — all with the goal of enhancing and enriching their travel experience.",
-    url: "https://electroniceducare.com", // <-- change to your real link
-    cta: "View Product",
-  },
-];
+        <h2 className="text-3xl font-extrabold tracking-tight text-[#f7f1df] md:text-6xl">
+          {title}
+        </h2>
 
-/* ---------------------------- Page View ------------------------------ */
+        <p className="mx-auto mt-6 max-w-[78ch] text-base font-medium leading-7 text-[#f7f1df]/85 md:text-lg md:leading-8">
+          {description}
+        </p>
+
+        <div className="mt-10 flex items-center justify-center">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              story-btn pointer-events-auto relative inline-flex items-center gap-3
+              select-none rounded-2xl px-7 py-3.5
+              bg-white/10 backdrop-blur-xl
+              text-[#f7f1df] font-semibold
+              border border-white/15
+              shadow-[0_12px_40px_rgba(0,0,0,0.25)]
+              transition-all duration-200 ease-out
+              hover:-translate-y-0.5 hover:bg-white/12 hover:border-white/25
+              active:translate-y-0 active:scale-[0.99]
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f2d38a]/60
+              overflow-hidden
+            "
+          >
+            <span className="btn-text">{cta ?? "View Project"}</span>
+            <span className="btn-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ----------------------------- Page View ------------------------------ */
 export default function StoryWorld() {
-  /* 🔥 SHARED MAGNETIC + SCROLL + RIPPLE SYSTEM */
+  // Magnetic + Ripple + Entrance animations (cleaned up, safe, no leaks)
   useEffect(() => {
-    const buttons = document.querySelectorAll(".story-btn");
+    const buttons = Array.from(document.querySelectorAll(".story-btn"));
     const cleanups = [];
 
     buttons.forEach((btn) => {
-      const strength = 40;
+      const strength = 36;
 
       const move = (e) => {
         const r = btn.getBoundingClientRect();
@@ -1207,31 +1347,49 @@ export default function StoryWorld() {
         gsap.to(btn, {
           x: x / strength,
           y: y / strength,
-          duration: 0.3,
+          duration: 0.25,
           ease: "power3.out",
         });
       };
 
-      const reset = () => gsap.to(btn, { x: 0, y: 0, duration: 0.4 });
+      const reset = () =>
+        gsap.to(btn, {
+          x: 0,
+          y: 0,
+          duration: 0.35,
+          ease: "power3.out",
+        });
 
       btn.addEventListener("mousemove", move);
       btn.addEventListener("mouseleave", reset);
 
-      gsap.from(btn, {
-        opacity: 0,
-        y: 30,
-        duration: 0.8,
-        scrollTrigger: {
-          trigger: btn,
-          start: "top 85%",
-        },
-      });
+      // Entrance per section (not per button only)
+      const section = btn.closest(".story-section");
+      if (section) {
+        gsap.fromTo(
+          section,
+          { opacity: 0, y: 24, filter: "blur(6px)" },
+          {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 0.9,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: section,
+              start: "top 72%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
 
       const click = (e) => {
+        // keep navigation, but add ripple and open safely
         e.preventDefault();
-        const url = btn.href;
+        const url = btn.getAttribute("href");
+        if (!url) return;
 
-        // remove old ripple if any (prevents stacking)
         const old = btn.querySelector(".btn-ripple");
         if (old) old.remove();
 
@@ -1241,11 +1399,11 @@ export default function StoryWorld() {
 
         gsap.fromTo(
           ripple,
-          { scale: 0, opacity: 0.6 },
+          { scale: 0, opacity: 0.55 },
           {
-            scale: 8,
+            scale: 9,
             opacity: 0,
-            duration: 0.6,
+            duration: 0.55,
             ease: "power3.out",
             onComplete: () => window.open(url, "_blank", "noopener,noreferrer"),
           }
@@ -1265,52 +1423,89 @@ export default function StoryWorld() {
   }, []);
 
   return (
-    <div className="story-container">
+    <div className="relative h-screen w-full overflow-hidden bg-[#07060b]">
+      {/* Premium background layer */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#f2d38a]/12 blur-3xl" />
+        <div className="absolute bottom-[-140px] left-[-140px] h-[520px] w-[520px] rounded-full bg-white/6 blur-3xl" />
+        <div className="absolute right-[-180px] top-1/3 h-[540px] w-[540px] rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.06),transparent_60%)]" />
+      </div>
+
+      {/* Subtle grain (optional) */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay [background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22%3E%3Cfilter id=%22n%22 x=%220%22 y=%220%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22160%22 height=%22160%22 filter=%22url(%23n)%22 opacity=%220.35%22/%3E%3C/svg%3E')]"></div>
+
       <Canvas
-        camera={{ position: [0, 1.3, 12], fov: 50 }}
+        camera={{ position: [0, 1.35, 13.5], fov: 48 }}
         gl={{ alpha: true, antialias: true }}
+        dpr={[1, 2]}
       >
         <Suspense fallback={null}>
-          <ScrollControls pages={6} damping={0.16}>
+          <ScrollControls pages={PROJECTS.length + 1} damping={0.14}>
             <CameraRig />
             <World />
 
             <EffectComposer>
-              <Bloom intensity={0.7} />
-              <Vignette darkness={0.3} />
+              <Bloom intensity={0.65} />
+              <Vignette darkness={0.42} />
             </EffectComposer>
 
-            <Scroll html style={{ pointerEvents: "auto" }}>
-
+            {/* HTML story */}
+            <Scroll html style={{ width: "100vw", pointerEvents: "auto" }}>
               <ProgressBar />
 
-              <div className="story-overlay"  style={{ pointerEvents: "auto" }}>
-                {PROJECTS.map((p, i) => (
-                  <section key={p.title} className="story-section">
-                    <h2 className="story-subtitle">
-                      {/* Project {i + 1} — {p.title} */}
-                      {p.title}
-                    </h2>
-
-                    <p className="story-p">{p.description}</p>
-
-                    <a
-                      href={p.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="story-btn"
-                    >
-                      <span className="btn-text">{p.cta ?? "View Project"}</span>
-                      <span className="btn-arrow">→</span>
-                    </a>
+              <div className="pointer-events-auto w-screen">
+                <div className="mx-auto w-full max-w-6xl px-4">
+                  {/* Intro */}
+                  <section className="story-section flex min-h-screen w-full flex-col items-center justify-center text-center">
+                    <p className="mb-4 text-xs font-semibold uppercase tracking-[0.35em] text-[#f2d38a]/90">
+                      ...
+                    </p>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-[#f7f1df] md:text-7xl">
+                      We build products that feel inevitable.
+                    </h1>
+                    <p className="mx-auto mt-6 max-w-[78ch] text-base font-medium leading-7 text-[#f7f1df]/80 md:text-lg md:leading-8">
+                      Scroll through the chapters. Each project is a milestone—designed with
+                      clarity, engineered with care, and presented with intention.
+                    </p>
+                    <div className="mt-10 flex items-center justify-center">
+                      <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-[#f7f1df]/85 backdrop-blur">
+                        Scroll to begin ↓
+                      </div>
+                    </div>
                   </section>
-                ))}
 
-                <section className="story-section">
-                  <a className="story-cta" href="/">
-                    Return Home
-                  </a>
-                </section>
+                  {/* Chapters */}
+                  {PROJECTS.map((p) => (
+                    <StorySection key={p.title} {...p} />
+                  ))}
+
+                  {/* Outro */}
+                  <section className="story-section flex min-h-screen w-full items-center justify-center">
+                    <div className="text-center">
+                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#f2d38a]/90">
+                        End of story
+                      </p>
+                      <h3 className="mt-3 text-3xl font-extrabold text-[#f7f1df] md:text-5xl">
+                        Let’s build the next chapter.
+                      </h3>
+
+                      <div className="mt-10 flex items-center justify-center gap-3">
+                        <a
+                          className="
+                            pointer-events-auto inline-flex items-center justify-center rounded-xl
+                            border border-white/15 bg-white/8 px-6 py-3 text-sm font-semibold
+                            text-[#f7f1df] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/12
+                            focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f2d38a]/60
+                          "
+                          href="/"
+                        >
+                          Return Home
+                        </a>
+                      </div>
+                    </div>
+                  </section>
+                </div>
               </div>
             </Scroll>
           </ScrollControls>
@@ -1318,6 +1513,22 @@ export default function StoryWorld() {
           <Preload all />
         </Suspense>
       </Canvas>
+
+      {/* Local CSS for ripple (kept inline-safe) */}
+      <style>{`
+        .btn-ripple{
+          position:absolute;
+          left:50%;
+          top:50%;
+          width:18px;
+          height:18px;
+          border-radius:999px;
+          transform:translate(-50%,-50%);
+          background:rgba(242,211,138,0.55);
+          filter:blur(0px);
+          pointer-events:none;
+        }
+      `}</style>
     </div>
   );
 }

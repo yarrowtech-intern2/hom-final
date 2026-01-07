@@ -89,11 +89,11 @@
 // src/components/HeaderMobile.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import logoImg from "/logo/logo-black.png";
+import logoImg from "/logo/logo-yellow.png";
 import { usePageTransition } from "./transition";
 import "./HeaderMobile.css";
 
-export default function HeaderMobile() {
+export default function HeaderMobile({ onOpenContact }) {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const { start } = usePageTransition();
@@ -182,9 +182,21 @@ export default function HeaderMobile() {
         <Link to="/project" onClick={(e) => handleNavClick(e, "/project")}>
           Projects
         </Link>
-        <Link to="/contact" onClick={(e) => handleNavClick(e, "/contact")}>
+        {/* <Link to="/contact" onClick={(e) => handleNavClick(e, "/contact")}>
+          Contact
+        </Link> */}
+        <Link
+          to="/contact"
+          onClick={(e) => {
+            e.preventDefault();
+            setOpen(false);
+            onOpenContact?.();
+          }}
+        >
           Contact
         </Link>
+
+
         <Link to="/carrers" onClick={(e) => handleNavClick(e, "/carrers")}>
           Carrers
         </Link>

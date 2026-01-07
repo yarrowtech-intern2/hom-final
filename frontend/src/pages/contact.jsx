@@ -206,8 +206,6 @@ import React, { useState } from "react";
 import "./contact.css";
 import API_BASE_URL from "../config";
 
-
-import { Scene } from "../components/ui/neon"; 
 export default function ContactUs() {
   const [form, setForm] = useState({
     name: "",
@@ -219,7 +217,8 @@ export default function ContactUs() {
   });
   const [loading, setLoading] = useState(false);
 
-  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -235,6 +234,7 @@ export default function ContactUs() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to send");
+
       alert("Thanks! We’ve received your message.");
       setForm({
         name: "",
@@ -252,39 +252,29 @@ export default function ContactUs() {
   };
 
   return (
-    <main className="contact-page">
-      {/* ✅ BACKGROUND (Shader Scene) */}
-      <div className="contact-bg" aria-hidden>
-        {/* fills full screen because .contact-bg is fixed inset:0 in your css */}
-        <Scene />
-        {/* optional: keep overlay if you want extra readability */}
-        {/* <div className="contact-bg-overlay" /> */}
-      </div>
-
-      {/* ✅ FOREGROUND CONTENT (UNCHANGED) */}
-      <div className="contact-container">
+    <div className="contact-modal-only">
+      <div className="contact-container glass">
         <header className="contact-header">
           <h1>Contact Us</h1>
           <p className="subtitle">Tell us a bit about your query.</p>
         </header>
 
         <form className="contact-form" onSubmit={onSubmit}>
+          {/* honeypot */}
           <input
             type="text"
             name="company"
-            autoComplete="off"
-            tabIndex="-1"
-            aria-hidden="true"
             className="hp"
+            tabIndex="-1"
+            autoComplete="off"
             value={form.company}
             onChange={onChange}
           />
 
           <div className="grid">
             <div className="form-group">
-              <label htmlFor="name">Name</label>
+              <label>Name</label>
               <input
-                id="name"
                 name="name"
                 value={form.name}
                 onChange={onChange}
@@ -294,9 +284,8 @@ export default function ContactUs() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label>Email</label>
               <input
-                id="email"
                 type="email"
                 name="email"
                 value={form.email}
@@ -307,9 +296,8 @@ export default function ContactUs() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="phone">Phone</label>
+              <label>Phone</label>
               <input
-                id="phone"
                 name="phone"
                 value={form.phone}
                 onChange={onChange}
@@ -318,9 +306,8 @@ export default function ContactUs() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="subject">Subject</label>
+              <label>Subject</label>
               <input
-                id="subject"
                 name="subject"
                 value={form.subject}
                 onChange={onChange}
@@ -330,9 +317,8 @@ export default function ContactUs() {
             </div>
 
             <div className="form-group full">
-              <label htmlFor="message">Message</label>
+              <label>Message</label>
               <textarea
-                id="message"
                 name="message"
                 rows="5"
                 value={form.message}
@@ -350,6 +336,6 @@ export default function ContactUs() {
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }
