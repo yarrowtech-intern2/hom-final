@@ -527,7 +527,7 @@ export default function BaymaksHome() {
 
           {/* ✅ Keep Link for styling, but stop navigation and open modal */}
           <Link to="/jobs" className="carrers-btn" onClick={handleExplore}>
-            Explore Now
+            Apply Now
           </Link>
         </div>
       </section>
