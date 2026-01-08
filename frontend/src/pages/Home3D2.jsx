@@ -31,7 +31,7 @@ import DecryptedText from "../components/decryptedText";
 
 /* ----------------------------- Config toggles ----------------------------- */
 const USE_HDR_BACKGROUND = true;
-const HDR_FILE = "/hdr/studio.hdr";
+const HDR_FILE = "/hdr/alps.hdr";
 
 /* ----------------------------- Mobile detector ---------------------------- */
 function useIsMobile(breakpoint = 768) {
