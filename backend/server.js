@@ -14,6 +14,10 @@ import careerRoutes from './routes/careers.routes.js';
 import path from "path";
 import { fileURLToPath } from "url";
 
+import jobApplicationRoutes from "./routes/jobApplication.routes.js";
+import contactAdminRoutes from "./routes/contact.admin.routes.js";
+
+
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -135,6 +139,10 @@ app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date() }));
 app.use('/api/email', emailRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/careers', careerRoutes);
+
+app.use("/api/job-applications", jobApplicationRoutes);
+app.use("/api/admin/contacts", contactAdminRoutes);
+
 
 // 🧱 Error handling (always last)
 app.use(notFound);
