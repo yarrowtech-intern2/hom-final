@@ -1,40 +1,5 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -200,7 +165,7 @@ const PLAYER_RADIUS = 0.35;
 
 /* =========================== Scene =============================== */
 function BalconyScene({ onSpawn }) {
-  const { scene } = useGLTF("/models/gallery4.compressed.glb");
+  const { scene } = useGLTF("/models/gallery-updated-compressed.glb");
 
   useEffect(() => {
     const spawn =
@@ -1163,7 +1128,7 @@ export default function GalleryPage() {
   );
 }
 
-useGLTF.preload("/models/gallery4.compressed.glb");
+useGLTF.preload("/models/gallery-updated-compressed.glb");
 
 
 
