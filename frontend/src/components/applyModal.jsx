@@ -40,6 +40,7 @@ export default function JobApplyModal({
   const [resumeFile, setResumeFile] = useState(null);
   const [coverNote, setCoverNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   // keep role valid if roles list changes
   useEffect(() => {
@@ -271,6 +272,22 @@ export default function JobApplyModal({
                            file:text-xs file:font-semibold file:text-white
                            hover:file:bg-slate-800"
               />
+
+              {progress > 0 && (
+                <div className="mt-3">
+                  <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
+                    <div
+                      className="h-full bg-green-500 transition-all duration-200"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-600 text-right">
+                    Uploading… {progress}%
+                  </p>
+                </div>
+              )}
+
+
             </div>
 
             {resumeFile ? (
@@ -315,15 +332,21 @@ export default function JobApplyModal({
 
             <button
               type="submit"
-              disabled={submitting || !vacantRoles.length}
-              className={cn(
-                "rounded-2xl px-5 py-2.5 text-sm font-semibold",
-                "bg-slate-900 text-white hover:bg-slate-800",
-                "disabled:cursor-not-allowed disabled:opacity-60"
-              )}
+              disabled={submitting}
+              className={`w-full rounded-xl py-3 font-semibold transition
+    ${submitting ? "bg-gray-400 cursor-not-allowed" : "bg-black hover:bg-black/90"}
+    text-white flex items-center justify-center gap-2`}
             >
-              {submitting ? "Submitting..." : "Submit Application"}
+              {submitting ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Application"
+              )}
             </button>
+
           </div>
         </form>
 

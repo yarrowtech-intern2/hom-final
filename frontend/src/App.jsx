@@ -15,14 +15,21 @@ import Contact from "./pages/contact";
 import Baymax from "./pages/baymax";
 import Carrers from "./pages/career2";
 import JobPage from "./pages/jobPage";
+
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // import Projects from "./pages/projects";
 
 import NeonPage from "./pages/neonDemo";
+
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 export default function App() {
   return (
     <TransitionProvider>
       <Header />
+      <ToastContainer position="top-right" autoClose={3000} />
       <Routes>
         <Route path="/" element={<Home3D2 />} />
         <Route path="/inside" element={<InsideHouse />} />
@@ -34,6 +41,12 @@ export default function App() {
         <Route path="/baymax" element={<Baymax />} />
         <Route path="/carrers" element={<Carrers />} />
         <Route path="/jobs" element={<JobPage />} />
+
+        <Route path="/admin123" element={<AdminLogin />} />
+        <Route path="/admin1234" element={<AdminDashboard />} />
+
+
+        
         {/* <Route path="/projects" element={<Projects />} /> */}
 
         <Route path="/neon" element={<NeonPage/>} />
