@@ -33,6 +33,20 @@ export default function AdminDashboard() {
     if (!token) nav("/admin123");
   }, [token, nav]);
 
+  useEffect(() => {
+  const prevBody = document.body.style.overflow;
+  const prevHtml = document.documentElement.style.overflow;
+
+  document.body.style.overflow = "auto";
+  document.documentElement.style.overflow = "auto";
+
+  return () => {
+    document.body.style.overflow = prevBody;
+    document.documentElement.style.overflow = prevHtml;
+  };
+}, []);
+
+
   const headers = useMemo(() => ({ "x-admin-token": token }), [token]);
 
   async function fetchApplications() {
@@ -91,7 +105,7 @@ export default function AdminDashboard() {
 
   function logout() {
     localStorage.removeItem("ADMIN_TOKEN");
-    nav("/admin/login");
+    nav("/admin123");
   }
 
   async function downloadResume(appId) {
@@ -134,7 +148,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-white pt-24">
       <div className="sticky top-0 z-10 border-b border-white/10 bg-slate-950/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between ">
           <div>
