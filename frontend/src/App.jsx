@@ -13,7 +13,7 @@ import About2 from "./pages/about2";
 import Project from "./pages/story";
 import Contact from "./pages/contact";
 import Baymax from "./pages/baymax";
-import Carrers from "./pages/career2";
+import Carrers from "./pages/carrers";
 import JobPage from "./pages/jobPage";
 
 import { ToastContainer } from "react-toastify";

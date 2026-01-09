@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const cn = (...a) => a.filter(Boolean).join(" ");
 
@@ -137,27 +138,43 @@ export default function JobApplyModal({
 
   if (!open) return null;
 
-  return (
+  // return (
+  //   <div
+  //     className="fixed inset-0 z-[999] flex items-center justify-center p-4"
+  //     role="dialog"
+  //     aria-modal="true"
+  //     aria-label="Apply for a role"
+  //     onMouseDown={(e) => {
+  //       // click outside to close
+  //       if (e.target === e.currentTarget) handleClose();
+  //     }}
+  //   >
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4"
+      // className="fixed inset-0 z-[9999] grid place-items-center p-4"
+      className="fixed inset-0 z-[9999]"
       role="dialog"
       aria-modal="true"
       aria-label="Apply for a role"
       onMouseDown={(e) => {
-        // click outside to close
         if (e.target === e.currentTarget) handleClose();
       }}
     >
+
+
       {/* backdrop */}
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
 
       {/* modal */}
+       <div className="absolute left-1/2 top-1/2 w-[min(92vw,560px)] -translate-x-1/2 -translate-y-1/2">
       <div
         ref={dialogRef}
         className={cn(
           "relative w-full max-w-xl rounded-3xl border border-white/20",
           "bg-white/70 shadow-[0_20px_80px_rgba(0,0,0,0.25)] backdrop-blur-xl",
-          "p-6 sm:p-7"
+          "p-6 sm:p-7",
+          "max-h-[calc(100vh-2rem)] overflow-y-auto",
         )}
       >
         <div className="mb-5">
@@ -360,6 +377,9 @@ export default function JobApplyModal({
           ✕
         </button>
       </div>
-    </div>
+      </div>
+    </div>,
+    document.body
   );
+  
 }
