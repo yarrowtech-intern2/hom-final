@@ -167,7 +167,7 @@ export default function HeaderDesktop({ onOpenContact }) {
         </Link>
 
         <Link to="/carrers" onClick={(e) => handleNavClick(e, "/carrers")}>
-          Carrers
+          Careers
         </Link>
       </nav>
     </header>

@@ -88,6 +88,10 @@ export async function applyForJob(req, res, next) {
     }
 
     res.status(201).json({ message: "Application submitted", id: doc._id });
+
+    
+
+
   } catch (err) {
     if (err?.code === "LIMIT_FILE_SIZE") {
       err.status = 413;

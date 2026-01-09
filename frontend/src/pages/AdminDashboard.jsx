@@ -229,7 +229,7 @@ export default function AdminDashboard() {
                   <th className="p-3">Phone</th>
                   <th className="p-3">Status</th>
                   <th className="p-3">CV</th>
-                  <th className="p-3">Actions</th>
+                  {/* <th className="p-3">Actions</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -254,7 +254,7 @@ export default function AdminDashboard() {
                         <span className="text-white/40 text-xs">No CV</span>
                       )}
                     </td>
-                    <td className="p-3">
+                    {/* <td className="p-3">
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => updateStatus(a._id, "IN_REVIEW")}
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
                           Reject
                         </button>
                       </div>
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
 

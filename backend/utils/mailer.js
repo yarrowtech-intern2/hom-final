@@ -23,6 +23,10 @@ function buildTransporter() {
     port: Number(SMTP_PORT || 587),
     secure: String(SMTP_SECURE || "false") === "true",
     auth: { user: SMTP_USER, pass: SMTP_PASS },
+
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
   });
 
   return transporter;
