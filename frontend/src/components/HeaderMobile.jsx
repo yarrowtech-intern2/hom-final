@@ -140,7 +140,7 @@ export default function HeaderMobile({ onOpenContact }) {
       </div>
 
       {/* Mobile hamburger */}
-      <button
+      {/* <button
         className="menu-btn"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
@@ -166,7 +166,35 @@ export default function HeaderMobile({ onOpenContact }) {
             />
           </svg>
         )}
-      </button>
+      </button> */}
+
+      <button
+  className={`menu-btn ${open ? "is-open" : ""}`}
+  aria-label={open ? "Close menu" : "Open menu"}
+  aria-expanded={open}
+  aria-controls="mobile-nav"
+  onClick={() => setOpen((v) => !v)}
+>
+  {!open ? (
+    <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M3 6h18M3 12h18M3 18h18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  ) : (
+    <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M6 6l12 12M18 6l-12 12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  )}
+</button>
 
       {/* Mobile dropdown panel */}
       <div
@@ -204,7 +232,7 @@ export default function HeaderMobile({ onOpenContact }) {
         <Link to="/admin123" onClick={(e) => handleNavClick(e, "/admin123")}>
           Admin
         </Link>
-        
+
       </div>
     </header>
   );
