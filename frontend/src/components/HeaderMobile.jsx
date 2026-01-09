@@ -200,6 +200,11 @@ export default function HeaderMobile({ onOpenContact }) {
         <Link to="/carrers" onClick={(e) => handleNavClick(e, "/carrers")}>
           Carrers
         </Link>
+
+        <Link to="/admin123" onClick={(e) => handleNavClick(e, "/admin123")}>
+          Admin
+        </Link>
+        
       </div>
     </header>
   );
