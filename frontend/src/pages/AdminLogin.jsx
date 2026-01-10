@@ -38,7 +38,7 @@ export default function AdminLogin() {
 
         <input
           className="mt-5 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"
-          placeholder="ADMIN_API_TOKEN"
+          placeholder="ADMIN_ACCESS_TOKEN"
           value={token}
           onChange={(e) => setToken(e.target.value)}
         />
