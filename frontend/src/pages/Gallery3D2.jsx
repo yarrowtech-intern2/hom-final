@@ -27,6 +27,14 @@ import RapierReady from "./RapierReady.jsx";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 
+// posters 
+import Yarrowtech from "../assets/posters/yt.png";
+import Building from "../assets/posters/building.png";
+import HireMe from "../assets/posters/hireme.png";
+import ArtBlock from "../assets/posters/artblock.png";
+import GreenBar from "../assets/posters/greenbar.png";
+import BetterPass from "../assets/posters/betterpass.png";
+
 
 /* ========= ✅ Environment Controller ========= */
 function EnvironmentController({ enabled }) {
@@ -84,75 +92,75 @@ const HDRI_OFF_ICON = "/icon/moon.svg";
 const PAINTINGS = [
   {
     id: "p1",
-    title: "Sportbit",
-    img: asset("/gallery/sport.jpg"),
+    title: "Yarrowtech",
+    img: Yarrowtech,
     position: [-9.9, 3.6, 3.9],
     rotation: [0, Math.PI, 0],
     size: [3.2, 4],
-    desc: "SportBit is an advanced AI-powered sports management system built to revolutionize how sports organizations operate. It offers an integrated platform for players, managers, clubs, and administrators to manage data, performance, and communication efficiently. Using artificial intelligence, SportBit provides predictive analytics, performance insights, and talent evaluation to help teams make smarter decisions. The system includes features like personalized dashboards, performance tracking, video analysis, and player profile management. It also simplifies administrative tasks such as scheduling, reporting, and communication. Designed with scalability in mind, SportBit caters to both amateur and professional levels of sports management. By combining technology and sports intelligence, it bridges the gap between athletic potential and data-driven performance optimization.",
+    desc: "YarrowTech are a next-generation software development company dedicated to transforming ideas into intelligent, high-impact digital solutions. Our expertise spans custom software development, ERP systems, AI-driven applications, and full-stack web and mobile development—built to support the evolving needs of modern businesses.",
   },
   {
     id: "p2",
-    title: "F&B",
-    img: asset("/gallery/art.jpg"),
+    title: "Building",
+    img: Building,
     position: [-3.4, 3.6, 3.9],
     rotation: [0, Math.PI, 0],
     size: [3.2, 4],
-    desc: "The F&B Restaurant Management System is an intelligent platform designed to streamline restaurant operations through automation and centralized control. It enables efficient management of orders, billing, inventory, and staff while improving kitchen workflows and customer service. With features like digital menus, real-time order tracking, and sales analytics, it helps optimize performance and reduce operational errors. Suitable for cafés, restaurants, and large F&B chains, the system enhances efficiency, profitability, and customer satisfaction through data-driven insights and seamless coordination.",
+    desc: "  This project involves building a secure, regulated crowdfunding platform for early-stage startups, designed to connect vetted founders with retail investors through a transparent and compliant digital marketplace. The platform enables startups to raise capital efficiently while allowing investors to discover, evaluate, and invest in curated opportunities with confidence.<br> The system incorporates KYC/AML compliance, campaign management, ensuring trust, regulatory alignment, and long-term platform sustainability. Revenue is generated through a commission-based model on successfully funded campaigns, supporting scalable growth and recurring income.<br> With a phased rollout approach, the platform is built for high performance, security, and scalability, targeting strong user adoption, efficient fundraising outcomes, and leadership in the regulated crowdfunding space."
   },
   {
     id: "p3",
-    title: "Tour Guide",
-    img: asset("/gallery/mgmt.jpg"),
+    title: "Hire Me",
+    img: HireMe,
     position: [3.2, 3.6, 3.9],
     rotation: [0, Math.PI, 0],
     size: [3.2, 4],
-    desc: "The AI Tour Guide Platform is an intelligent travel companion designed to enhance the touring experience through real-time, personalized guidance. It uses artificial intelligence to provide curated itineraries, location-based recommendations, and interactive voice or chat assistance. The platform helps travelers explore destinations efficiently by suggesting nearby attractions, dining options, and cultural insights. With smart navigation and multilingual support, the AI Tour Guide makes travel more convenient, engaging, and informative for users across the globe.",
+    desc: "Hire Me is a subscription-driven HR ecosystem that unites partner companies,their HR teams, and the employees they steward. We streamline workforce intake, tracking, and compliance for partner organisations while maintaining a secure, always-on environment administered by our in-house team. HR managers gain an intuitive portal to register, verify, and support their employees; admins oversee partnerships and platform integrity; employees enjoy stability through transparent monitoring; and guests can explore the platform’s value at a glance. <br> Built for scalability, data protection, and round-the-clock Availability, Hire Me delivers a dependable bridge between modern employers and the talent they nurture.",
   },
   {
     id: "p4",
-    title: "EEC",
-    img: asset("/gallery/restora.jpg"),
+    title: "Art Block",
+    img: ArtBlock,
     position: [9.2, 3.6, 3.9],
     rotation: [0, Math.PI, 0],
     size: [3.2, 4],
-    desc: "Electronic Educare is an AI-powered learning management system designed to revolutionize digital education through intelligent automation and personalization. It offers an interactive platform for students, teachers, and institutions to manage courses, track progress, and enhance learning outcomes. Using artificial intelligence, it provides personalized study plans, performance analytics, and adaptive assessments to cater to each learner's needs. The system also supports live classes, assignments, and real-time feedback, making education more engaging, efficient, and accessible for all users.",
+    desc: "ArtBlock is an innovative online social platform that empowers independent artists and creators to showcase, share, and monetize their work through a subscription-based model. It bridges the gap between creators and their audiences by offering tools for exclusive content sharing, tiered memberships, community engagement, and direct financial support. Artists can upload diverse content — such as videos, podcasts, or AR/VR experiences — and manage their supporters through personalized dashboards. Patrons (supporters) can subscribe to different membership tiers to access exclusive content, interact with creators, and support their favorite artists directly.<br> The platform integrates secure payment gateways, real-time notifications, and an analytics dashboard to track engagement and earnings. Admins oversee content moderation, user management, and system analytics through an admin dashboard. <br> Technically, ArtBlock is designed as a modular, scalable, and secure web application, featuring responsive design, API-driven architecture, and cloud-based infrastructure. Its mission is to foster artistic independence and sustainable creator income, building a thriving digital ecosystem where creativity and community flourish together. ",
   },
   {
     id: "p5",
-    title: "Yarrowtech",
-    img: asset("/gallery/shop.jpg"),
+    title: "Green Bar",
+    img: GreenBar,
     position: [9.8, 3.6, -3.9],
     rotation: [0, Math.PI * 2, 0],
     size: [3.2, 4],
-    desc: "YarrowTech is a modern technology service company specializing in building high-quality web applications, software solutions, and digital platforms. It offers end-to-end services including UI/UX design, web and mobile app development, and system integration tailored to client needs. With a focus on innovation, scalability, and performance, YarrowTech helps businesses establish a strong digital presence. The company's mission is to deliver reliable, cutting-edge solutions that drive growth and transform ideas into impactful digital experiences.",
+    desc: "BuyFresh is a web-based platform designed for ordering fresh groceries and farm produce online. It allows users to browse products, place orders, and manage purchases easily. The system includes admin and seller modules for product, order, and inventory management. BuyFresh provides a smooth checkout experience with real-time order tracking."
   },
   {
     id: "p6",
-    title: "ArtBlock",
-    img: asset("/gallery/tour.jpg"),
+    title: "BetterPass",
+    img: BetterPass,
     position: [3.2, 3.6, -3.9],
     rotation: [0, Math.PI * 2, 0],
     size: [3.2, 4],
-    desc: "ArtBlock is a creative service platform designed for artists to share, showcase, and discover artwork from around the world. It provides a vibrant digital space where creators can upload their art, connect with audiences, and collaborate with other artists. The platform supports various art forms — from digital illustrations to traditional paintings — promoting creativity and community engagement. With features like artist profiles, feedback systems, and curated galleries, ArtBlock empowers artists to gain visibility, inspiration, and opportunities in the global art ecosystem.",
+    desc: "The Better Pass is a social travel platform where tour companies and tourists can connect, post tours, and make bookings. Designed with an experience similar to Instagram or LinkedIn, the app supports four user roles: Tour Companies, Tourists/Travellers, Influencers, and Activity Instructors. Tour companies can share and promote their tour offerings, influencers can help amplify these tours, and activity instructors can showcase engaging nearby activities. Tourists can browse, book, and participate in both tours and activities — all with the goal of enhancing and enriching their travel experience.",
   },
   {
     id: "p7",
-    title: "Police & Fire management system",
-    img: asset("/gallery/sport.jpg"),
+    title: "Yarrowtech",
+    img: Yarrowtech,
     position: [-3.4, 3.6, -3.9],
     rotation: [0, Math.PI * 2, 0],
     size: [3.2, 4],
-    desc: "The Police and Fire Management System is an integrated digital platform designed to streamline emergency response and public safety operations. It enables efficient coordination between police, fire, and rescue departments through real-time communication and data sharing. The system manages incident reporting, resource allocation, and personnel tracking to ensure quick and effective responses. With features like live alerts, analytics, and case management, it enhances operational efficiency, accountability, and overall community safety.",
+    desc: "YarrowTech are a next-generation software development company dedicated to transforming ideas into intelligent, high-impact digital solutions. Our expertise spans custom software development, ERP systems, AI-driven applications, and full-stack web and mobile development—built to support the evolving needs of modern businesses.",
   },
   {
     id: "p8",
-    title: "RMS",
-    img: asset("/gallery/mgmt.jpg"),
+    title: "Building",
+    img: Building,
     position: [-9.9, 3.6, -3.9],
     rotation: [0, Math.PI * 2, 0],
     size: [3.2, 4],
-    desc: "The Retail Management System (RMS) is a comprehensive solution designed to simplify and automate retail operations. It enables businesses to efficiently manage sales, inventory, billing, and customer relationships from a single platform. With built-in analytics and reporting tools, RMS helps retailers track performance, forecast demand, and make data-driven decisions. The system improves operational efficiency, reduces manual errors, and enhances the overall shopping experience for both customers and store managers",
+    desc: " This project involves building a secure, regulated crowdfunding platform for early-stage startups, designed to connect vetted founders with retail investors through a transparent and compliant digital marketplace. The platform enables startups to raise capital efficiently while allowing investors to discover, evaluate, and invest in curated opportunities with confidence.<br> The system incorporates KYC/AML compliance, campaign management, ensuring trust, regulatory alignment, and long-term platform sustainability. Revenue is generated through a commission-based model on successfully funded campaigns, supporting scalable growth and recurring income.<br> With a phased rollout approach, the platform is built for high performance, security, and scalability, targeting strong user adoption, efficient fundraising outcomes, and leadership in the regulated crowdfunding space.",
   },
 ];
 
@@ -948,7 +956,8 @@ export default function GalleryPage() {
             zIndex: 50,
             display: "grid",
             placeItems: "center",
-            background: "rgba(0, 0, 0, 0.63)",
+            background: "rgba(0, 0, 0, 0.56)",
+            backdropFilter: "blur(20px)",
             transition: "background 160ms ease",
           }}
           onClick={() => setActive(null)}
@@ -956,32 +965,55 @@ export default function GalleryPage() {
           <div
             className="modalCard"
             style={{
-              background: "#ffffff4c",
+              background: "#ffffff61",
               backdropFilter: "blur(104px)",
               border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: 50,
-              padding: 16,
+              borderRadius: 10,
+              padding: 6,
               width: "min(56vw, 960px)",
-              maxHeight: "86vh",
+              maxHeight: "56vh",
               overflow: "auto",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ padding: "16px 24px" }}>
+            <div style={{ padding: "16px 24px", textAllign: "center" }}>
               <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 16 }}>
                 {active.title}
               </h2>
-              <img
-                src={active.img}
-                alt={active.title}
+              <div
                 style={{
-                  width: "100%",
-                  borderRadius: 24,
+                  display: "flex",
+                  justifyContent: "center",
                   marginBottom: 16,
-                }}
-              />
-              <p style={{ fontSize: 15, lineHeight: 1.7, color: "#333" }}>
+                }}>
+                <img
+                  src={active.img}
+                  alt={active.title}
+                  style={{
+                    width: "30%",
+                    maxHeight: "40vh",
+                    borderRadius: 24,
+                    marginBottom: 16,
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
+
+              <p style={{ fontSize: 15, lineHeight: 1.7, color: "#ffffffff" }}>
                 {active.desc}
+              </p>
+              <p
+                style={{
+                  color: "#790000ff",
+                  fontWeight: 800,
+                  marginTop: 14,
+                  fontSize: 12,
+                  opacity: 0.65,
+                  textAlign: "center",
+                  userSelect: "none",
+                }}
+              >
+                Press ESC to close
               </p>
             </div>
           </div>
@@ -1112,14 +1144,14 @@ export default function GalleryPage() {
           {/* Mobile: drag-to-look */}
           {isTouchDevice && <TouchLook enabled={true} lookRef={lookRef} />}
           <EffectComposer>
-  <Bloom
-    intensity={0.4}
-    mipmapBlur
-    luminanceThreshold={0.9}
-    luminanceSmoothing={0.3}
-    blendFunction={BlendFunction.SCREEN}
-  />
-</EffectComposer>
+            <Bloom
+              intensity={0.4}
+              mipmapBlur
+              luminanceThreshold={0.9}
+              luminanceSmoothing={0.3}
+              blendFunction={BlendFunction.SCREEN}
+            />
+          </EffectComposer>
 
 
         </Canvas>
