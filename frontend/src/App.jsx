@@ -5,25 +5,24 @@ import { Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header";
 import Home3D2 from "./pages/Home3D2";
-// import InsideHouse from "./pages/InsideHouse";
+
 import Gallery3D from "./pages/Gallery3D2";
 import TransitionProvider from "./components/transition";
 import About from "./pages/About";
-// import About2 from "./pages/about2";
+
 import Project from "./pages/story";
-// import Contact from "./pages/contact";
-// import Baymax from "./pages/baymax";
+
 import Carrers from "./pages/carrers";
-// import JobPage from "./pages/jobPage";
+
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import Projects from "./pages/projects";
 
-// import NeonPage from "./pages/neonDemo";
 
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import NotFound from "./pages/notFound";
+
 
 export default function App() {
   return (
@@ -32,24 +31,23 @@ export default function App() {
       <ToastContainer position="top-right" autoClose={3000} />
       <Routes>
         <Route path="/" element={<Home3D2 />} />
-        {/* <Route path="/inside" element={<InsideHouse />} /> */}
+       
         <Route path="/gallery" element={<Gallery3D />} />
         <Route path="/about" element={<About />} />
-        {/* <Route path="/about2" element={<About2 />} /> */}
+        
         <Route path="/project" element={<Project />} />
-        {/* <Route path="/contact" element={<Contact />} /> */}
-        {/* <Route path="/baymax" element={<Baymax />} /> */}
+       
         <Route path="/carrers" element={<Carrers />} />
-        {/* <Route path="/jobs" element={<JobPage />} /> */}
+        
 
         <Route path="/admin123" element={<AdminLogin />} />
         <Route path="/admin1234" element={<AdminDashboard />} />
+        <Route path="*" element={<NotFound />} />
+
 
 
         
-        {/* <Route path="/projects" element={<Projects />} /> */}
-
-        {/* <Route path="/neon" element={<NeonPage/>} /> */}
+       
       </Routes>
     </TransitionProvider>
   );
