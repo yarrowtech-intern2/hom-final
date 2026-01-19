@@ -62,7 +62,7 @@
 //   useFrame((state, delta) => {
 //     const t = clamp01(scroll.offset);
 //     const smoothT = easeInOutCubic(t);
-    
+
 //     // Get camera position and look-ahead point
 //     curve.getPointAt(smoothT, targetPos);
 //     curve.getPointAt(clamp01(smoothT + 0.008), lookPos);
@@ -74,7 +74,7 @@
 
 //     // Smooth camera movement with professional damping
 //     state.camera.position.lerp(targetPos, 1 - Math.pow(0.0008, delta));
-    
+
 //     // Smooth look-at with slight lag for cinematic feel
 //     currentLook.lerp(lookPos, 1 - Math.pow(0.001, delta));
 //     state.camera.lookAt(currentLook);
@@ -121,7 +121,7 @@
 //   // Dynamic lighting based on scroll
 //   useFrame((_, delta) => {
 //     const t = scroll.offset;
-    
+
 //     if (lightRef.current) {
 //       const intensity = THREE.MathUtils.lerp(1.2, 2.5, smoothstep(t));
 //       lightRef.current.intensity = THREE.MathUtils.damp(
@@ -156,17 +156,17 @@
 //   // Planet animation
 //   useFrame((state, delta) => {
 //     if (!planetRef.current) return;
-    
+
 //     const t = scroll.offset;
-    
+
 //     // Smooth orbital movement
 //     const orbitRadius = 12;
 //     const orbitSpeed = t * Math.PI * 2;
-    
+
 //     planetRef.current.position.x = Math.cos(orbitSpeed) * orbitRadius + 2;
 //     planetRef.current.position.z = Math.sin(orbitSpeed) * orbitRadius;
 //     planetRef.current.position.y = Math.sin(t * Math.PI) * 3 - 1;
-    
+
 //     // Gentle rotation
 //     planetRef.current.rotation.y += delta * 0.3;
 //     planetRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
@@ -188,7 +188,7 @@
 //       <group ref={groupRef}>
 //         {/* Lighting setup */}
 //         <ambientLight ref={ambientRef} intensity={0.3} color="#e8dcc0" />
-        
+
 //         <directionalLight
 //           ref={lightRef}
 //           position={[8, 10, 6]}
@@ -196,7 +196,7 @@
 //           color="#ffeaa7"
 //           castShadow
 //         />
-        
+
 //         <directionalLight
 //           ref={rimLightRef}
 //           position={[-6, 2, -8]}
@@ -222,7 +222,7 @@
 //         >
 //           <group ref={planetRef} position={[10, 0, 8]}>
 //             <AnimatedGLTF url="/models/aboutPage/planet10.glb" scale={1.4} />
-            
+
 //             {/* Atmospheric glow */}
 //             <mesh scale={1.6}>
 //               <sphereGeometry args={[1, 32, 32]} />
@@ -261,7 +261,7 @@
 //     if (barRef.current) {
 //       const progress = scroll.offset;
 //       barRef.current.style.transform = `scaleX(${progress})`;
-      
+
 //       if (glowRef.current) {
 //         glowRef.current.style.opacity = progress * 0.8;
 //       }
@@ -439,7 +439,7 @@
 //   /* Smooth section transitions */
 //   useEffect(() => {
 //     const sections = document.querySelectorAll(".project-section");
-    
+
 //     sections.forEach((section) => {
 //       gsap.from(section.querySelector(".project-content"), {
 //         opacity: 0,
@@ -1435,6 +1435,7 @@ function ProgressBar() {
 }
 
 /* ✅ PROJECT DATA */
+/* ✅ PROJECT DATA */
 const PROJECTS = [
   {
     title: "Yarrowtech",
@@ -1442,6 +1443,7 @@ const PROJECTS = [
       "YarrowTech is a next-generation software development company dedicated to transforming ideas into intelligent, high-impact digital solutions. Our expertise spans custom software development, ERP systems, AI-driven applications, and full-stack web and mobile development—built to support the evolving needs of modern businesses.",
     url: "https://yarrowtech.com",
     cta: "Visit Website",
+    tags: ["Software Development", "ERP Systems", "AI Apps", "Full-Stack", "Enterprise"],
   },
   {
     title: "Building",
@@ -1449,6 +1451,7 @@ const PROJECTS = [
       "This project involves building a secure, regulated crowdfunding platform for early-stage startups, designed to connect vetted founders with retail investors through a transparent and compliant digital marketplace. The platform enables startups to raise capital efficiently while allowing investors to discover, evaluate, and invest in curated opportunities with confidence. The system incorporates KYC/AML compliance, campaign management, ensuring trust, regulatory alignment, and long-term platform sustainability.",
     url: "https://sportbit.app",
     cta: "View Platform",
+    tags: ["Crowdfunding", "KYC/AML", "Compliance", "Marketplace", "Secure Payments"],
   },
   {
     title: "Hire-Me",
@@ -1456,6 +1459,7 @@ const PROJECTS = [
       "Hire Me is a subscription-driven HR ecosystem that unites partner companies, their HR teams, and the employees they steward. We streamline workforce intake, tracking, and compliance for partner organisations while maintaining a secure, always-on environment administered by our in-house team. Built for scalability, data protection, and round-the-clock availability, Hire Me delivers a dependable bridge between modern employers and the talent they nurture.",
     url: "https://fb.yarrowtech.com",
     cta: "Explore Product",
+    tags: ["HR Tech", "Subscriptions", "Workforce", "Compliance", "SaaS"],
   },
   {
     title: "Art-Block",
@@ -1463,6 +1467,7 @@ const PROJECTS = [
       "ArtBlock is an innovative online social platform that empowers independent artists and creators to showcase, share, and monetize their work through a subscription-based model. It bridges the gap between creators and their audiences by offering tools for exclusive content sharing, tiered memberships, community engagement, and direct financial support. The platform integrates secure payment gateways, real-time notifications, and an analytics dashboard to track engagement and earnings.",
     url: "https://myguide.yarrowtech.com",
     cta: "See Solution",
+    tags: ["Creator Platform", "Subscriptions", "Payments", "Notifications", "Analytics"],
   },
   {
     title: "Green-bar",
@@ -1470,6 +1475,7 @@ const PROJECTS = [
       "Green-bar is a web-based platform designed for ordering fresh groceries and farm produce online. It allows users to browse products, place orders, and manage purchases easily. The system includes admin and seller modules for product, order, and inventory management. BuyFresh provides a smooth checkout experience with real-time order tracking.",
     url: "https://electroniceducare.com",
     cta: "View Product",
+    tags: ["E-Commerce", "Grocery", "Inventory", "Order Tracking", "Admin Panel"],
   },
   {
     title: "Better-Pass",
@@ -1477,8 +1483,10 @@ const PROJECTS = [
       "The Better Pass is a social travel platform where tour companies and tourists can connect, post tours, and make bookings. Designed with an experience similar to Instagram or LinkedIn, the app supports four user roles: Tour Companies, Tourists/Travellers, Influencers, and Activity Instructors. Tour companies can share and promote their tour offerings, influencers can help amplify these tours, and activity instructors can showcase engaging nearby activities.",
     url: "https://electroniceducare.com",
     cta: "View Product",
+    tags: ["Travel Social", "Bookings", "Multi-Role", "Tours", "Community"],
   },
 ];
+
 
 /* ---------------------------- Quality Controller --------------------------- */
 function QualityController({ onQuality }) {
@@ -1691,8 +1699,62 @@ export default function StoryWorld() {
             <Scroll html style={{ width: "100vw", pointerEvents: "auto" }}>
               <ProgressBar />
 
+
+              {/* ✅ Scroll Down Indicator (fixed overlay) */}
+              <div className="pointer-events-none fixed bottom-6 left-1/2 z-[999] -translate-x-1/2 flex flex-col items-center gap-2">
+                <span className="text-xs md:text-sm tracking-widest text-[#e8dcc0]/70 font-mono uppercase">
+                  Scroll Down
+                </span>
+
+                <span className="relative h-12 w-px overflow-hidden rounded-full bg-[#9d6800]/30">
+                  <span className="scroll-indicator-bar absolute inset-0" />
+                </span>
+              </div>
+
+
+
+
               <div className="pointer-events-auto w-screen">
                 <div className="mx-auto w-full max-w-6xl px-6 lg:px-8">
+
+                  {/* ✅ Intro Header (Title + Subtitle) */}
+                  <section className="project-section flex min-h-screen w-full items-center justify-center py-20">
+                    <div className="project-content flex flex-col items-center gap-6 text-center">
+                      <div className="text-[#9d6800]/40 text-sm font-mono tracking-wider">
+                        Projects
+                      </div>
+
+                      <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-br from-[#ffd700] via-[#d4a574] to-[#9d6800] bg-clip-text text-transparent drop-shadow-2xl">
+                        Selected Work & Product Ecosystems
+                      </h1>
+
+                      <p className="mx-auto max-w-[70ch] text-base md:text-lg lg:text-xl leading-relaxed text-[#e8dcc0]/90 font-light">
+                        A curated collection of production-grade platforms—engineered for performance, security, and scalability.
+                        From full-stack SaaS to compliant marketplaces, each build reflects a focus on clean architecture,
+                        measurable outcomes, and world-class user experience.
+                      </p>
+
+                      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                        <span className="rounded-full border border-[#9d6800]/40 bg-black/10 px-4 py-2 text-xs md:text-sm text-[#e8dcc0]/80 backdrop-blur-sm">
+                          Full-Stack Engineering
+                        </span>
+                        <span className="rounded-full border border-[#9d6800]/40 bg-black/10 px-4 py-2 text-xs md:text-sm text-[#e8dcc0]/80 backdrop-blur-sm">
+                          Scalable Systems
+                        </span>
+                        <span className="rounded-full border border-[#9d6800]/40 bg-black/10 px-4 py-2 text-xs md:text-sm text-[#e8dcc0]/80 backdrop-blur-sm">
+                          Performance-First UX
+                        </span>
+                        <span className="rounded-full border border-[#9d6800]/40 bg-black/10 px-4 py-2 text-xs md:text-sm text-[#e8dcc0]/80 backdrop-blur-sm">
+                          Secure & Reliable
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+
+
+
+
+
                   {PROJECTS.map((project, index) => (
                     <section
                       key={project.title}
@@ -1710,6 +1772,22 @@ export default function StoryWorld() {
                         <p className="mx-auto max-w-[65ch] text-base md:text-lg lg:text-xl leading-relaxed text-[#e8dcc0]/90 font-light">
                           {project.description}
                         </p>
+
+                        {/* ✅ Project Tags */}
+                        {Array.isArray(project.tags) && project.tags.length > 0 && (
+                          <div className="mx-auto mt-1 flex max-w-[70ch] flex-wrap items-center justify-center gap-2">
+                            {project.tags.map((t) => (
+                              <span
+                                key={t}
+                                className="rounded-full border border-[#9d6800]/35 bg-[#9d6800]/80 px-4 py-2 text-xs md:text-sm text-white backdrop-blur-xl font-bold
+                   transition hover:border-[#ffd700]/40 hover:bg-black/15 hover:text-white"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
 
                         <a
                           href={project.url}
@@ -1740,6 +1818,10 @@ export default function StoryWorld() {
                     </div>
                   </section>
                 </div>
+
+
+
+
               </div>
             </Scroll>
           </ScrollControls>

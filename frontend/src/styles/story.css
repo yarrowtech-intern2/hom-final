@@ -148,3 +148,35 @@ body {
     display: none;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+.scroll-indicator-bar {
+  background: linear-gradient(to bottom, #ffd700, #9d6800);
+  transform: translateY(-100%);
+  opacity: 0;
+  animation: scrollIndicator 1.8s ease-in-out infinite;
+}
+
+@keyframes scrollIndicator {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}

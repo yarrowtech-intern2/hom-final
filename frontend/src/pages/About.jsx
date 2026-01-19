@@ -779,8 +779,8 @@ const CONTENT_SECTIONS = {
 };
 
 const CONTACT_INFO = {
-  phone: "+91 987654321",
-  email: "hello@houseofmusa.com",
+  phone: "+91 9836362249",
+  email: "houseofmusacareer@houseofmusa.com",
   address:
     "Lighhouse, Humayun Pl, Esplanade, Dharmatala, Taltala, Kolkata- 700087, West Bengal, India",
 };
