@@ -487,7 +487,6 @@ import { Canvas, useThree, extend } from "@react-three/fiber";
 import {
   Environment,
   OrbitControls,
-  Html,
   ContactShadows,
   useGLTF,
   Preload,
@@ -527,15 +526,6 @@ function useIsMobile(breakpoint = 768) {
     return () => mq.removeEventListener?.("change", onChange);
   }, [breakpoint]);
   return isMobile;
-}
-
-/* --------------------------------- Loader -------------------------------- */
-function Loader() {
-  return (
-    <Html center style={{ color: "#aaa", fontFamily: "Manrope, system-ui", fontSize: 18 }}>
-      Loading 3D website,Please wait…
-    </Html>
-  );
 }
 
 /* --------------------------------- Model --------------------------------- */
@@ -700,7 +690,7 @@ function Scene({ isMobile }) {
         color="#cbcbcb"
       />
 
-      <Suspense fallback={<Loader />}>
+      <Suspense fallback={null}>
         <House
           onReady={handleReady}
           onPortalEnter={(coords) => start("/gallery", coords)}

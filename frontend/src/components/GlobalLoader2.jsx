@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useProgress } from "@react-three/drei";
 import "../styles/loader.css";
 
-const DURATION_MS = 2100;
+const MIN_VISIBLE_MS = 650;
 const HOLD_AT_100_MS = 220;
 const REVEAL_MS = 1450;
+const THREE_GRACE_MS = 1500;
 const LOGO_SRC = "/logo/logo-white.png";
 const TARGET_DESKTOP = { left: 28, top: 18, width: 170 };
 const TARGET_MOBILE = { left: 16, top: 12, width: 132 };
@@ -17,51 +19,149 @@ const CURTAIN_BLOCKS = Array.from({ length: CURTAIN_COLUMNS }, (_, idx) => ({
 }));
 
 export default function GlobalLoader({ children }) {
+  const { active: threeActive, progress: threeProgressRaw, loaded: threeLoaded, total: threeTotal } =
+    useProgress();
+
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState("loading");
   const [target, setTarget] = useState(TARGET_DESKTOP);
   const [logoAspect, setLogoAspect] = useState(2.9);
+  const [domReady, setDomReady] = useState(
+    typeof document !== "undefined" ? document.readyState === "complete" : false
+  );
+  const [fontsReady, setFontsReady] = useState(
+    typeof document === "undefined" || !document.fonts || document.fonts.status === "loaded"
+  );
+  const [imageStats, setImageStats] = useState({ loaded: 0, total: 0 });
+  const [seenThreeActivity, setSeenThreeActivity] = useState(false);
+  const [threeGraceDone, setThreeGraceDone] = useState(false);
+  const mountedAtRef = useRef(typeof performance !== "undefined" ? performance.now() : Date.now());
+  const timersRef = useRef([]);
 
   useEffect(() => {
-    let rafId = 0;
-    let holdTimer = 0;
-    let doneTimer = 0;
-    const start = performance.now();
-
-    setLoading(true);
-    setProgress(0);
-    setPhase("loading");
-
-    const tick = (now) => {
-      const elapsed = now - start;
-      const t = Math.min(1, elapsed / DURATION_MS);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setProgress(Math.round(eased * 100));
-
-      if (t < 1) {
-        rafId = requestAnimationFrame(tick);
-        return;
-      }
-
-      holdTimer = window.setTimeout(() => {
-        setPhase("revealing");
-        doneTimer = window.setTimeout(() => {
-          setLoading(false);
-          setProgress(0);
-          setPhase("done");
-        }, REVEAL_MS);
-      }, HOLD_AT_100_MS);
-    };
-
-    rafId = requestAnimationFrame(tick);
-
     return () => {
-      cancelAnimationFrame(rafId);
-      window.clearTimeout(holdTimer);
-      window.clearTimeout(doneTimer);
+      timersRef.current.forEach((id) => window.clearTimeout(id));
+      timersRef.current = [];
     };
   }, []);
+
+  useEffect(() => {
+    if (threeActive || threeLoaded > 0 || threeTotal > 0) {
+      setSeenThreeActivity(true);
+    }
+  }, [threeActive, threeLoaded, threeTotal]);
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => setThreeGraceDone(true), THREE_GRACE_MS);
+    timersRef.current.push(timerId);
+    return () => window.clearTimeout(timerId);
+  }, []);
+
+  useEffect(() => {
+    if (domReady) return undefined;
+
+    const onWindowLoad = () => setDomReady(true);
+    window.addEventListener("load", onWindowLoad);
+    return () => window.removeEventListener("load", onWindowLoad);
+  }, [domReady]);
+
+  useEffect(() => {
+    if (fontsReady || typeof document === "undefined" || !document.fonts) return undefined;
+
+    let cancelled = false;
+    document.fonts.ready
+      .then(() => {
+        if (!cancelled) setFontsReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setFontsReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fontsReady]);
+
+  useEffect(() => {
+    if (!loading) return undefined;
+
+    const computeImageStats = () => {
+      const trackedImages = Array.from(document.images).filter((img) => {
+        if (img.classList.contains("global-loader-logo") || img.classList.contains("global-pinned-logo")) {
+          return false;
+        }
+        return img.loading !== "lazy";
+      });
+
+      const total = trackedImages.length;
+      const loaded = trackedImages.filter((img) => img.complete).length;
+      setImageStats({ loaded, total });
+    };
+
+    computeImageStats();
+    const intervalId = window.setInterval(computeImageStats, 120);
+    return () => window.clearInterval(intervalId);
+  }, [loading]);
+
+  const threePercent = useMemo(() => {
+    if (seenThreeActivity) {
+      return Math.max(0, Math.min(100, threeProgressRaw || 0));
+    }
+    return threeGraceDone ? 100 : 0;
+  }, [seenThreeActivity, threeGraceDone, threeProgressRaw]);
+
+  const imagePercent = useMemo(() => {
+    if (imageStats.total === 0) return 100;
+    return (imageStats.loaded / imageStats.total) * 100;
+  }, [imageStats.loaded, imageStats.total]);
+
+  const shellPercent = useMemo(() => {
+    const readyCount = (domReady ? 1 : 0) + (fontsReady ? 1 : 0);
+    return (readyCount / 2) * 100;
+  }, [domReady, fontsReady]);
+
+  const mergedProgress = useMemo(() => {
+    const next = threePercent * 0.78 + imagePercent * 0.14 + shellPercent * 0.08;
+    return Math.round(Math.max(0, Math.min(100, next)));
+  }, [imagePercent, shellPercent, threePercent]);
+
+  const threeReady = seenThreeActivity ? !threeActive && threePercent >= 99 : threeGraceDone;
+  const imagesReady = imageStats.total === 0 || imageStats.loaded >= imageStats.total;
+  const allReady = domReady && fontsReady && imagesReady && threeReady;
+
+  useEffect(() => {
+    if (!loading) return;
+    setProgress((prev) => Math.max(prev, mergedProgress));
+  }, [loading, mergedProgress]);
+
+  useEffect(() => {
+    if (!loading || phase !== "loading" || !allReady) return undefined;
+
+    timersRef.current.forEach((id) => window.clearTimeout(id));
+    timersRef.current = [];
+    setProgress(100);
+
+    const elapsed = (typeof performance !== "undefined" ? performance.now() : Date.now()) - mountedAtRef.current;
+    const minVisibleDelay = Math.max(0, MIN_VISIBLE_MS - elapsed);
+
+    const revealTimer = window.setTimeout(() => {
+      setPhase("revealing");
+
+      const doneTimer = window.setTimeout(() => {
+        setLoading(false);
+        setProgress(0);
+        setPhase("done");
+      }, REVEAL_MS);
+      timersRef.current.push(doneTimer);
+    }, minVisibleDelay + HOLD_AT_100_MS);
+
+    timersRef.current.push(revealTimer);
+
+    return () => {
+      window.clearTimeout(revealTimer);
+    };
+  }, [allReady, loading, phase]);
 
   useEffect(() => {
     const updateTarget = () => {

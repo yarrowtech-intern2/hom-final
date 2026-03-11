@@ -395,7 +395,6 @@ import {
   Environment,
   ScrollControls,
   Scroll,
-  Html,
   ContactShadows,
   Preload,
   useScroll,
@@ -463,40 +462,6 @@ const LIGHTING_CONFIG = {
     position: [0, -0.001, 0],
   },
 };
-
-/* ============================= LOADER UI ============================= */
-const Loader = memo(() => {
-  return (
-    <Html center>
-      <div
-        className="pointer-events-none w-[280px] max-w-[70vw] rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-xl"
-        role="status"
-        aria-live="polite"
-        aria-label="Loading 3D experience"
-      >
-        <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">
-          <div
-            className="h-full w-1/3 animate-[loader_1.2s_linear_infinite] rounded-full bg-white/70"
-            aria-hidden="true"
-          />
-        </div>
-        <p className="mt-3 text-center text-sm text-white/80">
-          Loading experience…
-        </p>
-
-        <style>{`
-          @keyframes loader {
-            0% { transform: translateX(-60%); }
-            50% { transform: translateX(120%); }
-            100% { transform: translateX(-60%); }
-          }
-        `}</style>
-      </div>
-    </Html>
-  );
-});
-
-Loader.displayName = "Loader";
 
 /* ============================= CAMERA RIG ============================ */
 const CameraRig = memo(() => {
@@ -939,7 +904,7 @@ export default function StoryWorld() {
             gl.physicallyCorrectLights = true;
           }}
         >
-          <Suspense fallback={<Loader />}>
+          <Suspense fallback={null}>
             <ScrollControls
               pages={SCROLL_CONFIG.pages}
               damping={SCROLL_CONFIG.damping}
