@@ -4,7 +4,6 @@ import { Canvas, useThree } from "@react-three/fiber";
 import {
     Environment,
     OrbitControls,
-    Html,
     ContactShadows,
     useGLTF,
     Preload,
@@ -41,15 +40,6 @@ const HERO_DIR = new THREE.Vector3(46, -10, -94).normalize(); // default-1.5, 0.
 const HERO_DISTANCE_MULT = 2.0; // how far back from the model size we stand (increase to see more)
 const MIN_DISTANCE_MULT = 0.9;
 const MAX_DISTANCE_MULT = 6.0;
-
-/* --------------------------------- Loader -------------------------------- */
-function Loader() {
-    return (
-        <Html center style={{ color: "#aaaaaaff", fontFamily: "Manrope , system-ui", fontSize: 24 }}>
-            HOUSE OF MUSA Loading…
-        </Html>
-    );
-}
 
 /* --------------------------------- Model --------------------------------- */
 function House({ onReady, scale = 1, rotation = [0, Math.PI * 0.15, 0], position = [0, -1, 0] }) {
@@ -145,7 +135,7 @@ function Scene() {
                 color="#cbcbcb"
             />
 
-            <Suspense fallback={<Loader />}>
+            <Suspense fallback={null}>
                 <House onReady={handleReady} />
 
 

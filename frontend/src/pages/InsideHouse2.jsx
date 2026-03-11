@@ -2,7 +2,7 @@
 import React, { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Html, Text, useGLTF, Preload } from "@react-three/drei";
+import { Text, useGLTF, Preload } from "@react-three/drei";
 import { DRACOLoader, MeshoptDecoder, GLTFLoader } from "three-stdlib";
 
 /* ---------------- Camera aims forward once (keeps your behavior) ---------------- */
@@ -104,7 +104,7 @@ export default function InsideHouse() {
       {/* Keep your camera behavior the same (looks forward) */}
       <CameraRig target={[0, 1.2, -2]} />
 
-      <Suspense fallback={<Html center>Loading…</Html>}>
+      <Suspense fallback={null}>
         {/* Your balcony model */}
         <Balcony
           url="/models/gallery.glb"

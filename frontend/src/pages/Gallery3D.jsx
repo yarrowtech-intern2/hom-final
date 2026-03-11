@@ -459,14 +459,6 @@ function useSafeTexture(url) {
   return { tex, failed };
 }
 
-function Loader() {
-  return (
-    <Html center style={{ color: "#aaa", fontFamily: "Manrope, system-ui", fontSize: 18 }}>
-      Entering Gallery…
-    </Html>
-  );
-}
-
 /* -------------------- Scene geometry -------------------- */
 function Corridor() {
   const floorMat = useMemo(
@@ -668,7 +660,7 @@ function GalleryScene() {
       <hemisphereLight intensity={0.25} groundColor="#101010" />
       <directionalLight position={[2, 3, 1]} intensity={0.4} color="#ffffff" />
 
-      <Suspense fallback={<Loader />}>
+      <Suspense fallback={null}>
         <Environment preset="apartment" background={false} />
         <Corridor />
         <Frames register={register} highlightedId={highlight} />
