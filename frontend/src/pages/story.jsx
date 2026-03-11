@@ -1487,6 +1487,8 @@ const PROJECTS = [
   },
 ];
 
+const STORY_PAGES = PROJECTS.length + 2;
+
 
 /* ---------------------------- Quality Controller --------------------------- */
 function QualityController({ onQuality }) {
@@ -1657,7 +1659,7 @@ export default function StoryWorld() {
   const enableFX = quality !== "low"; // postprocessing is expensive
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-b from-[#1a1410] via-[#2d2416] to-[#1a1410]">
+    <div className="relative w-full h-[100svh] overflow-hidden bg-gradient-to-b from-[#1a1410] via-[#2d2416] to-[#1a1410]">
       <Canvas
         camera={{ position: [0, 2, 15], fov: 50, near: 0.1, far: 1000 }}
         dpr={quality === "low" ? [1, 1] : quality === "mid" ? [1, 1.35] : [1, 1.75]}
@@ -1677,7 +1679,7 @@ export default function StoryWorld() {
         <Suspense fallback={null}>
           <QualityController onQuality={setQuality} />
 
-          <ScrollControls pages={7} damping={0.18} distance={1}>
+          <ScrollControls pages={STORY_PAGES} damping={0.18} distance={1}>
             <CameraRig />
             <World quality={quality} />
 

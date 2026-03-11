@@ -43,6 +43,14 @@ export default function ContactModal({ open, onClose }) {
       />
 
       <div className="contact-modal-panel">
+        <button
+          type="button"
+          className="contact-modal-close"
+          onClick={onClose}
+          aria-label="Close contact form"
+        >
+          ×
+        </button>
         <div className="contact-modal-content">
           <ContactUs />
         </div>

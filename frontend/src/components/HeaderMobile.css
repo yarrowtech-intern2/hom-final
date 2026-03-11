@@ -112,3 +112,30 @@ html, body {
   }
 }
 
+@media (max-width: 768px) {
+  .header-overlay {
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 12px 14px 0;
+  }
+
+  .menu-btn {
+    position: fixed;
+    top: max(10px, env(safe-area-inset-top));
+    right: 14px;
+    left: auto;
+    z-index: 80;
+    width: 42px;
+    height: 42px;
+    margin-left: auto;
+  }
+
+  .mobile-panel {
+    position: fixed;
+    top: calc(max(10px, env(safe-area-inset-top)) + 46px);
+    right: 12px;
+    left: auto;
+    z-index: 79;
+  }
+}
+

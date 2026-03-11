@@ -539,8 +539,11 @@ const Scene = memo(() => {
 Scene.displayName = "Scene";
 
 /* ============================= SECTION COMPONENT ===================== */
-const Section = memo(({ kicker, title, subtitle, children, chips, cta }) => (
-  <section className="min-h-[100svh] w-screen px-4 py-14 sm:py-20">
+const Section = memo(
+  ({ kicker, title, subtitle, children, chips, cta, sectionClassName = "" }) => (
+    <section
+      className={`min-h-[100svh] w-screen px-4 py-14 sm:py-20 ${sectionClassName}`}
+    >
     <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-6 text-center sm:min-h-[100svh] sm:justify-center">
       {/* Kicker Badge */}
       {kicker && (
@@ -593,8 +596,9 @@ const Section = memo(({ kicker, title, subtitle, children, chips, cta }) => (
         </div>
       )}
     </div>
-  </section>
-));
+    </section>
+  )
+);
 
 Section.displayName = "Section";
 
@@ -605,6 +609,7 @@ Section.propTypes = {
   children: PropTypes.node,
   chips: PropTypes.arrayOf(PropTypes.string),
   cta: PropTypes.bool,
+  sectionClassName: PropTypes.string,
 };
 
 /* ============================= CARD GRID ============================= */
@@ -759,6 +764,7 @@ const StoryOverlay = memo(() => {
         kicker={CONTENT_SECTIONS.hero.kicker}
         title={CONTENT_SECTIONS.hero.title}
         chips={CONTENT_SECTIONS.hero.chips}
+        sectionClassName="pt-32 sm:pt-20"
       >
         {CONTENT_SECTIONS.hero.content}
       </Section>
