@@ -1081,11 +1081,7 @@ export default function GalleryPage() {
           <RapierReady>
             <Physics gravity={[0, -9.81, 0]} timeStep={1 / 60} substeps={2}>
               <Suspense
-                fallback={
-                  <Html center style={{ color: "#fff" }}>
-                    Loading…
-                  </Html>
-                }
+                fallback={null}
               >
                 <BalconyScene onSpawn={setSpawn} />
               </Suspense>

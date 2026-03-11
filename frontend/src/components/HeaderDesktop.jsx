@@ -106,7 +106,6 @@
 // src/components/HeaderDesktop.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import logoImg from "/logo/logo-yellow.png";
 import { usePageTransition } from "./transition";
 
 export default function HeaderDesktop({ onOpenContact }) {
@@ -130,17 +129,6 @@ export default function HeaderDesktop({ onOpenContact }) {
 
   return (
     <header className="header-overlay">
-      <div className="logo">
-        <Link
-          to="/"
-          className="logo-link"
-          aria-label="House of MUSA"
-          onClick={(e) => handleNavClick(e, "/")}
-        >
-          <img src={logoImg} alt="House of MUSA" className="logo-img" />
-        </Link>
-      </div>
-
       <nav className="nav">
         <Link to="/" onClick={(e) => handleNavClick(e, "/")}>
           Home

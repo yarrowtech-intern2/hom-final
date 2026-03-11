@@ -89,7 +89,6 @@
 // src/components/HeaderMobile.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import logoImg from "/logo/logo-yellow.png";
 import { usePageTransition } from "./transition";
 import "./HeaderMobile.css";
 
@@ -128,17 +127,6 @@ export default function HeaderMobile({ onOpenContact }) {
 
   return (
     <header className="header-overlay">
-      <div className="logo">
-        <Link
-          to="/"
-          className="logo-link"
-          aria-label="House of MUSA"
-          onClick={(e) => handleNavClick(e, "/")}
-        >
-          <img src={logoImg} alt="House of MUSA" className="logo-img" />
-        </Link>
-      </div>
-
       {/* Mobile hamburger */}
       {/* <button
         className="menu-btn"
