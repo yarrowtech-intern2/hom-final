@@ -438,7 +438,7 @@ const MODEL_CONFIGS = [
 ];
 
 const SCROLL_CONFIG = {
-  pages: 7,
+  pages: 6,
   damping: 0.18,
   style: { touchAction: "pan-y" },
 };
@@ -542,9 +542,9 @@ Scene.displayName = "Scene";
 const Section = memo(
   ({ kicker, title, subtitle, children, chips, cta, sectionClassName = "" }) => (
     <section
-      className={`min-h-[100svh] w-screen px-4 py-14 sm:py-20 ${sectionClassName}`}
+      className={`min-h-[76svh] w-screen px-4 py-10 sm:min-h-[82svh] sm:py-14 ${sectionClassName}`}
     >
-    <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-6 text-center sm:min-h-[100svh] sm:justify-center">
+    <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center gap-5 text-center">
       {/* Kicker Badge */}
       {kicker && (
         <div
@@ -558,11 +558,11 @@ const Section = memo(
 
       {/* Headline */}
       {title ? (
-        <h1 className="text-balance text-3xl font-extrabold tracking-tight text-black sm:text-4xl md:text-6xl">
+        <h1 className="text-balance text-4xl font-extrabold tracking-tight text-black sm:text-5xl md:text-7xl">
           {title}
         </h1>
       ) : subtitle ? (
-        <h2 className="text-balance text-2xl font-extrabold tracking-tight text-black sm:text-3xl md:text-5xl">
+        <h2 className="text-balance text-3xl font-extrabold tracking-tight text-black sm:text-4xl md:text-6xl">
           {subtitle}
         </h2>
       ) : null}
@@ -764,7 +764,7 @@ const StoryOverlay = memo(() => {
         kicker={CONTENT_SECTIONS.hero.kicker}
         title={CONTENT_SECTIONS.hero.title}
         chips={CONTENT_SECTIONS.hero.chips}
-        sectionClassName="pt-32 sm:pt-20"
+        sectionClassName="pt-28 sm:pt-20"
       >
         {CONTENT_SECTIONS.hero.content}
       </Section>
@@ -807,7 +807,7 @@ const StoryOverlay = memo(() => {
       </Section>
 
       {/* Contact Section */}
-      <div className="pb-16">
+      <div className="pb-4">
         <Section
           kicker={CONTENT_SECTIONS.contact.kicker}
           subtitle={CONTENT_SECTIONS.contact.subtitle}

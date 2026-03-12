@@ -1,227 +1,94 @@
-// // Header.jsx
-// import React, { useState, useEffect } from "react";
-// import { Link, useLocation } from "react-router-dom";
-// import logoImg from "/logo/logo-black.png";
-
-// export default function Header() {
-//   const [open, setOpen] = useState(false);
-//   const { pathname } = useLocation();
-
-//   // Close menu on route change or ESC
-//   useEffect(() => setOpen(false), [pathname]);
-//   useEffect(() => {
-//     const onKey = (e) => e.key === "Escape" && setOpen(false);
-//     window.addEventListener("keydown", onKey);
-//     return () => window.removeEventListener("keydown", onKey);
-//   }, []);
-
-//   return (
-//     <header className="header-overlay">
-//       <div className="logo">
-//         <Link to="/" className="logo-link" aria-label="House of MUSA">
-//           <img src={logoImg} alt="House of MUSA" className="logo-img" />
-//         </Link>
-//       </div>
-
-//       {/* Desktop nav */}
-//       <nav className="nav" aria-label="Primary">
-//         <Link to="/">Home</Link>
-//         <Link to="/about">About</Link>
-//         <Link to="/project">Projects</Link>
-//         <Link to="/contact">Contact</Link>
-//         <Link to="/carrers">Carrers</Link>
-//       </nav>
-
-//       {/* Mobile hamburger */}
-//       <button
-//         className="menu-btn"
-//         aria-label={open ? "Close menu" : "Open menu"}
-//         aria-expanded={open}
-//         aria-controls="mobile-nav"
-//         onClick={() => setOpen((v) => !v)}
-//       >
-//         {/* icon */}
-//         {!open ? (
-//           <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-//             <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-//           </svg>
-//         ) : (
-//           <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-//             <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-//           </svg>
-//         )}
-//       </button>
-
-//       {/* Mobile dropdown panel */}
-//       <div id="mobile-nav" className={`mobile-panel ${open ? "open" : ""}`}>
-//         <Link to="/">Home</Link>
-//         <Link to="/about">About</Link>
-//         <Link to="/project">Projects</Link>
-//         <Link to="/contact">Contact</Link>
-//         <Link to="/carrers">Carrers</Link>
-//       </div>
-//     </header>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// src/components/HeaderMobile.jsx
-import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useCallback, useMemo } from "react";
 import { usePageTransition } from "./transition";
+import StaggeredMenu from "./StaggeredMenu";
 import "./HeaderMobile.css";
 
 export default function HeaderMobile({ onOpenContact }) {
-  const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
   const { start } = usePageTransition();
 
-  // Close menu on route change
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const menuItems = useMemo(
+    () => [
+      { label: "Home", ariaLabel: "Go to home page", link: "/" },
+      { label: "About", ariaLabel: "Learn about us", link: "/about" },
+      // {
+      //   label: "Projects",
+      //   ariaLabel: "View our project showcase",
+      //   link: "/projects",
+      // },
+      {
+        label: "Projects",
+        ariaLabel: "Open the 3D projects view",
+        link: "/project",
+      },
+      {
+        label: "Contact",
+        ariaLabel: "Open contact form",
+        link: "/contact",
+        action: "contact",
+      },
+      {
+        label: "Careers",
+        ariaLabel: "Explore career opportunities",
+        link: "/carrers",
+      },
+      // { label: "Admin", ariaLabel: "Open admin login", link: "/admin123" },
+    ],
+    []
+  );
 
-  // Close on ESC
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  const socialItems = useMemo(
+    () => [
+      { label: "Twitter", link: "https://twitter.com" },
+      { label: "GitHub", link: "https://github.com" },
+      { label: "LinkedIn", link: "https://linkedin.com" },
+    ],
+    []
+  );
 
-  const handleNavClick = (e, to) => {
-    e.preventDefault();
-    setOpen(false);
+  const handleMenuItemClick = useCallback(
+    ({ event, item }) => {
+      if (item.action === "contact") {
+        event.preventDefault();
+        onOpenContact?.();
+        return true;
+      }
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
+      if (!item.link || item.link.startsWith("http")) return true;
 
-    start(to, {
-      x,
-      y,
-      duration: 0.65,
-      ease: "power4.inOut",
-    });
-  };
+      event.preventDefault();
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+
+      start(item.link, {
+        x,
+        y,
+        duration: 0.65,
+        ease: "power4.inOut",
+      });
+
+      return true;
+    },
+    [onOpenContact, start]
+  );
 
   return (
     <header className="header-overlay">
-      {/* Mobile hamburger */}
-      {/* <button
-        className="menu-btn"
-        aria-label={open ? "Close menu" : "Open menu"}
-        aria-expanded={open}
-        aria-controls="mobile-nav"
-        onClick={() => setOpen((v) => !v)}
-      >
-        {!open ? (
-          <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M3 6h18M3 12h18M3 18h18"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        ) : (
-          <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M6 6l12 12M18 6l-12 12"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        )}
-      </button> */}
-
-      <button
-  className={`menu-btn ${open ? "is-open" : ""}`}
-  aria-label={open ? "Close menu" : "Open menu"}
-  aria-expanded={open}
-  aria-controls="mobile-nav"
-  onClick={() => setOpen((v) => !v)}
->
-  {!open ? (
-    <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M3 6h18M3 12h18M3 18h18"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
+      <StaggeredMenu
+        position="right"
+        items={menuItems}
+        socialItems={socialItems}
+        displaySocials
+        displayItemNumbering
+        menuButtonColor="#000000"
+        openMenuButtonColor="#000000"
+        changeMenuColorOnOpen
+        colors={["#b98324", "#9d6800"]}
+        logoUrl=""
+        accentColor="#9d6800"
+        isFixed
+        onItemClick={handleMenuItemClick}
       />
-    </svg>
-  ) : (
-    <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M6 6l12 12M18 6l-12 12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  )}
-</button>
-
-      {/* Mobile dropdown panel */}
-      <div
-        id="mobile-nav"
-        className={`mobile-panel ${open ? "open" : ""}`}
-      >
-        <Link to="/" onClick={(e) => handleNavClick(e, "/")}>
-          Home
-        </Link>
-        <Link to="/about" onClick={(e) => handleNavClick(e, "/about")}>
-          About
-        </Link>
-        <Link to="/project" onClick={(e) => handleNavClick(e, "/project")}>
-          Projects
-        </Link>
-        {/* <Link to="/contact" onClick={(e) => handleNavClick(e, "/contact")}>
-          Contact
-        </Link> */}
-        <Link
-          to="/contact"
-          onClick={(e) => {
-            e.preventDefault();
-            setOpen(false);
-            onOpenContact?.();
-          }}
-        >
-          Contact
-        </Link>
-
-
-        <Link to="/carrers" onClick={(e) => handleNavClick(e, "/carrers")}>
-          Carrers
-        </Link>
-
-        <Link to="/admin123" onClick={(e) => handleNavClick(e, "/admin123")}>
-          Admin
-        </Link>
-
-      </div>
     </header>
   );
 }

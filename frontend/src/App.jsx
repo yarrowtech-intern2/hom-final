@@ -9,7 +9,7 @@ import Home3D2 from "./pages/Home3D2";
 import Gallery3D from "./pages/Gallery3D2";
 import TransitionProvider from "./components/transition";
 import About from "./pages/About";
-
+import ProjectsShowcase from "./pages/ProjectsShowcase";
 import Project from "./pages/story";
 
 import Carrers from "./pages/carrers";
@@ -35,6 +35,7 @@ export default function App() {
         <Route path="/gallery" element={<Gallery3D />} />
         <Route path="/about" element={<About />} />
         
+        <Route path="/projects" element={<ProjectsShowcase />} />
         <Route path="/project" element={<Project />} />
        
         <Route path="/carrers" element={<Carrers />} />

@@ -1,6 +1,6 @@
 
 
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   KeyboardControls,
@@ -265,6 +265,7 @@ function Player({ spawn = [0, 1.2, 3], mobileInput, isTouchDevice, lookRef }) {
     const sprintPressed = pressed.sprint || m.sprint;
 
     const base = sprintPressed ? SPEED * SPRINT : SPEED;
+    const mobileSpeedFactor = isTouchDevice ? 0.72 : 1;
 
     // movement direction always from camera orientation
     forward.set(0, 0, -1).applyQuaternion(camera.quaternion);
@@ -281,7 +282,8 @@ function Player({ spawn = [0, 1.2, 3], mobileInput, isTouchDevice, lookRef }) {
     if (leftPressed) dir.add(right.clone().negate());
     if (rightPressed) dir.add(right);
 
-    if (dir.lengthSq() > 0) dir.normalize().multiplyScalar(base);
+    if (dir.lengthSq() > 0)
+      dir.normalize().multiplyScalar(base * mobileSpeedFactor);
 
     const lv = rb.linvel();
     rb.setLinvel({ x: dir.x, y: lv.y, z: dir.z }, true);
@@ -608,7 +610,7 @@ function LockBridge({ plcRef, setLocked }) {
 /* ===================== Mobile Touch Look ======================= */
 function TouchLook({ enabled, lookRef }) {
   const { gl } = useThree();
-  const dragging = useRef(false);
+  const activePointerIdRef = useRef(null);
   const last = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -616,17 +618,28 @@ function TouchLook({ enabled, lookRef }) {
     if (!lookRef?.current) return;
 
     const element = gl.domElement;
-    const sensitivity = 0.003;
+    const sensitivity = 0.0022;
     const PI_2 = Math.PI / 2;
+    const lookZoneRatio = 0.42;
+
+    const isMobileControlTarget = (target) => {
+      if (!(target instanceof Element)) return false;
+      return !!target.closest('[data-mobile-control="true"]');
+    };
 
     const onPointerDown = (e) => {
-      dragging.current = true;
+      if (activePointerIdRef.current !== null) return;
+      if (isMobileControlTarget(e.target)) return;
+      if (e.clientX < window.innerWidth * lookZoneRatio) return;
+
+      activePointerIdRef.current = e.pointerId;
       last.current.x = e.clientX;
       last.current.y = e.clientY;
+      e.preventDefault();
     };
 
     const onPointerMove = (e) => {
-      if (!dragging.current) return;
+      if (activePointerIdRef.current !== e.pointerId) return;
       if (!lookRef.current) return;
 
       const dx = e.clientX - last.current.x;
@@ -636,133 +649,222 @@ function TouchLook({ enabled, lookRef }) {
 
       let { yaw, pitch } = lookRef.current;
 
-      yaw -= dx * sensitivity;   // left/right
-      pitch -= dy * sensitivity; // up/down
+      yaw -= dx * sensitivity;
+      pitch -= dy * sensitivity;
 
-      // clamp vertical look
       pitch = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, pitch));
 
       lookRef.current.yaw = yaw;
       lookRef.current.pitch = pitch;
       lookRef.current.ready = true;
+      e.preventDefault();
     };
 
-    const onPointerUp = () => {
-      dragging.current = false;
+    const onPointerUp = (e) => {
+      if (activePointerIdRef.current !== e.pointerId) return;
+      activePointerIdRef.current = null;
     };
 
-    element.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMove);
+    element.addEventListener("pointerdown", onPointerDown, { passive: false });
+    window.addEventListener("pointermove", onPointerMove, { passive: false });
     window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
 
     return () => {
       element.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      activePointerIdRef.current = null;
     };
   }, [enabled, gl, lookRef]);
 
   return null;
 }
 
-
 /* ===================== Mobile HUD ======================= */
-function HudButton({ label, ...events }) {
-  return (
-    <button
-      {...events}
-      style={{
-        width: 52,
-        height: 52,
-        borderRadius: 999,
-        border: "1px solid rgba(255,255,255,0.4)",
-        background: "rgba(0,0,0,0.55)",
-        color: "#fff",
-        fontSize: 22,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backdropFilter: "blur(8px)",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        touchAction: "none",
-      }}
-    >
-      {label}
-    </button>
-  );
-}
-
 function MobileHUD({ setInput }) {
   if (!setInput) return null;
 
-  const update = (name, value) => {
-    setInput((prev) => ({ ...prev, [name]: value }));
-  };
+  const joystickRef = useRef(null);
+  const joystickPointerIdRef = useRef(null);
+  const [thumbPos, setThumbPos] = useState({ x: 0, y: 0 });
 
-  const makeHandlers = (name) => {
-    const start = (e) => {
+  const JOYSTICK_RADIUS = 38;
+  const DEADZONE = 0.22;
+
+  const setMovementFromVector = useCallback(
+    (nx, ny) => {
+      const magnitude = Math.hypot(nx, ny);
+      const moving = magnitude > DEADZONE;
+
+      setInput((prev) => ({
+        ...prev,
+        forward: moving && ny < -0.22,
+        backward: moving && ny > 0.22,
+        left: moving && nx < -0.22,
+        right: moving && nx > 0.22,
+        sprint: moving && magnitude > 0.9,
+      }));
+    },
+    [setInput]
+  );
+
+  const resetMovement = useCallback(() => {
+    setThumbPos({ x: 0, y: 0 });
+    setInput((prev) => ({
+      ...prev,
+      forward: false,
+      backward: false,
+      left: false,
+      right: false,
+      sprint: false,
+    }));
+  }, [setInput]);
+
+  const onStickDown = useCallback((e) => {
+    if (joystickPointerIdRef.current !== null) return;
+    joystickPointerIdRef.current = e.pointerId;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+  }, []);
+
+  const onStickMove = useCallback(
+    (e) => {
+      if (joystickPointerIdRef.current !== e.pointerId) return;
+      const baseRect = joystickRef.current?.getBoundingClientRect();
+      if (!baseRect) return;
+
+      const cx = baseRect.left + baseRect.width / 2;
+      const cy = baseRect.top + baseRect.height / 2;
+      let dx = e.clientX - cx;
+      let dy = e.clientY - cy;
+
+      const len = Math.hypot(dx, dy);
+      if (len > JOYSTICK_RADIUS) {
+        dx = (dx / len) * JOYSTICK_RADIUS;
+        dy = (dy / len) * JOYSTICK_RADIUS;
+      }
+
+      setThumbPos({ x: dx, y: dy });
+      setMovementFromVector(dx / JOYSTICK_RADIUS, dy / JOYSTICK_RADIUS);
       e.preventDefault();
-      e.stopPropagation();
-      update(name, true);
-    };
-    const end = (e) => {
+    },
+    [setMovementFromVector]
+  );
+
+  const onStickUp = useCallback(
+    (e) => {
+      if (joystickPointerIdRef.current !== e.pointerId) return;
+      joystickPointerIdRef.current = null;
+      resetMovement();
       e.preventDefault();
-      e.stopPropagation();
-      update(name, false);
-    };
-    return {
-      onTouchStart: start,
-      onTouchEnd: end,
-      onTouchCancel: end,
-      onMouseDown: start,
-      onMouseUp: end,
-      onMouseLeave: end,
-    };
-  };
+    },
+    [resetMovement]
+  );
+
+  const onJumpStart = useCallback(
+    (e) => {
+      e.preventDefault();
+      setInput((prev) => ({ ...prev, jump: true }));
+    },
+    [setInput]
+  );
+
+  const onJumpEnd = useCallback(
+    (e) => {
+      e.preventDefault();
+      setInput((prev) => ({ ...prev, jump: false }));
+    },
+    [setInput]
+  );
+
+  useEffect(() => {
+    return () => resetMovement();
+  }, [resetMovement]);
 
   return (
     <div
+      data-mobile-control="true"
       style={{
         position: "fixed",
-        bottom: 90,
+        bottom: 84,
         left: 0,
         right: 0,
-        padding: "0 24px",
+        padding: "0 20px",
         display: "flex",
         justifyContent: "space-between",
         pointerEvents: "none",
         zIndex: 40,
       }}
     >
-      {/* Left – movement pad */}
       <div
+        ref={joystickRef}
+        data-mobile-control="true"
+        onPointerDown={onStickDown}
+        onPointerMove={onStickMove}
+        onPointerUp={onStickUp}
+        onPointerCancel={onStickUp}
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 8,
+          width: 108,
+          height: 108,
+          borderRadius: "50%",
+          border: "1px solid rgba(255,255,255,0.32)",
+          background: "rgba(0,0,0,0.42)",
           pointerEvents: "auto",
+          touchAction: "none",
+          backdropFilter: "blur(8px)",
+          position: "relative",
         }}
       >
-        <div />
-        <HudButton label="▲" {...makeHandlers("forward")} />
-        <div />
-        <HudButton label="◀" {...makeHandlers("left")} />
-        <HudButton label="▼" {...makeHandlers("backward")} />
-        <HudButton label="▶" {...makeHandlers("right")} />
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            border: "1px solid rgba(255,255,255,0.5)",
+            background: "rgba(255,255,255,0.16)",
+            transform: `translate(calc(-50% + ${thumbPos.x}px), calc(-50% + ${thumbPos.y}px))`,
+            transition:
+              joystickPointerIdRef.current === null ? "transform 80ms ease-out" : "none",
+          }}
+        />
       </div>
 
-      {/* Right – jump */}
       <div
+        data-mobile-control="true"
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 10,
+          gap: 12,
           pointerEvents: "auto",
           alignItems: "flex-end",
         }}
       >
-        <HudButton label="⤒" {...makeHandlers("jump")} />
+        <button
+          data-mobile-control="true"
+          onPointerDown={onJumpStart}
+          onPointerUp={onJumpEnd}
+          onPointerCancel={onJumpEnd}
+          style={{
+            width: 68,
+            height: 68,
+            borderRadius: "50%",
+            border: "1px solid rgba(255,255,255,0.5)",
+            background: "rgba(0,0,0,0.52)",
+            color: "#fff",
+            fontSize: 14,
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            touchAction: "none",
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          JUMP
+        </button>
       </div>
     </div>
   );
@@ -781,6 +883,7 @@ export default function GalleryPage() {
 
   // 📱 detect touch devices
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [showMobileWarning, setShowMobileWarning] = useState(false);
   const [mobileInput, setMobileInput] = useState({
     forward: false,
     backward: false,
@@ -809,6 +912,13 @@ export default function GalleryPage() {
 
     setIsTouchDevice(isCoarsePointer || isSmallScreen);
   }, []);
+
+  useEffect(() => {
+    if (!isTouchDevice) return;
+    const key = "gallery-mobile-warning-shown";
+    const alreadyShown = sessionStorage.getItem(key) === "1";
+    if (!alreadyShown) setShowMobileWarning(true);
+  }, [isTouchDevice]);
 
   const addBall = (b) =>
     setBalls((prev) => {
@@ -869,6 +979,7 @@ export default function GalleryPage() {
       {/* Small helper text for mobile */}
       {isTouchDevice && (
         <div
+          data-mobile-control="true"
           style={{
             position: "fixed",
             top: 12,
@@ -883,7 +994,65 @@ export default function GalleryPage() {
             backdropFilter: "blur(6px)",
           }}
         >
-          Drag to look around • use buttons below to move
+          Right-side drag to look - left joystick to move
+        </div>
+      )}
+
+      {isTouchDevice && showMobileWarning && (
+        <div
+          data-mobile-control="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 70,
+            display: "grid",
+            placeItems: "center",
+            background: "rgba(0,0,0,0.44)",
+            backdropFilter: "blur(6px)",
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              width: "min(92vw, 420px)",
+              background: "rgba(10,10,12,0.84)",
+              border: "1px solid rgba(255,255,255,0.22)",
+              borderRadius: 16,
+              padding: "18px 16px 14px",
+              color: "#fff",
+              boxShadow: "0 20px 44px rgba(0,0,0,0.4)",
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: 14,
+                lineHeight: 1.45,
+                opacity: 0.95,
+              }}
+            >
+              Warning: this page is best experienced in desktop/laptop.
+            </p>
+            <button
+              data-mobile-control="true"
+              onClick={() => {
+                sessionStorage.setItem("gallery-mobile-warning-shown", "1");
+                setShowMobileWarning(false);
+              }}
+              style={{
+                marginTop: 12,
+                width: "100%",
+                borderRadius: 10,
+                border: "1px solid rgba(255,255,255,0.3)",
+                background: "rgba(255,255,255,0.12)",
+                color: "#fff",
+                padding: "8px 10px",
+                fontWeight: 600,
+              }}
+            >
+              Continue
+            </button>
+          </div>
         </div>
       )}
 
@@ -945,7 +1114,9 @@ export default function GalleryPage() {
       />
 
       {/* 🕹 Mobile HUD joystick */}
-      {isTouchDevice && <MobileHUD setInput={setMobileInput} />}
+      {isTouchDevice && !active && !showMobileWarning && (
+        <MobileHUD setInput={setMobileInput} />
+      )}
 
       {/* Painting modal */}
       {active && (
@@ -1138,7 +1309,12 @@ export default function GalleryPage() {
           )}
 
           {/* Mobile: drag-to-look */}
-          {isTouchDevice && <TouchLook enabled={true} lookRef={lookRef} />}
+          {isTouchDevice && (
+            <TouchLook
+              enabled={!active && !showMobileWarning}
+              lookRef={lookRef}
+            />
+          )}
           <EffectComposer>
             <Bloom
               intensity={0.4}
@@ -1157,6 +1333,8 @@ export default function GalleryPage() {
 }
 
 useGLTF.preload("/models/gallery-updated-compressed.glb");
+
+
 
 
 

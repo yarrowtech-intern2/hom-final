@@ -512,6 +512,8 @@ import DecryptedText from "../components/decryptedText";
 /* ----------------------------- Config toggles ----------------------------- */
 const USE_HDR_BACKGROUND = true;
 const HDR_FILE = "/hdr/alps.hdr";
+const HOME_DAWN_GRADIENT =
+  "radial-gradient(120% 78% at 50% 76%, rgba(255, 174, 74, 0.42) 0%, rgba(255, 174, 74, 0) 58%), linear-gradient(180deg, #fff3df 0%, #ffd69a 34%, #f0a041 66%, #b56708 100%)";
 
 /* ----------------------------- Mobile detector ---------------------------- */
 function useIsMobile(breakpoint = 768) {
@@ -677,7 +679,7 @@ function Scene({ isMobile }) {
 
   return (
     <>
-      {USE_HDR_BACKGROUND && <color attach="background" args={["#ffff"]} />}
+      {/* Keep environment lighting from HDR, but let the DOM dawn gradient be visible */}
 
       {/* Softer lights on mobile */}
       <hemisphereLight intensity={isMobile ? 0.015 : 0.02} groundColor="#222" />
@@ -771,9 +773,11 @@ export default function Home3D() {
 
   useEffect(() => {
     const prevBodyBg = document.body.style.background;
+    const prevHtmlBg = document.documentElement.style.background;
     const prevBodyOverflow = document.body.style.overflow;
 
-    document.body.style.background = "#0b0b0c"; // dark background for home
+    document.body.style.background = HOME_DAWN_GRADIENT;
+    document.documentElement.style.background = HOME_DAWN_GRADIENT;
 
     // Only lock overflow on non-mobile so mobile can scroll
     if (!isMobile) {
@@ -785,6 +789,7 @@ export default function Home3D() {
 
     return () => {
       document.body.style.background = prevBodyBg;
+      document.documentElement.style.background = prevHtmlBg;
       document.body.style.overflow = prevBodyOverflow;
     };
   }, [isMobile]);
@@ -836,6 +841,7 @@ export default function Home3D() {
         }}
         gl={{
           antialias: !isMobile,
+          alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           outputColorSpace: THREE.SRGBColorSpace,
@@ -855,6 +861,7 @@ export default function Home3D() {
             Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5)
           );
           gl.physicallyCorrectLights = true;
+          gl.setClearColor(0x000000, 0);
         }}
       >
         <Scene isMobile={isMobile} />

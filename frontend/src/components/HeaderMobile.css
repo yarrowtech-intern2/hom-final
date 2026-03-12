@@ -100,6 +100,7 @@ html, body {
 .mobile-panel.open a:nth-child(4) { transition-delay: 130ms; }
 .mobile-panel.open a:nth-child(5) { transition-delay: 160ms; }
 .mobile-panel.open a:nth-child(6) { transition-delay: 190ms; }
+.mobile-panel.open a:nth-child(7) { transition-delay: 220ms; }
 
 /* Accessibility: reduce motion */
 @media (prefers-reduced-motion: reduce) {
