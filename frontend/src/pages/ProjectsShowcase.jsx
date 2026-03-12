@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
+import * as THREE from "three";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ytPoster from "../assets/posters/yt.png";
@@ -92,418 +93,390 @@ const PROCESS_STEPS = [
   },
 ];
 
-const MARQUEE_WORDS = [
-  "Spotlight Projects",
-  "Creative Engineering",
-  "Immersive Interfaces",
-  "Performance First",
-  "House of Musa",
-];
+function CrosshairIcon({ size = 40, color = "currentColor", strokeWidth = 1.4 }) {
+  const r = size / 2;
+  const innerR = r * 0.28;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none" aria-hidden="true">
+      <circle cx={r} cy={r} r={r - 1} stroke={color} strokeWidth={strokeWidth} />
+      <circle cx={r} cy={r} r={innerR} stroke={color} strokeWidth={strokeWidth} />
+      <line x1={r} y1={1} x2={r} y2={r - innerR - 2} stroke={color} strokeWidth={strokeWidth} />
+      <line x1={r} y1={r + innerR + 2} x2={r} y2={size - 1} stroke={color} strokeWidth={strokeWidth} />
+      <line x1={1} y1={r} x2={r - innerR - 2} y2={r} stroke={color} strokeWidth={strokeWidth} />
+      <line x1={r + innerR + 2} y1={r} x2={size - 1} y2={r} stroke={color} strokeWidth={strokeWidth} />
+    </svg>
+  );
+}
 
 export default function ProjectsShowcase() {
-  const pageRef = useRef(null);
-  const projectsWrapperRef = useRef(null);
-  const projectsTrackRef = useRef(null);
-  const processRef = useRef(null);
-  const footerRef = useRef(null);
-  const projectCardsRef = useRef([]);
+  const pageRef  = useRef(null);
+  const canvasRef = useRef(null);
 
-  projectCardsRef.current = [];
-  const addCardRef = (el) => {
-    if (el && !projectCardsRef.current.includes(el)) {
-      projectCardsRef.current.push(el);
-    }
-  };
-
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap
-        .timeline({ defaults: { ease: "power4.out" } })
-        .from(".ps-kicker, .ps-kicker-count", {
-          y: 14,
-          opacity: 0,
-          duration: 0.65,
-          stagger: 0.08,
-        })
-        .from(
-          ".ps-hero-line",
-          { scaleX: 0, transformOrigin: "left center", duration: 1.05, ease: "power3.inOut" },
-          0.15
-        )
-        .from(".ps-word-inner", { yPercent: 112, duration: 1.05, stagger: 0.1 }, 0.28)
-        .from(".ps-subheadline", { y: 24, opacity: 0, duration: 0.78 }, "-=0.4")
-        .from(".ps-hero-chip", { y: 14, opacity: 0, duration: 0.55, stagger: 0.08 }, "-=0.42")
-        .from(".ps-scroll-hint", { y: 16, opacity: 0, duration: 0.6 }, "-=0.28");
-
-      gsap.from(".ps-marquee", {
-        y: 16,
-        opacity: 0,
-        duration: 0.78,
-        ease: "power3.out",
-        scrollTrigger: { trigger: ".ps-marquee", start: "top 90%", once: true },
-      });
-
-      const mm = gsap.matchMedia();
-      mm.add("(min-width: 769px)", () => {
-        const getScrollDistance = () =>
-          projectsTrackRef.current
-            ? Math.max(0, projectsTrackRef.current.scrollWidth - window.innerWidth)
-            : 0;
-
-        const horizontalTween = gsap.to(projectsTrackRef.current, {
-          x: () => -getScrollDistance(),
-          ease: "none",
-          scrollTrigger: {
-            trigger: projectsWrapperRef.current,
-            start: "top top",
-            end: () => `+=${getScrollDistance()}`,
-            pin: true,
-            scrub: 1.05,
-            snap:
-              PROJECTS.length > 1
-                ? {
-                    snapTo: 1 / (PROJECTS.length - 1),
-                    duration: { min: 0.28, max: 0.58 },
-                    delay: 0.06,
-                    ease: "power1.inOut",
-                  }
-                : false,
-            anticipatePin: 0.5,
-            fastScrollEnd: true,
-            invalidateOnRefresh: true,
-          },
-        });
-
-        gsap.from(".ps-section-label, .ps-section-subtitle, .ps-section-counter", {
-          y: 22,
-          opacity: 0,
-          duration: 0.72,
-          stagger: 0.08,
-          ease: "power3.out",
-          scrollTrigger: { trigger: projectsWrapperRef.current, start: "top 72%", once: true },
-        });
-
-        projectCardsRef.current.forEach((card) => {
-          const frame = card.querySelector(".project-frame");
-          const imageSide = card.querySelector(".project-work-image-side");
-          const infoSide = card.querySelector(".project-work-info-side");
-          const img = card.querySelector(".project-work-image-side img");
-          const infoChildren = infoSide ? Array.from(infoSide.querySelectorAll(":scope > *")) : [];
-
-          if (frame) {
-            gsap.from(frame, {
-              y: 26,
-              opacity: 0,
-              duration: 0.75,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: card,
-                containerAnimation: horizontalTween,
-                start: "left 86%",
-                toggleActions: "play none none none",
-              },
-            });
-          }
-
-          if (imageSide) {
-            gsap.from(imageSide, {
-              x: -54,
-              opacity: 0,
-              duration: 0.8,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: card,
-                containerAnimation: horizontalTween,
-                start: "left 84%",
-                toggleActions: "play none none none",
-              },
-            });
-          }
-
-          if (img) {
-            gsap.fromTo(
-              img,
-              { scale: 1.08 },
-              {
-                scale: 1,
-                ease: "none",
-                scrollTrigger: {
-                  trigger: card,
-                  containerAnimation: horizontalTween,
-                  start: "left right",
-                  end: "right left",
-                  scrub: true,
-                },
-              }
-            );
-          }
-
-          if (infoChildren.length > 0) {
-            gsap.from(infoChildren, {
-              y: 20,
-              opacity: 0,
-              stagger: 0.08,
-              duration: 0.54,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: card,
-                containerAnimation: horizontalTween,
-                start: "left 76%",
-                toggleActions: "play none none none",
-              },
-            });
-          }
-        });
-      });
-
-      gsap.from(".ps-process-kicker, .ps-process-title", {
-        y: 44,
-        opacity: 0,
-        stagger: 0.12,
-        duration: 0.86,
-        ease: "power3.out",
-        scrollTrigger: { trigger: processRef.current, start: "top 78%", once: true },
-      });
-
-      gsap.from(".ps-process-row", {
-        y: 34,
-        opacity: 0,
-        stagger: 0.12,
-        duration: 0.78,
-        ease: "power3.out",
-        scrollTrigger: { trigger: processRef.current, start: "top 74%", once: true },
-      });
-
-      gsap.from(".ps-process-divider", {
-        scaleX: 0,
-        transformOrigin: "left center",
-        stagger: 0.12,
-        duration: 0.7,
-        ease: "power2.inOut",
-        scrollTrigger: { trigger: processRef.current, start: "top 72%", once: true },
-      });
-
-      gsap.from(".ps-footer-brand, .ps-footer-nav, .ps-footer-tagline, .ps-footer-bottom", {
-        y: 24,
-        opacity: 0,
-        stagger: 0.08,
-        duration: 0.7,
-        ease: "power3.out",
-        scrollTrigger: { trigger: footerRef.current, start: "top 88%", once: true },
-      });
-
-      const refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 400);
-      return () => clearTimeout(refreshTimer);
-    }, pageRef);
-
-    return () => ctx.revert();
+  /* ── Page bg ── */
+  useEffect(() => {
+    const prev = document.body.style.background;
+    document.body.style.background = "#EFE8D5";
+    return () => { document.body.style.background = prev; };
   }, []);
 
+  /* ── Three.js gold wire mesh ── */
   useEffect(() => {
-    const root = document.getElementById("root");
-    const prev = {
-      bodyBg: document.body.style.background,
-      htmlBg: document.documentElement.style.background,
-      bodyOverflow: document.body.style.overflow,
-      htmlOverflow: document.documentElement.style.overflow,
-      rootOverflow: root ? root.style.overflow : "",
-      rootHeight: root ? root.style.height : "",
-    };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    document.body.style.background = "#9d6800";
-    document.documentElement.style.background = "#9d6800";
-    document.body.style.overflow = "auto";
-    document.documentElement.style.overflow = "auto";
-    if (root) {
-      root.style.overflow = "visible";
-      root.style.height = "auto";
+    const isMobile = window.innerWidth < 768;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance" });
+    renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
+    renderer.setClearColor(0x0b0b0b, 1);
+
+    const scene = new THREE.Scene();
+    /* Wider FOV + closer camera fills the full viewport with the mesh */
+    const camera = new THREE.PerspectiveCamera(68, 1, 0.1, 300);
+    camera.position.set(0, 5, 18);
+    camera.lookAt(0, 0, -1);
+
+    /* Fewer segments on mobile for performance */
+    const segW = isMobile ? 48 : 70;
+    const segH = isMobile ? 32 : 46;
+    const geometry = new THREE.PlaneGeometry(150, 100, segW, segH);
+    geometry.rotateX(-Math.PI * 0.4);
+
+    const material = new THREE.MeshBasicMaterial({
+      color: 0xb07828,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.55,
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    const posAttr = geometry.attributes.position;
+    const count   = posAttr.count;
+    const orig    = new Float32Array(posAttr.array);
+
+    function resize() {
+      const cw = canvas.clientWidth;
+      const ch = canvas.clientHeight;
+      if (!cw || !ch) return;
+      renderer.setSize(cw, ch, false);
+      camera.aspect = cw / ch;
+      camera.updateProjectionMatrix();
     }
 
-    return () => {
-      document.body.style.background = prev.bodyBg;
-      document.documentElement.style.background = prev.htmlBg;
-      document.body.style.overflow = prev.bodyOverflow;
-      document.documentElement.style.overflow = prev.htmlOverflow;
-      if (root) {
-        root.style.overflow = prev.rootOverflow;
-        root.style.height = prev.rootHeight;
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas.parentElement || canvas);
+
+    let animId;
+    const t0 = performance.now();
+    let frame = 0;
+
+    function animate() {
+      animId = requestAnimationFrame(animate);
+      frame++;
+      /* Skip every other frame on mobile for smooth 30 fps */
+      if (isMobile && frame % 2 !== 0) return;
+
+      const t = (performance.now() - t0) * 0.001;
+      const arr = posAttr.array;
+
+      for (let i = 0; i < count; i++) {
+        const ix = i * 3;
+        const ox = orig[ix];
+        const oy = orig[ix + 1];
+        arr[ix + 1] = oy + Math.sin(ox * 0.2 + t) * 1.8 + Math.sin(oy * 0.15 + t * 0.6) * 1.2;
       }
+      posAttr.needsUpdate = true;
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      ro.disconnect();
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+    };
+  }, []);
+
+  /* ── GSAP — every text element ── */
+  useLayoutEffect(() => {
+    /* Normalise touch scroll on mobile so ScrollTrigger fires correctly */
+    ScrollTrigger.normalizeScroll(true);
+
+    const ctx = gsap.context(() => {
+
+      /* ── HERO (no scrollTrigger — play on load) ── */
+      gsap.fromTo(".ps2-hero-title-inner",
+        { y: "108%", immediateRender: true },
+        { y: "0%", duration: 1.1, ease: "power4.out", stagger: 0.13, delay: 0.3 }
+      );
+      gsap.fromTo(".ps2-hero-caption",
+        { y: 18, opacity: 0, immediateRender: true },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", delay: 0.75 }
+      );
+
+      /* ── STATEMENT ── */
+      gsap.fromTo(".ps2-statement-line",
+        { y: "105%", immediateRender: false },
+        { y: "0%", duration: 1, ease: "power3.out", stagger: 0.1,
+          scrollTrigger: { trigger: ".ps2-statement", start: "top 88%", once: true } }
+      );
+      gsap.fromTo(".ps2-statement-subcol",
+        { y: 30, opacity: 0, immediateRender: false },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out", stagger: 0.15,
+          scrollTrigger: { trigger: ".ps2-statement-subcols", start: "top 92%", once: true } }
+      );
+
+      /* ── PROCESS ── */
+      gsap.fromTo(".ps2-process-label",
+        { x: -24, opacity: 0, immediateRender: false },
+        { x: 0, opacity: 1, duration: 0.65, ease: "power2.out",
+          scrollTrigger: { trigger: ".ps2-process-topbar", start: "top 95%", once: true } }
+      );
+      gsap.fromTo(".ps2-process-counter",
+        { x: 24, opacity: 0, immediateRender: false },
+        { x: 0, opacity: 1, duration: 0.65, ease: "power2.out",
+          scrollTrigger: { trigger: ".ps2-process-topbar", start: "top 95%", once: true } }
+      );
+      gsap.fromTo(".ps2-process-title .ps2-word-inner",
+        { y: "108%", immediateRender: false },
+        { y: "0%", duration: 1, ease: "power4.out", stagger: 0.1,
+          scrollTrigger: { trigger: ".ps2-process-left", start: "top 90%", once: true } }
+      );
+      gsap.fromTo(".ps2-process-desc",
+        { y: 22, opacity: 0, immediateRender: false },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out",
+          scrollTrigger: { trigger: ".ps2-process-left", start: "top 88%", once: true } }
+      );
+      gsap.fromTo(".ps2-process-card",
+        { x: 60, opacity: 0, immediateRender: false },
+        { x: 0, opacity: 1, duration: 0.85, ease: "power3.out", stagger: 0.14,
+          scrollTrigger: { trigger: ".ps2-process-right", start: "top 92%", once: true } }
+      );
+      gsap.fromTo(".ps2-process-card-body",
+        { opacity: 0, y: 10, immediateRender: false },
+        { opacity: 1, y: 0, duration: 0.65, ease: "power2.out", stagger: 0.12,
+          scrollTrigger: { trigger: ".ps2-process-right", start: "top 88%", once: true } }
+      );
+
+      /* ── PROJECTS ── */
+      gsap.fromTo(".ps2-projects-headline .ps2-word-inner",
+        { y: "108%", immediateRender: false },
+        { y: "0%", duration: 1, ease: "power4.out", stagger: 0.13,
+          scrollTrigger: { trigger: ".ps2-projects", start: "top 92%", once: true } }
+      );
+      gsap.fromTo(".ps2-project-col",
+        { y: 50, opacity: 0, immediateRender: false },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", stagger: 0.1,
+          scrollTrigger: { trigger: ".ps2-projects-grid", start: "top 92%", once: true } }
+      );
+      gsap.fromTo(".ps2-project-meta",
+        { x: -16, opacity: 0, immediateRender: false },
+        { x: 0, opacity: 1, duration: 0.65, ease: "power2.out", stagger: 0.08,
+          scrollTrigger: { trigger: ".ps2-projects-grid", start: "top 88%", once: true } }
+      );
+      gsap.fromTo(".ps2-project-img",
+        { scale: 1.08, opacity: 0, immediateRender: false },
+        { scale: 1, opacity: 1, duration: 0.9, ease: "power3.out", stagger: 0.09,
+          scrollTrigger: { trigger: ".ps2-projects-grid", start: "top 88%", once: true } }
+      );
+      gsap.fromTo(".ps2-project-title",
+        { y: 20, opacity: 0, immediateRender: false },
+        { y: 0, opacity: 1, duration: 0.7, ease: "power3.out", stagger: 0.09,
+          scrollTrigger: { trigger: ".ps2-projects-grid", start: "top 85%", once: true } }
+      );
+      gsap.fromTo(".ps2-project-tagline",
+        { opacity: 0, immediateRender: false },
+        { opacity: 1, duration: 0.6, ease: "power2.out", stagger: 0.08,
+          scrollTrigger: { trigger: ".ps2-projects-grid", start: "top 82%", once: true } }
+      );
+
+      /* ── FOOTER ── */
+      gsap.fromTo(".ps2-footer-left svg",
+        { scale: 0.82, opacity: 0, rotation: -10, immediateRender: false },
+        { scale: 1, opacity: 1, rotation: 0, duration: 1.1, ease: "power3.out",
+          scrollTrigger: { trigger: ".ps2-footer", start: "top 92%", once: true } }
+      );
+      gsap.fromTo(".ps2-footer-nav a",
+        { y: 16, opacity: 0, immediateRender: false },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", stagger: 0.06,
+          scrollTrigger: { trigger: ".ps2-footer-right", start: "top 95%", once: true } }
+      );
+      gsap.fromTo(".ps2-footer-social-link",
+        { x: -16, opacity: 0, immediateRender: false },
+        { x: 0, opacity: 1, duration: 0.65, ease: "power2.out", stagger: 0.1,
+          scrollTrigger: { trigger: ".ps2-footer-socials", start: "top 95%", once: true } }
+      );
+      gsap.fromTo(".ps2-footer-bottom-row",
+        { opacity: 0, immediateRender: false },
+        { opacity: 1, duration: 0.65, ease: "power2.out",
+          scrollTrigger: { trigger: ".ps2-footer-bottom-row", start: "top 98%", once: true } }
+      );
+
+    }, pageRef);
+
+    /* Force ScrollTrigger to recalculate after fonts + images load */
+    const tid = setTimeout(() => ScrollTrigger.refresh(), 300);
+
+    return () => {
+      clearTimeout(tid);
+      ctx.revert();
     };
   }, []);
 
   return (
-    <main className="projects-showcase-page" ref={pageRef}>
-      <section className="ps-hero">
-        <div className="ps-hero-inner">
-          <div className="ps-kicker-row">
-            <span className="ps-kicker">House of Musa - Showcase 2025</span>
-            <span className="ps-kicker-count">0{PROJECTS.length} Spotlight Works</span>
+    <div className="ps2-page" ref={pageRef}>
+
+      {/* ══ HERO ══ */}
+      <section className="ps2-hero">
+        <canvas ref={canvasRef} className="ps2-hero-canvas" />
+
+        <div className="ps2-hero-inner">
+          <div className="ps2-hero-title-wrap">
+            <h1 className="ps2-hero-title">
+              <span className="ps2-hero-title-line">
+                <span className="ps2-hero-title-inner">HOUSE</span>
+              </span>
+              <span className="ps2-hero-title-line">
+                <span className="ps2-hero-title-inner">OF MUSA.</span>
+              </span>
+            </h1>
+            <p className="ps2-hero-caption">Spotlight Projects 2025</p>
           </div>
+        </div>
+      </section>
 
-          <div className="ps-hero-line" />
-
-          <h1 className="ps-headline" aria-label="Project Showcase Edition">
-            {["PROJECT", "SHOWCASE", "EDITION"].map((word, idx) => (
-              <span key={word} className={`ps-headline-line ${idx === 1 ? "is-outline" : ""}`}>
-                <span className="ps-word-inner">{word}</span>
+      {/* ══ STATEMENT ══ */}
+      <section className="ps2-statement">
+        <div className="ps2-statement-inner">
+          <p className="ps2-statement-body">
+            {[
+              "Our team of builders, designers,",
+              "and engineers crafts intelligent digital products —",
+              "built for modern businesses that demand performance.",
+            ].map((line) => (
+              <span key={line} className="ps2-statement-line-wrap">
+                <span className="ps2-statement-line">{line}</span>
               </span>
             ))}
-          </h1>
+          </p>
 
-          <div className="ps-hero-bottom">
-            <p className="ps-subheadline">
-              Same context, new stage.
-              <br />
-              A cinematic reel of Musa products.
+          <div className="ps2-statement-subcols">
+            <p className="ps2-statement-subcol">
+              FROM THE FIRST IDEA TO LAUNCH, HOUSE OF MUSA IS BY YOUR SIDE — HELPING YOU NAVIGATE
+              PRODUCT STRATEGY, DESIGN, ENGINEERING, AND WHATEVER YOUR PROJECT NEEDS.
             </p>
-
-            <div className="ps-hero-chips" aria-hidden="true">
-              <span className="ps-hero-chip">Creative Tech</span>
-              <span className="ps-hero-chip">Built for Scale</span>
-              <span className="ps-hero-chip">Performance First</span>
-            </div>
-
-            <div className="ps-scroll-hint">
-              <span className="ps-scroll-pip" />
-              <span className="ps-scroll-text">Scroll to enter spotlight</span>
-            </div>
+            <p className="ps2-statement-subcol">
+              PARTNERING WITH HOUSE OF MUSA MEANS A STREAMLINED, END-TO-END APPROACH — FROM CONCEPT
+              AND ARCHITECTURE TO DEVELOPMENT AND DELIVERY.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="ps-marquee" aria-label="Showcase ribbon">
-        <div className="ps-marquee-track">
-          {[...MARQUEE_WORDS, ...MARQUEE_WORDS, ...MARQUEE_WORDS].map((word, idx) => (
-            <span key={`${word}-${idx}`}>{word}</span>
-          ))}
-        </div>
-      </section>
-
-      <section className="projects-wrapper-section" ref={projectsWrapperRef}>
-        <div className="projects-section-header">
-          <span className="ps-section-label">In the Spotlight</span>
-          <p className="ps-section-subtitle">A bold scroll reel with your current projects and context.</p>
-          <span className="ps-section-counter" aria-hidden="true">
-            01 - {String(PROJECTS.length).padStart(2, "0")}
-          </span>
+      {/* ══ PROCESS ══ */}
+      <section className="ps2-process">
+        <div className="ps2-process-topbar">
+          <span className="ps2-process-label">PROCESS</span>
+          <span className="ps2-process-counter">[HOM.03]</span>
         </div>
 
-        <div className="projects-scroll-track" ref={projectsTrackRef}>
-          {PROJECTS.map((project, index) => (
-            <article className="project-work-card" key={project.title} ref={addCardRef}>
-              <span className="project-bg-num" aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-
-              <div className="project-frame">
-                <a
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-work-image-side"
-                  aria-label={`Open ${project.title}`}
-                >
-                  <img src={project.poster} alt={`${project.title} screenshot`} loading="lazy" />
-                  <div className="project-hover-label">
-                    <span>Open Project</span>
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-                      <path
-                        d="M2.5 12.5L12.5 2.5M12.5 2.5H5.5M12.5 2.5V9.5"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                </a>
-
-                <div className="project-work-info-side">
-                  <div className="project-work-meta">
-                    <span className="project-work-idx">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="project-work-sep">/</span>
-                    <span className="project-work-total">{String(PROJECTS.length).padStart(2, "0")}</span>
-                  </div>
-
-                  <h3 className="project-work-title">{project.title.toUpperCase()}</h3>
-                  <p className="project-work-tagline">{project.tagline}</p>
-                  <p className="project-work-description">{project.description}</p>
-
-                  <div className="project-work-tags">
-                    {project.tags.map((tag) => (
-                      <span key={`${project.title}-${tag}`}>{tag}</span>
-                    ))}
-                  </div>
-
-                  <a href={project.url} target="_blank" rel="noopener noreferrer" className="project-work-cta">
-                    {project.cta}
-                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                      <path
-                        d="M2 11L11 2M11 2H4.5M11 2V8.5"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="ps-process-section" ref={processRef}>
-        <div className="ps-process-inner">
-          <div className="ps-process-header">
-            <span className="ps-process-kicker">How we build</span>
-            <h2 className="ps-process-title">Our Approach</h2>
+        <div className="ps2-process-inner">
+          <div className="ps2-process-left">
+            <h2 className="ps2-process-title">
+              {["Here at", "every step"].map((line) => (
+                <span key={line} className="ps2-word-line">
+                  <span className="ps2-word-inner">{line}</span>
+                </span>
+              ))}
+            </h2>
+            <p className="ps2-process-desc">
+              FROM DISCOVERY TO DELIVERY, WE MOVE WITH INTENTION — MAPPING YOUR GOALS,
+              ENGINEERING ROBUST SYSTEMS, AND SCALING WHAT WORKS.
+            </p>
           </div>
 
-          <div className="ps-process-list">
-            {PROCESS_STEPS.map((step) => (
-              <div key={step.num} className="ps-process-row">
-                <div className="ps-process-divider" />
-                <div className="ps-process-row-inner">
-                  <span className="ps-process-step-num">{step.num}</span>
-                  <div className="ps-process-step-body">
-                    <h3>{step.title}</h3>
-                    <p>{step.body}</p>
-                  </div>
-                  <span className="ps-process-step-arrow" aria-hidden="true">
-                    -
-                  </span>
+          <div className="ps2-process-right">
+            {PROCESS_STEPS.map((step, i) => (
+              <div key={step.num} className={`ps2-process-card${i === 1 ? " is-tilted" : ""}`}>
+                <div className="ps2-process-card-top">
+                  <span className="ps2-process-card-title">{step.title}</span>
+                  <span className="ps2-process-card-num">{step.num}</span>
                 </div>
+                <div className="ps2-process-card-divider" />
+                <p className="ps2-process-card-body">{step.body}</p>
+                <div className="ps2-process-card-divider" />
               </div>
             ))}
-            <div className="ps-process-divider" />
           </div>
         </div>
       </section>
 
-      <footer className="ps-footer" ref={footerRef}>
-        <div className="ps-footer-inner">
-          <div className="ps-footer-top">
-            <div className="ps-footer-brand">
-              <span className="ps-footer-logo">House of Musa</span>
-              <p className="ps-footer-tagline">Digital products built for scale.</p>
+      {/* ══ PROJECTS ══ */}
+      <section className="ps2-projects">
+        <h2 className="ps2-projects-headline">
+          {["Spotlight", "Projects"].map((w) => (
+            <span key={w} className="ps2-word-line">
+              <span className="ps2-word-inner">{w}</span>
+            </span>
+          ))}
+        </h2>
+
+        <div className="ps2-projects-grid">
+          {PROJECTS.map((p, i) => (
+            <div className="ps2-project-col" key={p.title}>
+              <div className="ps2-project-meta">
+                <span className="ps2-project-num">{String(i + 1).padStart(2, "0")}</span>
+                <span className="ps2-project-meta-line" aria-hidden="true" />
+                <span className="ps2-project-tag">{p.tags[0]}</span>
+              </div>
+              <div className="ps2-project-img-wrap">
+                <a href={p.url} target="_blank" rel="noopener noreferrer" tabIndex={-1}>
+                  <img src={p.poster} alt={p.title} className="ps2-project-img" loading="lazy" />
+                </a>
+              </div>
+              <h3 className="ps2-project-title">{p.title}</h3>
+              <p className="ps2-project-tagline">{p.tagline}</p>
             </div>
-            <nav className="ps-footer-nav" aria-label="Footer navigation">
-              <a href="/">Home</a>
-              <a href="/about">About</a>
-              <a href="/projects">Projects</a>
-              <a href="/gallery">Gallery</a>
-              <a href="/carrers">Careers</a>
-            </nav>
+          ))}
+        </div>
+      </section>
+
+      {/* ══ FOOTER ══ */}
+      <footer className="ps2-footer">
+        <div className="ps2-footer-inner">
+          <div className="ps2-footer-left">
+            <CrosshairIcon size={240} color="#EFE8D5" strokeWidth={0.7} />
           </div>
 
-          <div className="ps-footer-bottom">
-            <span className="ps-footer-copy">© 2026 House of Musa. All rights reserved.</span>
-            <span className="ps-footer-craft">Crafted with intention.</span>
+          <div className="ps2-footer-right">
+            <nav className="ps2-footer-nav" aria-label="Footer navigation">
+              <a href="/about">ABOUT</a>
+              <a href="/projects">PROJECTS</a>
+              <a href="/gallery">GALLERY</a>
+              <a href="/carrers">CAREERS</a>
+              <a href="/story">STORY</a>
+              <a href="/">HOME</a>
+            </nav>
+
+            <div className="ps2-footer-socials">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="ps2-footer-social-link">INSTAGRAM</a>
+              <a href="https://linkedin.com"  target="_blank" rel="noopener noreferrer" className="ps2-footer-social-link">LINKEDIN</a>
+              <a href="https://twitter.com"   target="_blank" rel="noopener noreferrer" className="ps2-footer-social-link">TWITTER / X</a>
+            </div>
+
+            <div className="ps2-footer-bottom-row">
+              <span className="ps2-footer-copy">&copy; 2026. HOUSE OF MUSA. ALL RIGHTS RESERVED.</span>
+              <span className="ps2-footer-craft">CRAFTED WITH INTENTION.</span>
+            </div>
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
