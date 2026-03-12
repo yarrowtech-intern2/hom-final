@@ -92,6 +92,14 @@ const PROCESS_STEPS = [
   },
 ];
 
+const MARQUEE_WORDS = [
+  "Spotlight Projects",
+  "Creative Engineering",
+  "Immersive Interfaces",
+  "Performance First",
+  "House of Musa",
+];
+
 export default function ProjectsShowcase() {
   const pageRef = useRef(null);
   const projectsWrapperRef = useRef(null);
@@ -109,18 +117,33 @@ export default function ProjectsShowcase() {
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      /* ── HERO (all breakpoints) ── */
       gsap
         .timeline({ defaults: { ease: "power4.out" } })
-        .from(".ps-kicker, .ps-kicker-count", { y: 14, opacity: 0, duration: 0.7, stagger: 0.08 })
-        .from(".ps-hero-line", { scaleX: 0, transformOrigin: "left center", duration: 1.1, ease: "power3.inOut" }, 0.18)
-        .from(".ps-word-inner", { yPercent: 112, duration: 1.1, stagger: 0.1 }, 0.28)
-        .from(".ps-subheadline", { y: 28, opacity: 0, duration: 0.85 }, "-=0.45")
-        .from(".ps-scroll-hint", { y: 16, opacity: 0, duration: 0.65 }, "-=0.35");
+        .from(".ps-kicker, .ps-kicker-count", {
+          y: 14,
+          opacity: 0,
+          duration: 0.65,
+          stagger: 0.08,
+        })
+        .from(
+          ".ps-hero-line",
+          { scaleX: 0, transformOrigin: "left center", duration: 1.05, ease: "power3.inOut" },
+          0.15
+        )
+        .from(".ps-word-inner", { yPercent: 112, duration: 1.05, stagger: 0.1 }, 0.28)
+        .from(".ps-subheadline", { y: 24, opacity: 0, duration: 0.78 }, "-=0.4")
+        .from(".ps-hero-chip", { y: 14, opacity: 0, duration: 0.55, stagger: 0.08 }, "-=0.42")
+        .from(".ps-scroll-hint", { y: 16, opacity: 0, duration: 0.6 }, "-=0.28");
 
-      /* ── HORIZONTAL SCROLL — DESKTOP ONLY via matchMedia ── */
+      gsap.from(".ps-marquee", {
+        y: 16,
+        opacity: 0,
+        duration: 0.78,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".ps-marquee", start: "top 90%", once: true },
+      });
+
       const mm = gsap.matchMedia();
-
       mm.add("(min-width: 769px)", () => {
         const getScrollDistance = () =>
           projectsTrackRef.current
@@ -135,64 +158,93 @@ export default function ProjectsShowcase() {
             start: "top top",
             end: () => `+=${getScrollDistance()}`,
             pin: true,
-            // Higher scrub = smoother, less stuttering
-            scrub: 1.2,
-            snap: PROJECTS.length > 1
-              ? {
-                  snapTo: 1 / (PROJECTS.length - 1),
-                  // Longer durations prevent the "snap freeze" effect
-                  duration: { min: 0.3, max: 0.65 },
-                  delay: 0.05,
-                  ease: "power1.inOut",
-                }
-              : false,
+            scrub: 1.05,
+            snap:
+              PROJECTS.length > 1
+                ? {
+                    snapTo: 1 / (PROJECTS.length - 1),
+                    duration: { min: 0.28, max: 0.58 },
+                    delay: 0.06,
+                    ease: "power1.inOut",
+                  }
+                : false,
             anticipatePin: 0.5,
-            invalidateOnRefresh: true,
             fastScrollEnd: true,
+            invalidateOnRefresh: true,
           },
         });
 
         gsap.from(".ps-section-label, .ps-section-subtitle, .ps-section-counter", {
-          y: 28, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.out",
+          y: 22,
+          opacity: 0,
+          duration: 0.72,
+          stagger: 0.08,
+          ease: "power3.out",
           scrollTrigger: { trigger: projectsWrapperRef.current, start: "top 72%", once: true },
         });
 
-        /* Per-card: use x/opacity only (clip-path in containerAnimation is too expensive) */
         projectCardsRef.current.forEach((card) => {
+          const frame = card.querySelector(".project-frame");
           const imageSide = card.querySelector(".project-work-image-side");
           const infoSide = card.querySelector(".project-work-info-side");
           const img = card.querySelector(".project-work-image-side img");
           const infoChildren = infoSide ? Array.from(infoSide.querySelectorAll(":scope > *")) : [];
 
-          if (imageSide) {
-            gsap.from(imageSide, {
-              x: -60, opacity: 0, duration: 0.85, ease: "power3.out",
+          if (frame) {
+            gsap.from(frame, {
+              y: 26,
+              opacity: 0,
+              duration: 0.75,
+              ease: "power3.out",
               scrollTrigger: {
                 trigger: card,
                 containerAnimation: horizontalTween,
-                start: "left 88%",
-                // "none none none none" avoids re-triggering on scroll-back which can freeze
+                start: "left 86%",
+                toggleActions: "play none none none",
+              },
+            });
+          }
+
+          if (imageSide) {
+            gsap.from(imageSide, {
+              x: -54,
+              opacity: 0,
+              duration: 0.8,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: card,
+                containerAnimation: horizontalTween,
+                start: "left 84%",
                 toggleActions: "play none none none",
               },
             });
           }
 
           if (img) {
-            gsap.fromTo(img, { scale: 1.1 }, {
-              scale: 1, ease: "none",
-              scrollTrigger: {
-                trigger: card,
-                containerAnimation: horizontalTween,
-                start: "left right",
-                end: "right left",
-                scrub: true,
-              },
-            });
+            gsap.fromTo(
+              img,
+              { scale: 1.08 },
+              {
+                scale: 1,
+                ease: "none",
+                scrollTrigger: {
+                  trigger: card,
+                  containerAnimation: horizontalTween,
+                  start: "left right",
+                  end: "right left",
+                  scrub: true,
+                },
+              }
+            );
           }
 
           if (infoChildren.length > 0) {
             gsap.from(infoChildren, {
-              y: 22, opacity: 0, stagger: 0.08, duration: 0.6, ease: "power3.out",
+              y: 20,
+              opacity: 0,
+              stagger: 0.08,
+              duration: 0.54,
+              ease: "power3.out",
               scrollTrigger: {
                 trigger: card,
                 containerAnimation: horizontalTween,
@@ -204,27 +256,42 @@ export default function ProjectsShowcase() {
         });
       });
 
-      /* ── PROCESS (all breakpoints) ── */
       gsap.from(".ps-process-kicker, .ps-process-title", {
-        y: 48, opacity: 0, stagger: 0.12, duration: 0.9, ease: "power3.out",
+        y: 44,
+        opacity: 0,
+        stagger: 0.12,
+        duration: 0.86,
+        ease: "power3.out",
         scrollTrigger: { trigger: processRef.current, start: "top 78%", once: true },
       });
+
       gsap.from(".ps-process-row", {
-        y: 44, opacity: 0, stagger: 0.15, duration: 0.85, ease: "power3.out",
-        scrollTrigger: { trigger: processRef.current, start: "top 72%", once: true },
-      });
-      gsap.from(".ps-process-divider", {
-        scaleX: 0, transformOrigin: "left center", stagger: 0.15, duration: 0.72, ease: "power2.inOut",
-        scrollTrigger: { trigger: processRef.current, start: "top 70%", once: true },
+        y: 34,
+        opacity: 0,
+        stagger: 0.12,
+        duration: 0.78,
+        ease: "power3.out",
+        scrollTrigger: { trigger: processRef.current, start: "top 74%", once: true },
       });
 
-      /* ── FOOTER (all breakpoints) ── */
+      gsap.from(".ps-process-divider", {
+        scaleX: 0,
+        transformOrigin: "left center",
+        stagger: 0.12,
+        duration: 0.7,
+        ease: "power2.inOut",
+        scrollTrigger: { trigger: processRef.current, start: "top 72%", once: true },
+      });
+
       gsap.from(".ps-footer-brand, .ps-footer-nav, .ps-footer-tagline, .ps-footer-bottom", {
-        y: 28, opacity: 0, stagger: 0.1, duration: 0.75, ease: "power3.out",
+        y: 24,
+        opacity: 0,
+        stagger: 0.08,
+        duration: 0.7,
+        ease: "power3.out",
         scrollTrigger: { trigger: footerRef.current, start: "top 88%", once: true },
       });
 
-      // Wait for images + fonts to settle before measuring
       const refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 400);
       return () => clearTimeout(refreshTimer);
     }, pageRef);
@@ -235,52 +302,49 @@ export default function ProjectsShowcase() {
   useEffect(() => {
     const root = document.getElementById("root");
     const prev = {
-      bodyBg:       document.body.style.background,
-      htmlBg:       document.documentElement.style.background,
+      bodyBg: document.body.style.background,
+      htmlBg: document.documentElement.style.background,
       bodyOverflow: document.body.style.overflow,
       htmlOverflow: document.documentElement.style.overflow,
       rootOverflow: root ? root.style.overflow : "",
-      rootHeight:   root ? root.style.height : "",
+      rootHeight: root ? root.style.height : "",
     };
 
-    // This page needs real scrolling — override the global body:overflow:hidden
-    document.body.style.background        = "#9d6800";
+    document.body.style.background = "#9d6800";
     document.documentElement.style.background = "#9d6800";
-    document.body.style.overflow          = "auto";
-    document.documentElement.style.overflow   = "auto";
+    document.body.style.overflow = "auto";
+    document.documentElement.style.overflow = "auto";
     if (root) {
       root.style.overflow = "visible";
-      root.style.height   = "auto";
+      root.style.height = "auto";
     }
 
     return () => {
-      document.body.style.background        = prev.bodyBg;
+      document.body.style.background = prev.bodyBg;
       document.documentElement.style.background = prev.htmlBg;
-      document.body.style.overflow          = prev.bodyOverflow;
-      document.documentElement.style.overflow   = prev.htmlOverflow;
+      document.body.style.overflow = prev.bodyOverflow;
+      document.documentElement.style.overflow = prev.htmlOverflow;
       if (root) {
         root.style.overflow = prev.rootOverflow;
-        root.style.height   = prev.rootHeight;
+        root.style.height = prev.rootHeight;
       }
     };
   }, []);
 
   return (
     <main className="projects-showcase-page" ref={pageRef}>
-
-      {/* ═══════════════ HERO ═══════════════ */}
       <section className="ps-hero">
         <div className="ps-hero-inner">
           <div className="ps-kicker-row">
-            <span className="ps-kicker">House of Musa — Projects</span>
-            <span className="ps-kicker-count">0{PROJECTS.length} Works</span>
+            <span className="ps-kicker">House of Musa - Showcase 2025</span>
+            <span className="ps-kicker-count">0{PROJECTS.length} Spotlight Works</span>
           </div>
 
           <div className="ps-hero-line" />
 
-          <h1 className="ps-headline" aria-label="Immersive Digital Work">
-            {["IMMERSIVE", "DIGITAL", "WORK"].map((word) => (
-              <span key={word} className="ps-headline-line">
+          <h1 className="ps-headline" aria-label="Project Showcase Edition">
+            {["PROJECT", "SHOWCASE", "EDITION"].map((word, idx) => (
+              <span key={word} className={`ps-headline-line ${idx === 1 ? "is-outline" : ""}`}>
                 <span className="ps-word-inner">{word}</span>
               </span>
             ))}
@@ -288,24 +352,39 @@ export default function ProjectsShowcase() {
 
           <div className="ps-hero-bottom">
             <p className="ps-subheadline">
-              Products engineered for scale,<br />speed, and standout UX.
+              Same context, new stage.
+              <br />
+              A cinematic reel of Musa products.
             </p>
+
+            <div className="ps-hero-chips" aria-hidden="true">
+              <span className="ps-hero-chip">Creative Tech</span>
+              <span className="ps-hero-chip">Built for Scale</span>
+              <span className="ps-hero-chip">Performance First</span>
+            </div>
+
             <div className="ps-scroll-hint">
               <span className="ps-scroll-pip" />
-              <span className="ps-scroll-text">Scroll to explore</span>
+              <span className="ps-scroll-text">Scroll to enter spotlight</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ HORIZONTAL PROJECTS ═══════════════ */}
+      <section className="ps-marquee" aria-label="Showcase ribbon">
+        <div className="ps-marquee-track">
+          {[...MARQUEE_WORDS, ...MARQUEE_WORDS, ...MARQUEE_WORDS].map((word, idx) => (
+            <span key={`${word}-${idx}`}>{word}</span>
+          ))}
+        </div>
+      </section>
+
       <section className="projects-wrapper-section" ref={projectsWrapperRef}>
-        {/* Header hidden on mobile via CSS */}
         <div className="projects-section-header">
-          <span className="ps-section-label">Selected Work</span>
-          <p className="ps-section-subtitle">Scroll horizontally to browse</p>
+          <span className="ps-section-label">In the Spotlight</span>
+          <p className="ps-section-subtitle">A bold scroll reel with your current projects and context.</p>
           <span className="ps-section-counter" aria-hidden="true">
-            01 — {String(PROJECTS.length).padStart(2, "0")}
+            01 - {String(PROJECTS.length).padStart(2, "0")}
           </span>
         </div>
 
@@ -316,57 +395,72 @@ export default function ProjectsShowcase() {
                 {String(index + 1).padStart(2, "0")}
               </span>
 
-              <a
-                href={project.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="project-work-image-side"
-                aria-label={`Open ${project.title}`}
-              >
-                <img src={project.poster} alt={`${project.title} screenshot`} loading="lazy" />
-                <div className="project-hover-label">
-                  <span>Open Project</span>
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-                    <path d="M2.5 12.5L12.5 2.5M12.5 2.5H5.5M12.5 2.5V9.5"
-                      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-              </a>
-
-              <div className="project-work-info-side">
-                <div className="project-work-meta">
-                  <span className="project-work-idx">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="project-work-sep">/</span>
-                  <span className="project-work-total">{String(PROJECTS.length).padStart(2, "0")}</span>
-                </div>
-                <h3 className="project-work-title">{project.title.toUpperCase()}</h3>
-                <p className="project-work-tagline">{project.tagline}</p>
-                <p className="project-work-description">{project.description}</p>
-                <div className="project-work-tags">
-                  {project.tags.map((tag) => (
-                    <span key={`${project.title}-${tag}`}>{tag}</span>
-                  ))}
-                </div>
-                <a href={project.url} target="_blank" rel="noopener noreferrer" className="project-work-cta">
-                  {project.cta}
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                    <path d="M2 11L11 2M11 2H4.5M11 2V8.5"
-                      stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+              <div className="project-frame">
+                <a
+                  href={project.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-work-image-side"
+                  aria-label={`Open ${project.title}`}
+                >
+                  <img src={project.poster} alt={`${project.title} screenshot`} loading="lazy" />
+                  <div className="project-hover-label">
+                    <span>Open Project</span>
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                      <path
+                        d="M2.5 12.5L12.5 2.5M12.5 2.5H5.5M12.5 2.5V9.5"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
                 </a>
+
+                <div className="project-work-info-side">
+                  <div className="project-work-meta">
+                    <span className="project-work-idx">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="project-work-sep">/</span>
+                    <span className="project-work-total">{String(PROJECTS.length).padStart(2, "0")}</span>
+                  </div>
+
+                  <h3 className="project-work-title">{project.title.toUpperCase()}</h3>
+                  <p className="project-work-tagline">{project.tagline}</p>
+                  <p className="project-work-description">{project.description}</p>
+
+                  <div className="project-work-tags">
+                    {project.tags.map((tag) => (
+                      <span key={`${project.title}-${tag}`}>{tag}</span>
+                    ))}
+                  </div>
+
+                  <a href={project.url} target="_blank" rel="noopener noreferrer" className="project-work-cta">
+                    {project.cta}
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                      <path
+                        d="M2 11L11 2M11 2H4.5M11 2V8.5"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </a>
+                </div>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      {/* ═══════════════ PROCESS SECTION ═══════════════ */}
       <section className="ps-process-section" ref={processRef}>
         <div className="ps-process-inner">
           <div className="ps-process-header">
             <span className="ps-process-kicker">How we build</span>
             <h2 className="ps-process-title">Our Approach</h2>
           </div>
+
           <div className="ps-process-list">
             {PROCESS_STEPS.map((step) => (
               <div key={step.num} className="ps-process-row">
@@ -377,7 +471,9 @@ export default function ProjectsShowcase() {
                     <h3>{step.title}</h3>
                     <p>{step.body}</p>
                   </div>
-                  <span className="ps-process-step-arrow" aria-hidden="true">→</span>
+                  <span className="ps-process-step-arrow" aria-hidden="true">
+                    -
+                  </span>
                 </div>
               </div>
             ))}
@@ -386,7 +482,6 @@ export default function ProjectsShowcase() {
         </div>
       </section>
 
-      {/* ═══════════════ FOOTER ═══════════════ */}
       <footer className="ps-footer" ref={footerRef}>
         <div className="ps-footer-inner">
           <div className="ps-footer-top">
@@ -402,13 +497,13 @@ export default function ProjectsShowcase() {
               <a href="/carrers">Careers</a>
             </nav>
           </div>
+
           <div className="ps-footer-bottom">
-            <span className="ps-footer-copy">© 2025 House of Musa. All rights reserved.</span>
+            <span className="ps-footer-copy">© 2026 House of Musa. All rights reserved.</span>
             <span className="ps-footer-craft">Crafted with intention.</span>
           </div>
         </div>
       </footer>
-
     </main>
   );
 }

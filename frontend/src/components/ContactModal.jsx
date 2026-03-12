@@ -51,8 +51,28 @@ export default function ContactModal({ open, onClose }) {
         >
           ×
         </button>
-        <div className="contact-modal-content">
+
+        {/* Left — form */}
+        <div className="contact-modal-left">
+          <div className="contact-modal-brand">
+            <span className="contact-modal-brand-dot" />
+            <span className="contact-modal-brand-name">House of Musa</span>
+          </div>
           <ContactUs />
+        </div>
+
+        {/* Right — image + quote */}
+        <div className="contact-modal-right" aria-hidden="true">
+          <div className="contact-modal-right-inner">
+            <blockquote className="contact-modal-quote">
+              Working with House of Musa elevated our brand beyond what we
+              imagined. Every detail was handled with vision and precision.
+            </blockquote>
+            <div className="contact-modal-arrows">
+              <span className="contact-modal-arrow">&#8592;</span>
+              <span className="contact-modal-arrow">&#8594;</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>,
