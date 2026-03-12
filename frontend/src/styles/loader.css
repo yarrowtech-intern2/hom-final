@@ -1,9 +1,9 @@
 .global-loader-overlay {
   --loader-logo-left: 20px;
   --loader-logo-top: 10px;
-  --loader-logo-width: 170px;
-  --loader-logo-final-left: 105px;
-  --loader-logo-final-top: 40px;
+  --loader-logo-width: 122px;
+  --loader-logo-final-left: 79px;
+  --loader-logo-final-top: 25px;
   --loader-curtain-base: #9d6800;
   --loader-curtain-top: #9d6800;
   --loader-curtain-bottom: #9d6800;
@@ -54,7 +54,7 @@
   position: fixed;
   left: 50%;
   top: 50%;
-  width: min(38vw, 290px);
+  width: min(28vw, 210px);
   height: auto;
   transform: translate(-50%, -50%) scale(1);
   transform-origin: center center;
@@ -151,7 +151,7 @@
 
 @media (max-width: 768px) {
   .global-loader-logo {
-    width: min(56vw, 220px);
+    width: min(46vw, 168px);
   }
 
   .global-loader-progress-wrap {

@@ -530,6 +530,14 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
+function detectLowSpecDevice() {
+  if (typeof window === "undefined") return false;
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const cores = navigator.hardwareConcurrency || 4;
+  const memory = navigator.deviceMemory || 4;
+  return Boolean(reducedMotion || cores <= 4 || memory <= 4);
+}
+
 /* --------------------------------- Model --------------------------------- */
 function House({
   onReady,
@@ -598,13 +606,14 @@ function House({
 useGLTF.preload("/models/house3.glb");
 
 /* ---------------------------- Inner Scene node --------------------------- */
-function Scene({ isMobile }) {
+function Scene({ isMobile, lowSpec }) {
   const { camera, invalidate } = useThree();
   const [autoRotate, setAutoRotate] = useState(true);
   const controls = useRef();
   const [perf, setPerf] = useState(1);
   const [envReady, setEnvReady] = useState(false);
   const { start } = usePageTransition();
+  const normalPass = useMemo(() => new NormalPass(), []);
 
   const boundsRef = useRef({ minY: -1 });
 
@@ -675,7 +684,8 @@ function Scene({ isMobile }) {
 
 
 
-  const effectsOn = perf >= 1;
+  const lowQuality = lowSpec || perf < 0.9;
+  const enablePostFx = !lowQuality;
 
   return (
     <>
@@ -702,7 +712,9 @@ function Scene({ isMobile }) {
         />
 
         {envReady &&
-          (USE_HDR_BACKGROUND ? (
+          (lowSpec ? (
+            <Environment preset="city" background={false} />
+          ) : USE_HDR_BACKGROUND ? (
             <Environment files={HDR_FILE} background={false} />
           ) : (
             <Environment preset="city" background={false} />
@@ -711,23 +723,30 @@ function Scene({ isMobile }) {
         {/* Slightly smaller + blurrier contact shadow on mobile */}
         <ContactShadows
           position={[0, -1.01, 0]}
-          opacity={isMobile ? 0.3 : 0.4}
-          scale={isMobile ? 12 : 16}
-          blur={isMobile ? 3.6 : 2.8}
+          opacity={lowQuality ? 0.22 : isMobile ? 0.3 : 0.4}
+          scale={lowQuality ? 10 : isMobile ? 12 : 16}
+          blur={lowQuality ? 3.9 : isMobile ? 3.6 : 2.8}
+          resolution={lowQuality ? 256 : 512}
           far={4}
         />
 
         {/* Post-processing is lighter on mobile */}
-        <EffectComposer multisampling={0}>
-          {!isMobile && <primitive attach="passes" object={new NormalPass()} />}
-          {!isMobile && <SSAO samples={16} radius={0.25} intensity={1.2 * perf} />}
-          <Bloom mipmapBlur intensity={isMobile ? 0.35 : 0.6 * perf} luminanceThreshold={0.85} />
-          <Vignette eskil={false} offset={-0.2} darkness={isMobile ? 0.7 : 0.9} />
-        </EffectComposer>
+        {enablePostFx && (
+          <EffectComposer multisampling={0}>
+            {!isMobile && <primitive attach="passes" object={normalPass} />}
+            {!isMobile && <SSAO samples={12} radius={0.22} intensity={1.05 * perf} />}
+            <Bloom mipmapBlur intensity={isMobile ? 0.28 : 0.52 * perf} luminanceThreshold={0.88} />
+            <Vignette eskil={false} offset={-0.18} darkness={isMobile ? 0.64 : 0.82} />
+          </EffectComposer>
+        )}
       </Suspense>
 
-      <PerformanceMonitor onDecline={() => setPerf(0.8)} onIncline={() => setPerf(1)} flipflops={2} />
-      <AdaptiveDpr pixelated />
+      <PerformanceMonitor
+        onDecline={() => setPerf((p) => Math.max(0.78, p - 0.08))}
+        onIncline={() => setPerf((p) => Math.min(1, p + 0.06))}
+        flipflops={2}
+      />
+      <AdaptiveDpr pixelated={lowQuality} />
       <AdaptiveEvents />
 
       <OrbitControls
@@ -765,6 +784,9 @@ function Scene({ isMobile }) {
 
 export default function Home3D() {
   const isMobile = useIsMobile(768);
+  const lowSpec = useMemo(() => detectLowSpecDevice(), []);
+  const maxDpr = lowSpec ? 1 : isMobile ? 1.25 : 1.5;
+  const dpr = lowSpec ? [1, 1] : isMobile ? [1, 1.25] : [1, 1.5];
 
 
 
@@ -832,7 +854,7 @@ export default function Home3D() {
     <>
       <Canvas
         frameloop="demand"
-        dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+        dpr={dpr}
         camera={{
           position: isMobile ? [7.5, 3, 9] : [28, 4, -40],
           fov: isMobile ? 55 : 45,
@@ -840,7 +862,7 @@ export default function Home3D() {
           far: 1700,
         }}
         gl={{
-          antialias: !isMobile,
+          antialias: !isMobile && !lowSpec,
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
@@ -857,14 +879,12 @@ export default function Home3D() {
         }}
         onCreated={({ gl }) => {
           THREE.Cache.enabled = true;
-          gl.setPixelRatio(
-            Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5)
-          );
+          gl.setPixelRatio(Math.min(window.devicePixelRatio, maxDpr));
           gl.physicallyCorrectLights = true;
           gl.setClearColor(0x000000, 0);
         }}
       >
-        <Scene isMobile={isMobile} />
+        <Scene isMobile={isMobile} lowSpec={lowSpec} />
         <Preload all />
       </Canvas>
 

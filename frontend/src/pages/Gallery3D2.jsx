@@ -1,6 +1,6 @@
 
 
-import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   KeyboardControls,
@@ -10,7 +10,6 @@ import {
   Environment,
   useGLTF,
   ContactShadows,
-  useTexture,
   useCursor,
   SoftShadows,
 } from "@react-three/drei";
@@ -74,6 +73,14 @@ const makeId = () => {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
+function detectLowSpecDevice() {
+  if (typeof window === "undefined") return false;
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const cores = navigator.hardwareConcurrency || 4;
+  const memory = navigator.deviceMemory || 4;
+  return Boolean(reducedMotion || cores <= 4 || memory <= 4);
+}
+
 /* ----------------------------- keymap ---------------------------- */
 const KEYMAP = [
   { name: "forward", keys: ["KeyW", "ArrowUp"] },
@@ -87,6 +94,50 @@ const KEYMAP = [
 
 const HDRI_ON_ICON = "/icon/sun.svg";
 const HDRI_OFF_ICON = "/icon/moon.svg";
+
+const paintingTextureCache = new Map();
+const paintingTexturePromiseCache = new Map();
+
+function loadPaintingTexture(src, anisotropy = 4) {
+  const cached = paintingTextureCache.get(src);
+  if (cached) {
+    const safeAnisotropy = Math.max(1, anisotropy);
+    if (cached.anisotropy !== safeAnisotropy) {
+      cached.anisotropy = safeAnisotropy;
+      cached.needsUpdate = true;
+    }
+    return Promise.resolve(cached);
+  }
+
+  const pending = paintingTexturePromiseCache.get(src);
+  if (pending) return pending;
+
+  const loader = new THREE.TextureLoader();
+  const promise = new Promise((resolve, reject) => {
+    loader.load(
+      src,
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = Math.max(1, anisotropy);
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.generateMipmaps = true;
+        tex.needsUpdate = true;
+        paintingTextureCache.set(src, tex);
+        paintingTexturePromiseCache.delete(src);
+        resolve(tex);
+      },
+      undefined,
+      (err) => {
+        paintingTexturePromiseCache.delete(src);
+        reject(err);
+      }
+    );
+  });
+
+  paintingTexturePromiseCache.set(src, promise);
+  return promise;
+}
 
 /* ----------------------------- paintings ------------------------- */
 const PAINTINGS = [
@@ -320,17 +371,47 @@ function Player({ spawn = [0, 1.2, 3], mobileInput, isTouchDevice, lookRef }) {
 }
 
 /* ========================= Paintings ============================= */
-function Painting({ id, title, img, position, rotation, size, desc }) {
-  const tex = useTexture(img);
-  useEffect(() => {
-    if (!tex) return;
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
-  }, [tex]);
+function Painting({
+  id,
+  title,
+  img,
+  position,
+  rotation,
+  size,
+  desc,
+  shouldLoadTexture = false,
+  textureAnisotropy = 4,
+}) {
+  const [tex, setTex] = useState(() => paintingTextureCache.get(img) ?? null);
 
   const planeRef = useRef();
   const [aimed, setAimed] = useState(false);
   useCursor(aimed);
+
+  useEffect(() => {
+    if (!shouldLoadTexture || tex) return;
+    let cancelled = false;
+
+    loadPaintingTexture(img, textureAnisotropy)
+      .then((loadedTex) => {
+        if (cancelled) return;
+        setTex(loadedTex);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [img, shouldLoadTexture, tex, textureAnisotropy]);
+
+  useEffect(() => {
+    if (!tex) return;
+    const safeAnisotropy = Math.max(1, textureAnisotropy);
+    if (tex.anisotropy !== safeAnisotropy) {
+      tex.anisotropy = safeAnisotropy;
+      tex.needsUpdate = true;
+    }
+  }, [tex, textureAnisotropy]);
 
   useEffect(() => {
     if (planeRef.current) {
@@ -356,7 +437,8 @@ function Painting({ id, title, img, position, rotation, size, desc }) {
       >
         <planeGeometry args={size} />
         <meshStandardMaterial
-          map={tex}
+          map={tex || null}
+          color={tex ? "#ffffff" : "#d6d6d6"}
           roughness={0.12}
           metalness={0}
           toneMapped
@@ -407,14 +489,76 @@ function PaintingsManager({
   onOpen,
   maxDistance = 8,
   pointerLocked = false,
+  seedPosition = null,
+  textureLoadDistance = 10,
+  textureAnisotropy = 4,
 }) {
   const groupRef = useRef();
   const ray = useRef(new THREE.Raycaster()).current;
   const { camera } = useThree();
   const [, get] = useKeyboardControls();
   const ndc = useRef(new THREE.Vector2(0, 0)).current;
+  const [loadedTextureIds, setLoadedTextureIds] = useState(() => new Set());
+  const textureUpdateClockRef = useRef(0);
+
+  const markTexturesForLoading = useCallback((ids) => {
+    if (!ids?.length) return;
+    setLoadedTextureIds((prev) => {
+      let changed = false;
+      let next = prev;
+      for (const id of ids) {
+        if (!prev.has(id)) {
+          if (!changed) {
+            next = new Set(prev);
+            changed = true;
+          }
+          next.add(id);
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    const base = seedPosition ?? [0, PLAYER_HEIGHT / 2, 3];
+    const [sx, sy, sz] = base;
+    const nearest = [...config]
+      .sort((a, b) => {
+        const da =
+          (a.position[0] - sx) ** 2 +
+          (a.position[1] - sy) ** 2 +
+          (a.position[2] - sz) ** 2;
+        const db =
+          (b.position[0] - sx) ** 2 +
+          (b.position[1] - sy) ** 2 +
+          (b.position[2] - sz) ** 2;
+        return da - db;
+      })
+      .slice(0, 3)
+      .map((p) => p.id);
+
+    markTexturesForLoading(nearest);
+  }, [config, markTexturesForLoading, seedPosition]);
 
   useFrame(() => {
+    textureUpdateClockRef.current += 1;
+    if (textureUpdateClockRef.current >= 14) {
+      textureUpdateClockRef.current = 0;
+      const maxDistanceSq = textureLoadDistance * textureLoadDistance;
+      const visibleIds = [];
+      const cx = camera.position.x;
+      const cy = camera.position.y;
+      const cz = camera.position.z;
+
+      for (const p of config) {
+        const dx = p.position[0] - cx;
+        const dy = p.position[1] - cy;
+        const dz = p.position[2] - cz;
+        if (dx * dx + dy * dy + dz * dz <= maxDistanceSq) visibleIds.push(p.id);
+      }
+      markTexturesForLoading(visibleIds);
+    }
+
     const pressed = get();
     if (!pressed.interact) return;
     if (!pointerLocked) return;
@@ -458,7 +602,12 @@ function PaintingsManager({
   return (
     <group ref={groupRef}>
       {config.map((p) => (
-        <Painting key={p.id} {...p} />
+        <Painting
+          key={p.id}
+          {...p}
+          shouldLoadTexture={loadedTextureIds.has(p.id)}
+          textureAnisotropy={textureAnisotropy}
+        />
       ))}
     </group>
   );
@@ -504,7 +653,7 @@ const BALL_POWER = 10;
 const BALL_SPAWN_OFFSET = 0.6;
 const BALL_TTL_MS = 20000;
 
-function Ball({ id, position, velocity, onExpire }) {
+function Ball({ id, position, velocity, onExpire, segments = 20, castShadow = true }) {
   const ref = useRef();
   const hasInitialized = useRef(false);
 
@@ -536,8 +685,8 @@ function Ball({ id, position, velocity, onExpire }) {
       mass={0.25}
       gravityScale={1}            // explicit, just for clarity
     >
-      <mesh castShadow receiveShadow>
-        <sphereGeometry args={[BALL_RADIUS, 24, 24]} />
+      <mesh castShadow={castShadow} receiveShadow={castShadow}>
+        <sphereGeometry args={[BALL_RADIUS, segments, segments]} />
         <meshStandardMaterial
           roughness={0.35}
           metalness={0.05}
@@ -877,8 +1026,9 @@ export default function GalleryPage() {
   const [active, setActive] = useState(null);
   const plcRef = useRef();
   const navigate = useNavigate();
+  const [isLowSpec, setIsLowSpec] = useState(() => detectLowSpecDevice());
 
-  const [envEnabled, setEnvEnabled] = useState(true);
+  const [envEnabled, setEnvEnabled] = useState(() => !detectLowSpecDevice());
   const [balls, setBalls] = useState([]);
 
   // 📱 detect touch devices
@@ -911,7 +1061,12 @@ export default function GalleryPage() {
     const isSmallScreen = window.innerWidth < 768;
 
     setIsTouchDevice(isCoarsePointer || isSmallScreen);
+    setIsLowSpec((prev) => prev || isSmallScreen || detectLowSpecDevice());
   }, []);
+
+  useEffect(() => {
+    if (isLowSpec) setEnvEnabled(false);
+  }, [isLowSpec]);
 
   useEffect(() => {
     if (!isTouchDevice) return;
@@ -920,10 +1075,31 @@ export default function GalleryPage() {
     if (!alreadyShown) setShowMobileWarning(true);
   }, [isTouchDevice]);
 
+  const maxBallsAllowed = isLowSpec ? 18 : isTouchDevice ? 28 : MAX_BALLS;
+  const canvasDpr = isLowSpec ? [0.85, 1] : isTouchDevice ? [0.9, 1.2] : [1, 1.35];
+  const shadowMapSize = isLowSpec ? 1024 : 2048;
+  const useHighFx = !isLowSpec;
+  const physicsTimeStep = isLowSpec ? 1 / 50 : 1 / 60;
+  const physicsSubsteps = isLowSpec ? 1 : 2;
+  const textureAnisotropy = isLowSpec ? 2 : isTouchDevice ? 4 : 8;
+  const textureLoadDistance = isLowSpec ? 8 : 10.5;
+  const ballSegments = isLowSpec ? 12 : isTouchDevice ? 14 : 20;
+  const ballCastShadow = !isLowSpec;
+  const glOptions = useMemo(
+    () => ({
+      antialias: !isLowSpec,
+      alpha: true,
+      powerPreference: "high-performance",
+    }),
+    [isLowSpec]
+  );
+
   const addBall = (b) =>
     setBalls((prev) => {
       const next = [...prev, { ...b, createdAt: performance.now() }];
-      if (next.length > MAX_BALLS) next.splice(0, next.length - MAX_BALLS);
+      if (next.length > maxBallsAllowed) {
+        next.splice(0, next.length - maxBallsAllowed);
+      }
       return next;
     });
 
@@ -1193,6 +1369,8 @@ export default function GalleryPage() {
 
       <KeyboardControls map={KEYMAP}>
         <Canvas
+          dpr={canvasDpr}
+          gl={glOptions}
           style={{
             width: "100vw",
             height: "100vh",
@@ -1211,28 +1389,31 @@ export default function GalleryPage() {
           onCreated={({ gl, scene }) => {
             gl.setClearColor("#050509", 1);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.2;
+            gl.toneMappingExposure = isLowSpec ? 1.05 : 1.2;
             gl.outputColorSpace = THREE.SRGBColorSpace;
+            gl.setPixelRatio(Math.min(window.devicePixelRatio, canvasDpr[1]));
 
             gl.physicallyCorrectLights = true;
             if ("useLegacyLights" in gl) gl.useLegacyLights = false;
 
 
             gl.shadowMap.enabled = true;
-            gl.shadowMap.type = THREE.PCFSoftShadowMap;
+            gl.shadowMap.type = isLowSpec
+              ? THREE.BasicShadowMap
+              : THREE.PCFSoftShadowMap;
             scene.fog = new THREE.FogExp2("#0c0c12", 0.012);
           }}
           camera={{ fov: 68, near: 0.1, far: 200 }}
         >
-          <SoftShadows size={25} samples={24} focus={0.7} />
+          {useHighFx && <SoftShadows size={25} samples={24} focus={0.7} />}
           <ambientLight intensity={0.18} color="#d9e1ff" />
           <directionalLight
             position={[6, 10, 4]}
-            intensity={2.2}
+            intensity={isLowSpec ? 1.45 : 2.2}
             color="#ffffff"
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
+            castShadow={!isLowSpec}
+            shadow-mapSize-width={shadowMapSize}
+            shadow-mapSize-height={shadowMapSize}
             shadow-bias={-0.0002}
             shadow-normalBias={0.02}
           />
@@ -1250,7 +1431,11 @@ export default function GalleryPage() {
           <EnvironmentController enabled={envEnabled} />
 
           <RapierReady>
-            <Physics gravity={[0, -9.81, 0]} timeStep={1 / 60} substeps={2}>
+            <Physics
+              gravity={[0, -9.81, 0]}
+              timeStep={physicsTimeStep}
+              substeps={physicsSubsteps}
+            >
               <Suspense
                 fallback={null}
               >
@@ -1259,11 +1444,11 @@ export default function GalleryPage() {
 
               <ContactShadows
                 position={[0, 0.01, 0]}
-                opacity={0.55}
+                opacity={isLowSpec ? 0.28 : 0.55}
                 scale={40}
-                blur={3.1}
+                blur={isLowSpec ? 3.6 : 3.1}
                 far={22}
-                resolution={1024}
+                resolution={isLowSpec ? 512 : 1024}
               />
 
 
@@ -1272,6 +1457,9 @@ export default function GalleryPage() {
                 onOpen={setActive}
                 maxDistance={8}
                 pointerLocked={locked && !isTouchDevice}
+                seedPosition={spawn}
+                textureLoadDistance={textureLoadDistance}
+                textureAnisotropy={textureAnisotropy}
               />
 
               {spawn && (
@@ -1297,6 +1485,8 @@ export default function GalleryPage() {
                   position={b.position}
                   velocity={b.velocity}
                   onExpire={removeBall}
+                  segments={ballSegments}
+                  castShadow={ballCastShadow}
                 />
               ))}
             </Physics>
@@ -1315,15 +1505,17 @@ export default function GalleryPage() {
               lookRef={lookRef}
             />
           )}
-          <EffectComposer>
-            <Bloom
-              intensity={0.4}
-              mipmapBlur
-              luminanceThreshold={0.9}
-              luminanceSmoothing={0.3}
-              blendFunction={BlendFunction.SCREEN}
-            />
-          </EffectComposer>
+          {useHighFx && (
+            <EffectComposer>
+              <Bloom
+                intensity={0.4}
+                mipmapBlur
+                luminanceThreshold={0.9}
+                luminanceSmoothing={0.3}
+                blendFunction={BlendFunction.SCREEN}
+              />
+            </EffectComposer>
+          )}
 
 
         </Canvas>

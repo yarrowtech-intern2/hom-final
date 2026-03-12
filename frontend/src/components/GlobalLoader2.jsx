@@ -7,8 +7,8 @@ const HOLD_AT_100_MS = 220;
 const REVEAL_MS = 1450;
 const THREE_GRACE_MS = 1500;
 const LOGO_SRC = "/logo/logo-white.png";
-const TARGET_DESKTOP = { left: 24, top: 10, width: 150 };
-const TARGET_MOBILE = { left: 14, top: 8, width: 118 };
+const TARGET_DESKTOP = { left: 18, top: 4, width: 122 };
+const TARGET_MOBILE = { left: 10, top: 3, width: 96 };
 const CURTAIN_COLUMNS = 6;
 const CURTAIN_BLOCKS = Array.from({ length: CURTAIN_COLUMNS }, (_, idx) => ({
   left: `${(idx * 100) / CURTAIN_COLUMNS}%`,

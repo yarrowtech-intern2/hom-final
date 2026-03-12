@@ -28,8 +28,8 @@ export default function TransitionProvider({ children }) {
   }, []);
 
   useLayoutEffect(() => {
-  if (location.pathname === "/contact") {
-    // ✅ Enable native scroll for contact page
+  if (location.pathname === "/contact" || location.pathname === "/projects") {
+    // ✅ Enable native scroll for contact & projects pages
     document.documentElement.style.overflow = "auto";
     document.body.style.overflow = "auto";
   } else {

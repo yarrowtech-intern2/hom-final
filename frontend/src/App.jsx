@@ -1,27 +1,54 @@
 
 
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header";
-import Home3D2 from "./pages/Home3D2";
-
-import Gallery3D from "./pages/Gallery3D2";
 import TransitionProvider from "./components/transition";
-import About from "./pages/About";
-import ProjectsShowcase from "./pages/ProjectsShowcase";
-import Project from "./pages/story";
-
-import Carrers from "./pages/carrers";
-
-
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const Home3D2 = lazy(() => import("./pages/Home3D2"));
+const Gallery3D = lazy(() => import("./pages/Gallery3D2"));
+const About = lazy(() => import("./pages/About"));
+const ProjectsShowcase = lazy(() => import("./pages/ProjectsShowcase"));
+const Project = lazy(() => import("./pages/story"));
+const Carrers = lazy(() => import("./pages/carrers"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const NotFound = lazy(() => import("./pages/notFound"));
 
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
-import NotFound from "./pages/notFound";
+function RouteFallback() {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        display: "grid", 
+        placeItems: "center",
+        background: "#09090b",
+        color: "#fff",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: "50%",
+          border: "3px solid rgba(255,255,255,0.24)",
+          borderTopColor: "#fff",
+          animation: "appSpin 0.9s linear infinite",
+        }}
+      />
+      <style>{`
+        @keyframes appSpin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 
 export default function App() {
@@ -29,27 +56,19 @@ export default function App() {
     <TransitionProvider>
       <Header />
       <ToastContainer position="top-right" autoClose={3000} />
-      <Routes>
-        <Route path="/" element={<Home3D2 />} />
-       
-        <Route path="/gallery" element={<Gallery3D />} />
-        <Route path="/about" element={<About />} />
-        
-        <Route path="/projects" element={<ProjectsShowcase />} />
-        <Route path="/project" element={<Project />} />
-       
-        <Route path="/carrers" element={<Carrers />} />
-        
-
-        <Route path="/admin123" element={<AdminLogin />} />
-        <Route path="/admin1234" element={<AdminDashboard />} />
-        <Route path="*" element={<NotFound />} />
-
-
-
-        
-       
-      </Routes>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/" element={<Home3D2 />} />
+          <Route path="/gallery" element={<Gallery3D />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/projects" element={<ProjectsShowcase />} />
+          <Route path="/project" element={<Project />} />
+          <Route path="/carrers" element={<Carrers />} />
+          <Route path="/admin123" element={<AdminLogin />} />
+          <Route path="/admin1234" element={<AdminDashboard />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </TransitionProvider>
   );
 }
