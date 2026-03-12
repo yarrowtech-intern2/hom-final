@@ -23,8 +23,6 @@ import {
 import * as THREE from "three";
 import { useNavigate } from "react-router-dom";
 import RapierReady from "./RapierReady.jsx";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
 
 // posters 
 import Yarrowtech from "../assets/posters/yt.png";
@@ -424,7 +422,13 @@ function Painting({
     <group position={position} rotation={rotation}>
       <mesh position={[0, 0, -0.03]} castShadow receiveShadow>
         <boxGeometry args={[size[0] + 0.08, size[1] + 0.08, 0.06]} />
-        <meshStandardMaterial metalness={0} roughness={0} color="#00000008" />
+        <meshStandardMaterial
+          metalness={0}
+          roughness={0}
+          color="#000000"
+          transparent
+          opacity={0.08}
+        />
       </mesh>
 
       <mesh
@@ -1505,19 +1509,6 @@ export default function GalleryPage() {
               lookRef={lookRef}
             />
           )}
-          {useHighFx && (
-            <EffectComposer>
-              <Bloom
-                intensity={0.4}
-                mipmapBlur
-                luminanceThreshold={0.9}
-                luminanceSmoothing={0.3}
-                blendFunction={BlendFunction.SCREEN}
-              />
-            </EffectComposer>
-          )}
-
-
         </Canvas>
       </KeyboardControls>
     </>

@@ -125,8 +125,24 @@ export default function ProjectsShowcase() {
     if (!canvas) return;
 
     const isMobile = window.innerWidth < 768;
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: false,
+        alpha: false,
+        powerPreference: "high-performance",
+      });
+    } catch (err) {
+      console.error("ProjectsShowcase renderer init failed:", err);
+      return;
+    }
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance" });
+    if (!renderer?.getContext?.()) {
+      renderer?.dispose?.();
+      return;
+    }
+
     renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x0b0b0b, 1);
 
@@ -167,7 +183,8 @@ export default function ProjectsShowcase() {
 
     resize();
     const ro = new ResizeObserver(resize);
-    ro.observe(canvas.parentElement || canvas);
+    const resizeTarget = canvas.parentElement || canvas;
+    ro.observe(resizeTarget);
 
     let animId;
     const t0 = performance.now();
@@ -205,9 +222,6 @@ export default function ProjectsShowcase() {
 
   /* ── GSAP — every text element ── */
   useLayoutEffect(() => {
-    /* Normalise touch scroll on mobile so ScrollTrigger fires correctly */
-    ScrollTrigger.normalizeScroll(true);
-
     const ctx = gsap.context(() => {
 
       /* ── HERO (no scrollTrigger — play on load) ── */
