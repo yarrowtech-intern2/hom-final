@@ -21,7 +21,6 @@ import {
   CuboidCollider,
 } from "@react-three/rapier";
 import * as THREE from "three";
-import { useNavigate } from "react-router-dom";
 import RapierReady from "./RapierReady.jsx";
 
 // posters 
@@ -53,13 +52,35 @@ function EnvironmentController({ enabled }) {
   ) : null;
 }
 
-/* ----------------------------- utils ----------------------------- */
-const asset = (p) => {
-  const base = (import.meta.env?.BASE_URL ?? "/").replace(/\/+$/, "");
-  const rel = String(p).replace(/^\/+/, "");
-  return `${base}/${rel}`;
-};
+function WebGLStatusBridge({ onContextLost, onContextRestored }) {
+  const { gl } = useThree();
 
+  useEffect(() => {
+    const canvas = gl.domElement;
+    if (!canvas) return undefined;
+
+    const handleContextLost = (event) => {
+      event.preventDefault();
+      onContextLost?.();
+    };
+
+    const handleContextRestored = () => {
+      onContextRestored?.();
+    };
+
+    canvas.addEventListener("webglcontextlost", handleContextLost, false);
+    canvas.addEventListener("webglcontextrestored", handleContextRestored, false);
+
+    return () => {
+      canvas.removeEventListener("webglcontextlost", handleContextLost, false);
+      canvas.removeEventListener("webglcontextrestored", handleContextRestored, false);
+    };
+  }, [gl, onContextLost, onContextRestored]);
+
+  return null;
+}
+
+/* ----------------------------- utils ----------------------------- */
 // ✅ Safe ID generator (works on mobile too)
 const makeId = () => {
   if (
@@ -1064,8 +1085,9 @@ export default function GalleryPage() {
   const [spawn, setSpawn] = useState(null);
   const [active, setActive] = useState(null);
   const plcRef = useRef();
-  const navigate = useNavigate();
   const [isLowSpec, setIsLowSpec] = useState(() => detectLowSpecDevice());
+  const [canvasKey, setCanvasKey] = useState(0);
+  const [webglUnavailable, setWebglUnavailable] = useState(false);
 
   const [envEnabled, setEnvEnabled] = useState(() => !detectLowSpecDevice());
   const [balls, setBalls] = useState([]);
@@ -1111,6 +1133,22 @@ export default function GalleryPage() {
   }, []);
 
   useEffect(() => {
+    const prevBodyBg = document.body.style.background;
+    const prevHtmlBg = document.documentElement.style.background;
+
+    const galleryBackdrop =
+      "radial-gradient(circle at 50% 12%, rgba(254, 222, 190, 0.12), transparent 22%), linear-gradient(180deg, #120703 0%, #190a04 48%, #0c0502 100%)";
+
+    document.body.style.background = galleryBackdrop;
+    document.documentElement.style.background = galleryBackdrop;
+
+    return () => {
+      document.body.style.background = prevBodyBg;
+      document.documentElement.style.background = prevHtmlBg;
+    };
+  }, []);
+
+  useEffect(() => {
     if (isLowSpec) setEnvEnabled(false);
   }, [isLowSpec]);
 
@@ -1139,6 +1177,25 @@ export default function GalleryPage() {
     }),
     [isLowSpec]
   );
+
+  const handleWebGLLost = useCallback(() => {
+    setLocked(false);
+    setActive(null);
+    setWebglUnavailable(true);
+  }, []);
+
+  const handleWebGLRestored = useCallback(() => {
+    setWebglUnavailable(false);
+  }, []);
+
+  const retryWebGL = useCallback(() => {
+    setWebglUnavailable(false);
+    setLocked(false);
+    setActive(null);
+    setSpawn(null);
+    setBalls([]);
+    setCanvasKey((current) => current + 1);
+  }, []);
 
   const addBall = (b) =>
     setBalls((prev) => {
@@ -1174,8 +1231,23 @@ export default function GalleryPage() {
 
   return (
     <>
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+          background:
+            "radial-gradient(rgba(254, 222, 190, 0.08) 0.8px, transparent 0.8px), url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.05' numOctaves='4' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='1'/></svg>\")",
+          backgroundSize: "22px 22px, 180px 180px",
+          opacity: 0.14,
+          mixBlendMode: "soft-light",
+        }}
+      />
+
       {/* ── Desktop pointer-lock entry ── */}
-      {!isTouchDevice && !locked && (
+      {!isTouchDevice && !locked && !webglUnavailable && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 30,
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -1229,6 +1301,62 @@ export default function GalleryPage() {
               }}
             >
               Click to Enter
+            </button>
+          </div>
+        </div>
+      )}
+
+      {webglUnavailable && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.62)",
+            backdropFilter: "blur(10px)",
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              width: "min(92vw, 420px)",
+              background: "rgba(10,10,14,0.94)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 20,
+              padding: "28px 24px 22px",
+              color: "#fff",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+              display: "grid",
+              gap: 14,
+            }}
+          >
+            <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.38)" }}>
+              House of Musa — Gallery
+            </div>
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, lineHeight: 1.2 }}>
+              3D scene needs to reload
+            </h2>
+            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: "rgba(255,255,255,0.58)" }}>
+              The browser lost the WebGL context, so the gallery renderer stopped. Reload the 3D scene to continue.
+            </p>
+            <button
+              onClick={retryWebGL}
+              style={{
+                padding: "12px 0",
+                borderRadius: 12,
+                background: "#FD5602",
+                border: "none",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                cursor: "pointer",
+              }}
+            >
+              Reload Gallery
             </button>
           </div>
         </div>
@@ -1452,6 +1580,7 @@ export default function GalleryPage() {
 
       <KeyboardControls map={KEYMAP}>
         <Canvas
+          key={canvasKey}
           dpr={canvasDpr}
           gl={glOptions}
           style={{
@@ -1460,6 +1589,7 @@ export default function GalleryPage() {
             display: "block",
             position: "relative",
             zIndex: 1,
+            background: "transparent",
             touchAction: "none",
           }}
           // gl={{
@@ -1488,6 +1618,10 @@ export default function GalleryPage() {
           }}
           camera={{ fov: 68, near: 0.1, far: 200 }}
         >
+          <WebGLStatusBridge
+            onContextLost={handleWebGLLost}
+            onContextRestored={handleWebGLRestored}
+          />
           {useHighFx && <SoftShadows size={25} samples={24} focus={0.7} />}
           <ambientLight intensity={0.18} color="#d9e1ff" />
           <directionalLight

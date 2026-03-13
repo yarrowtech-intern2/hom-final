@@ -26,7 +26,7 @@ const PURPOSE_IMAGE_SRC =
   "https://images.unsplash.com/photo-1579389083046-e3df9c2b3325?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 const PRINCIPLES_TOTAL = 3;
 const METER_RADIUS = 172;
-const TITLE_LINES = ["Building", "Digital", "Legacies."];
+const TITLE_LINES = ["M8bid", "Digital", "Legacies."];
 const DETAIL_ITEMS = [
   "ERP systems",
   "ML products",
@@ -52,7 +52,7 @@ const ABOUT_PROJECT_ITEMS = [
   },
   {
     id: "02",
-    title: "Building",
+    title: "M8bid",
     subtitle: "Regulated Crowdfunding Platform",
     description:
       "A trusted digital marketplace for founders and investors, designed with strong compliance and campaign flows.",
