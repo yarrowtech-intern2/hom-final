@@ -10,7 +10,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 const Home3D2 = lazy(() => import("./pages/Home3D2"));
 const Gallery3D = lazy(() => import("./pages/Gallery3D2"));
-const About = lazy(() => import("./pages/About"));
+// const About = lazy(() => import("./pages/About"));
+const About3 = lazy(() => import("./pages/about3"));
 const ProjectsShowcase = lazy(() => import("./pages/ProjectsShowcase"));
 const Project = lazy(() => import("./pages/story"));
 const Carrers = lazy(() => import("./pages/carrers"));
@@ -60,7 +61,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home3D2 />} />
           <Route path="/gallery" element={<Gallery3D />} />
-          <Route path="/about" element={<About />} />
+          {/* <Route path="/about" element={<About />} /> */}
+          <Route path="/about" element={<About3 />} />
           <Route path="/projects" element={<ProjectsShowcase />} />
           <Route path="/project" element={<Project />} />
           <Route path="/carrers" element={<Carrers />} />

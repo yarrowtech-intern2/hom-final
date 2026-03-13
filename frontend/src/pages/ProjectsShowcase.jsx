@@ -222,6 +222,13 @@ export default function ProjectsShowcase() {
 
   /* ── GSAP — every text element ── */
   useLayoutEffect(() => {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (isMobile || prefersReducedMotion) {
+      return undefined;
+    }
+
     const ctx = gsap.context(() => {
 
       /* ── HERO (no scrollTrigger — play on load) ── */

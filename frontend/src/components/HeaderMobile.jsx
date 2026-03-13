@@ -18,7 +18,7 @@ export default function HeaderMobile({ onOpenContact }) {
       {
         label: "Projects",
         ariaLabel: "Open the 3D projects view",
-        link: "/project",
+        link: "/projects",
       },
       {
         label: "Contact",

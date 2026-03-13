@@ -28,21 +28,42 @@ export default function TransitionProvider({ children }) {
   }, []);
 
   useLayoutEffect(() => {
-  if (location.pathname === "/contact" || location.pathname === "/projects") {
-    // ✅ Enable native scroll for contact & projects pages
-    document.documentElement.style.overflow = "auto";
-    document.body.style.overflow = "auto";
-  } else {
-    // ✅ Other pages can stay controlled
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-  }
+    const scrollPages = new Set(["/about", "/contact", "/projects"]);
+    const isScrollPage = scrollPages.has(location.pathname);
+    const root = document.getElementById("root");
 
-  return () => {
-    document.documentElement.style.overflow = "auto";
-    document.body.style.overflow = "auto";
-  };
-}, [location.pathname]);
+    if (isScrollPage) {
+      // Let content-heavy pages use the document scroller.
+      document.documentElement.style.overflow = "auto";
+      document.body.style.overflow = "auto";
+
+      if (root) {
+        root.style.height = "auto";
+        root.style.minHeight = "100%";
+        root.style.overflow = "visible";
+      }
+    } else {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+
+      if (root) {
+        root.style.height = "";
+        root.style.minHeight = "";
+        root.style.overflow = "";
+      }
+    }
+
+    return () => {
+      document.documentElement.style.overflow = "auto";
+      document.body.style.overflow = "auto";
+
+      if (root) {
+        root.style.height = "";
+        root.style.minHeight = "";
+        root.style.overflow = "";
+      }
+    };
+  }, [location.pathname]);
 
   const start = useCallback((to, opts = {}) => {
     const { x, y, duration = 0.65, ease = "power4.inOut" } = opts;
