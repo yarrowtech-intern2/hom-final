@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
+  AnimatePresence,
   motion as Motion,
   useMotionValue,
   useMotionValueEvent,
@@ -9,9 +10,6 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import ytPoster from "../assets/posters/yt.png";
-import greenbarPoster from "../assets/posters/greenbar.png";
-import betterpassPoster from "../assets/posters/betterpass.png";
 import "../styles/about3-hero.css";
 
 const HERO_VIDEO_SRC =
@@ -41,6 +39,126 @@ const IDENTITY_LINES = [
   { text: "products that scale", accent: false },
 ];
 const PROJECT_HEADLINE_LINES = ["See the work that", "moves ambitious brands"];
+const ABOUT_PROJECT_ITEMS = [
+  {
+    id: "01",
+    title: "Yarrowtech",
+    subtitle: "Software and ERP Ecosystem",
+    description:
+      "Intelligent software products, ERP systems, AI applications, and full-stack delivery for modern businesses.",
+    cta: "Visit website",
+    url: "https://yarrowtech.com",
+    tags: ["ERP Systems", "AI Apps", "Full-Stack", "Enterprise"],
+  },
+  {
+    id: "02",
+    title: "Building",
+    subtitle: "Regulated Crowdfunding Platform",
+    description:
+      "A trusted digital marketplace for founders and investors, designed with strong compliance and campaign flows.",
+    cta: "View platform",
+    url: "https://sportbit.app",
+    tags: ["Crowdfunding", "KYC/AML", "Compliance", "Marketplace"],
+  },
+  {
+    id: "03",
+    title: "Hire-Me",
+    subtitle: "Subscription HR Infrastructure",
+    description:
+      "A role-based HR platform for intake, workforce tracking, and compliance operations in one secure system.",
+    cta: "Explore product",
+    url: "https://fb.yarrowtech.com",
+    tags: ["HR Tech", "SaaS", "Workforce", "Compliance"],
+  },
+  {
+    id: "04",
+    title: "Art-Block",
+    subtitle: "Creator Commerce Network",
+    description:
+      "A creator-first platform for memberships, direct audience monetization, and analytics-powered growth.",
+    cta: "See solution",
+    url: "https://myguide.yarrowtech.com",
+    tags: ["Creator Platform", "Subscriptions", "Payments", "Analytics"],
+  },
+  {
+    id: "05",
+    title: "Green-bar",
+    subtitle: "Fresh Grocery Ordering System",
+    description:
+      "End-to-end commerce for fresh produce with ordering, inventory workflows, and real-time tracking.",
+    cta: "View product",
+    url: "https://electroniceducare.com",
+    tags: ["E-Commerce", "Inventory", "Order Tracking", "Admin Panel"],
+  },
+  {
+    id: "06",
+    title: "Better-Pass",
+    subtitle: "Social Travel Marketplace",
+    description:
+      "A social booking network for tour companies, travelers, and creators with discovery plus conversion.",
+    cta: "View product",
+    url: "https://electroniceducare.com",
+    tags: ["Travel Social", "Bookings", "Multi-Role", "Community"],
+  },
+];
+const FOOTER_LINK_GROUPS = [
+  {
+    title: "Explore",
+    items: [
+      { label: "Home", to: "/" },
+      { label: "About", to: "/about" },
+      { label: "Projects", to: "/projects" },
+      { label: "Careers", to: "/carrers" },
+    ],
+  },
+  {
+    title: "Focus",
+    items: [
+      { label: "ERP systems", to: "/projects" },
+      { label: "AI workflows", to: "/projects" },
+      { label: "Web platforms", to: "/projects" },
+      { label: "UI systems", to: "/projects" },
+    ],
+  },
+];
+const FAQ_ITEMS = [
+  {
+    id: "01",
+    question: "What does House of Musa actually build?",
+    answer:
+      "We design and ship ERP systems, AI-enabled workflows, branded web platforms, and conversion-focused product experiences for businesses that need clarity and scale.",
+  },
+  {
+    id: "02",
+    question: "Do you work only on design, or full product delivery too?",
+    answer:
+      "We work across the full stack. Strategy, interface systems, frontend engineering, backend architecture, and launch support are all part of the delivery model when the project needs it.",
+  },
+  {
+    id: "03",
+    question: "Can you modernize an existing business system?",
+    answer:
+      "Yes. A large part of our work is improving legacy flows, internal dashboards, outdated websites, and operational tools without forcing a complete rebuild when it is unnecessary.",
+  },
+  {
+    id: "04",
+    question: "How do projects usually begin?",
+    answer:
+      "Most engagements start with a focused discovery phase where we map business goals, users, workflows, and technical constraints. That gives us a clear direction before design or engineering begins.",
+  },
+  {
+    id: "05",
+    question: "Do you build for long-term growth after launch?",
+    answer:
+      "Yes. We think beyond release day. Performance improvements, product refinement, analytics-informed iteration, and scalable architecture are part of how we help products grow over time.",
+  },
+  {
+    id: "06",
+    question: "How can we start a conversation with your team?",
+    answer:
+      "If the project needs sharp execution, strong systems thinking, and a premium digital presence, the best next step is to reach out through the contact flow and share the business context.",
+  },
+];
 const PRINCIPLE_ITEMS = [
   {
     id: "01",
@@ -76,33 +194,6 @@ const PRINCIPLE_ITEMS = [
     imageAlt: "House of Musa purpose visual",
   },
 ];
-const FEATURED_PROJECTS = [
-  {
-    id: "01",
-    title: "Yarrowtech",
-    tagline: "ERP and AI ecosystem",
-    summary:
-      "Enterprise tooling, workflow logic, and product interfaces designed for operational clarity.",
-    poster: ytPoster,
-  },
-  {
-    id: "02",
-    title: "Green-bar",
-    tagline: "Commerce infrastructure",
-    summary:
-      "Ordering, inventory, and admin flows tailored for fast-moving fresh retail operations.",
-    poster: greenbarPoster,
-  },
-  {
-    id: "03",
-    title: "Better-Pass",
-    tagline: "Social travel marketplace",
-    summary:
-      "Discovery, bookings, and community-led conversion designed inside one scalable platform.",
-    poster: betterpassPoster,
-  },
-];
-
 const sectionStaggerVariants = {
   hidden: {},
   visible: {
@@ -222,16 +313,20 @@ function AnimatedTitleLines({ className = "", style, reducedMotion }) {
 }
 
 export default function About3() {
+  const location = useLocation();
   const containerRef = useRef(null);
   const heroRef = useRef(null);
   const identityRef = useRef(null);
   const principlesRef = useRef(null);
   const projectsRef = useRef(null);
+  const projectsCatalogRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
   const [activePrinciple, setActivePrinciple] = useState(0);
   const [progressPercent, setProgressPercent] = useState(0);
+  const [openFaqId, setOpenFaqId] = useState("01");
+  const [footerNow, setFooterNow] = useState(() => new Date());
   const [isDesktopPinned, setIsDesktopPinned] = useState(() =>
     typeof window !== "undefined"
       ? window.matchMedia("(min-width: 961px)").matches
@@ -355,11 +450,7 @@ export default function About3() {
     mass: 0.32,
   });
   const projectsSweep = useSpring(
-    useTransform(
-      projectsProgress,
-      [0, 0.18, 1],
-      isDesktopPinned ? [0.14, 0.26, 1] : [1, 1, 1]
-    ),
+    useTransform(projectsProgress, [0, 0.18, 1], [0.14, 0.26, 1]),
     { stiffness: 120, damping: 26, mass: 0.34 }
   );
   const projectsBodyOpacity = useTransform(
@@ -432,6 +523,33 @@ export default function About3() {
     };
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setFooterNow(new Date());
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (location.hash !== "#projects") {
+      return undefined;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      projectsCatalogRef.current?.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [location.hash, prefersReducedMotion]);
+
   const handleIdentityPointerMove = (event) => {
     if (prefersReducedMotion) {
       return;
@@ -446,6 +564,13 @@ export default function About3() {
     cursorX.set(event.clientX - bounds.left);
     cursorY.set(event.clientY - bounds.top);
   };
+
+  const footerTimeLabel = footerNow.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  const footerYear = footerNow.getFullYear();
 
   const handleIdentityPointerLeave = () => {
     const section = identityRef.current;
@@ -821,9 +946,7 @@ export default function About3() {
 
       <section
         ref={projectsRef}
-        className={`about-showcase ${
-          isDesktopPinned ? "about-showcase--pinned" : "about-showcase--stacked"
-        }`}
+        className="about-showcase about-showcase--pinned"
       >
         <div className="about-showcase__sticky">
           <Motion.div
@@ -882,45 +1005,6 @@ export default function About3() {
               </Motion.div>
 
               <Motion.div
-                className="about-showcase__projects"
-                style={
-                  prefersReducedMotion
-                    ? undefined
-                    : { opacity: projectsCardsOpacity, y: projectsCardsY }
-                }
-              >
-                {FEATURED_PROJECTS.map((project) => (
-                  <article
-                    key={project.id}
-                    className="about-showcase__project-card"
-                  >
-                    <div className="about-showcase__project-media">
-                      <img
-                        src={project.poster}
-                        alt={`${project.title} project poster`}
-                        loading="lazy"
-                      />
-                    </div>
-
-                    <div className="about-showcase__project-copy">
-                      <div className="about-showcase__project-index">
-                        [{project.id}]
-                      </div>
-                      <h3 className="about-showcase__project-title">
-                        {project.title}
-                      </h3>
-                      <div className="about-showcase__project-tagline">
-                        {project.tagline}
-                      </div>
-                      <p className="about-showcase__project-summary">
-                        {project.summary}
-                      </p>
-                    </div>
-                  </article>
-                ))}
-              </Motion.div>
-
-              <Motion.div
                 className="about-showcase__footer"
                 style={
                   prefersReducedMotion
@@ -932,14 +1016,275 @@ export default function About3() {
                   Explore the full catalogue of launches, systems, and digital
                   products built by House of Musa.
                 </div>
-                <Link className="about-showcase__cta" to="/projects">
+                {/* <Link className="about-showcase__cta" to="/projects">
                   View projects
-                </Link>
+                </Link> */}
               </Motion.div>
             </div>
           </Motion.div>
         </div>
       </section>
+
+      <section
+        ref={projectsCatalogRef}
+        id="projects"
+        className="about-projects"
+      >
+        <Motion.div
+          className="about-projects__intro"
+          variants={sectionStaggerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.22 }}
+        >
+          <Motion.div
+            className="about-projects__label"
+            variants={sectionItemVariants}
+          >
+            Project showcase
+          </Motion.div>
+          <div className="about-projects__intro-grid">
+            <Motion.h2
+              className="about-projects__title"
+              variants={sectionItemVariants}
+            >
+              Our products.
+            </Motion.h2>
+            <Motion.div
+              className="about-projects__intro-copy"
+              variants={sectionItemVariants}
+            >
+              <div className="about-projects__kicker">
+                Introducing six House of Musa launches:
+              </div>
+              <p className="about-projects__summary">
+                ERP platforms. Commerce systems. Creator networks. HR tools.
+                Travel products. Built for businesses that need structure,
+                conversion, and long-term scale.
+              </p>
+            </Motion.div>
+          </div>
+        </Motion.div>
+
+        <Motion.div
+          className="about-projects__grid"
+          variants={sectionStaggerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.08 }}
+        >
+          {ABOUT_PROJECT_ITEMS.map((project) => (
+            <Motion.article
+              key={project.id}
+              className="about-projects__card"
+              variants={sectionItemVariants}
+            >
+              <div className="about-projects__card-head">
+                <div className="about-projects__index">[{project.id}]</div>
+                <div className="about-projects__marker" aria-hidden="true" />
+              </div>
+
+              <div className="about-projects__body">
+                <h3 className="about-projects__name">{project.title}</h3>
+                <div className="about-projects__subtitle">
+                  {project.subtitle}
+                </div>
+                <p className="about-projects__description">
+                  {project.description}
+                </p>
+
+                <div
+                  className="about-projects__module"
+                  aria-label={`${project.title} tags`}
+                >
+                  <div className="about-projects__module-label">Focus areas</div>
+                  <div className="about-projects__tags">
+                    {project.tags.map((tag) => (
+                      <span
+                        key={`${project.id}-${tag}`}
+                        className="about-projects__tag"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <a
+                className="about-projects__cta"
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span>{project.cta}</span>
+                <span aria-hidden="true">-&gt;</span>
+              </a>
+            </Motion.article>
+          ))}
+        </Motion.div>
+      </section>
+
+      <section className="about-faq">
+        <Motion.div
+          className="about-faq__intro"
+          variants={sectionStaggerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.28 }}
+        >
+          <Motion.div className="about-faq__label" variants={sectionItemVariants}>
+            Useful information
+          </Motion.div>
+          <Motion.h2 className="about-faq__title" variants={sectionItemVariants}>
+            FAQ
+          </Motion.h2>
+          <Motion.p className="about-faq__summary" variants={sectionItemVariants}>
+            If you are evaluating House of Musa for a product, platform, or
+            systems-focused engagement, these are the questions that usually
+            come up first.
+          </Motion.p>
+        </Motion.div>
+
+        <Motion.div
+          className="about-faq__list"
+          variants={sectionStaggerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.14 }}
+        >
+          {FAQ_ITEMS.map((item) => {
+            const isOpen = openFaqId === item.id;
+
+            return (
+              <Motion.article
+                key={item.id}
+                className={`about-faq__item ${isOpen ? "is-open" : ""}`}
+                variants={sectionItemVariants}
+              >
+                <button
+                  type="button"
+                  className="about-faq__trigger"
+                  onClick={() =>
+                    setOpenFaqId((currentId) =>
+                      currentId === item.id ? "" : item.id
+                    )
+                  }
+                  aria-expanded={isOpen}
+                >
+                  <span className="about-faq__index">[{item.id}]</span>
+                  <span className="about-faq__question">{item.question}</span>
+                  <span className="about-faq__icon" aria-hidden="true">
+                    {isOpen ? "−" : "+"}
+                  </span>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {isOpen ? (
+                    <Motion.div
+                      key="content"
+                      className="about-faq__answer-wrap"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <div className="about-faq__answer-shell">
+                        <p className="about-faq__answer">{item.answer}</p>
+                      </div>
+                    </Motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </Motion.article>
+            );
+          })}
+        </Motion.div>
+      </section>
+
+      <footer className="about-footer">
+        <Motion.div
+          className="about-footer__grid"
+          variants={sectionStaggerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <Motion.div
+            className="about-footer__contact"
+            variants={sectionItemVariants}
+          >
+            <div className="about-footer__eyebrow">Project inquiries</div>
+            <a
+              className="about-footer__contact-link"
+              href="mailto:hello@houseofmusa.com"
+            >
+              hello@houseofmusa.com
+            </a>
+
+            <div className="about-footer__eyebrow">Build with us</div>
+            <p className="about-footer__contact-copy">
+              ERP systems, AI-enabled products, branded web platforms, and
+              long-term digital infrastructure for ambitious teams.
+            </p>
+          </Motion.div>
+
+          <Motion.div
+            className="about-footer__identity"
+            variants={sectionItemVariants}
+          >
+            <div className="about-footer__badge">House of Musa</div>
+            <h2 className="about-footer__headline">
+              Systems with precision.
+              <br />
+              Brands with presence.
+            </h2>
+          </Motion.div>
+
+          <Motion.div
+            className="about-footer__nav"
+            variants={sectionItemVariants}
+          >
+            {FOOTER_LINK_GROUPS.map((group) => (
+              <div key={group.title} className="about-footer__nav-group">
+                <div className="about-footer__eyebrow">{group.title}</div>
+                <div className="about-footer__nav-list">
+                  {group.items.map((item) => (
+                    <Link
+                      key={`${group.title}-${item.label}`}
+                      className="about-footer__nav-link"
+                      to={item.to}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </Motion.div>
+        </Motion.div>
+
+        <Motion.div
+          className="about-footer__wordmark-wrap"
+          initial={{ opacity: 0, y: 42 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="about-footer__wordmark">House of Musa</div>
+        </Motion.div>
+
+        <div className="about-footer__meta">
+          <div className="about-footer__meta-item">
+            ©{footerYear} House of Musa. All rights reserved.
+          </div>
+          <div className="about-footer__meta-item">
+            Designed for bold product systems.
+          </div>
+          <div className="about-footer__meta-item">{footerTimeLabel}</div>
+        </div>
+
+        <div className="about-footer__scale" aria-hidden="true" />
+      </footer>
     </div>
   );
 }

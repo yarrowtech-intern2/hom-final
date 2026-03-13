@@ -1,7 +1,7 @@
 // RealisticScene.jsx
 import React, { useEffect } from "react";
 import * as THREE from "three";
-import { Canvas, useThree, useFrame } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import {
   Environment,
   OrbitControls,
@@ -120,7 +120,7 @@ export default function RealisticScene() {
       />
 
       {/* Tasteful post FX */}
-      <EffectComposer multisampling={4}>
+      <EffectComposer multisampling={4} enableNormalPass>
         <SSAO intensity={20} radius={0.2} bias={0.02} />
         <Bloom intensity={0.25} mipmapBlur />
         <Vignette eskil offset={0.12} darkness={0.6} />

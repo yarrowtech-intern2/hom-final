@@ -11,15 +11,10 @@ import {
     PerformanceMonitor,
 } from "@react-three/drei";
 import { EffectComposer, Bloom, SSAO, Vignette } from "@react-three/postprocessing";
-import { NormalPass } from "postprocessing";
-import { extend } from "@react-three/fiber";
 import DoorPortal from "../components/DoorPortal";
 import TutorialHint from "../components/TutorialHint";
 import { usePageTransition } from "../components/transition.jsx";
 // import ViewTutorialIndicator from "../components/viewIndicator.jsx";
-
-
-extend({ NormalPass });
 // import { CameraControls } from "@react-three/drei";
 
 /* ----------------------------- Config toggles ----------------------------- */
@@ -150,9 +145,8 @@ function Scene() {
                 <ContactShadows position={[0, -1.01, 0]} opacity={0.4} scale={16} blur={2.8} far={4} />
 
                 {/* Subtle post FX for Cycles-like pop */}
-                <EffectComposer multisampling={0}>
-                    <primitive attach="passes" object={new NormalPass()} />
-                    <SSAO normalPass samples={16} radius={0.25} intensity={1.2 * perf} />
+                <EffectComposer multisampling={0} enableNormalPass>
+                    <SSAO samples={16} radius={0.25} intensity={1.2 * perf} />
                     <Bloom mipmapBlur intensity={0.6 * perf} luminanceThreshold={0.85} />
                     <Vignette eskil={false} offset={-0.2} darkness={.9} />
                 </EffectComposer>

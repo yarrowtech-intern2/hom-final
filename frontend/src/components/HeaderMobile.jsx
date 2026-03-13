@@ -16,9 +16,9 @@ export default function HeaderMobile({ onOpenContact }) {
       //   link: "/projects",
       // },
       {
-        label: "Projects",
-        ariaLabel: "Open the 3D projects view",
-        link: "/projects",
+        label: "Products",
+        ariaLabel: "Jump to the projects section on the about page",
+        link: "/about#projects",
       },
       {
         label: "Contact",
@@ -80,12 +80,15 @@ export default function HeaderMobile({ onOpenContact }) {
         socialItems={socialItems}
         displaySocials
         displayItemNumbering
-        menuButtonColor="#000000"
-        openMenuButtonColor="#000000"
+        menuButtonColor="#FEDEBE"
+        openMenuButtonColor="#180802"
+        foregroundColor="#180802"
+        mutedColor="rgba(24, 8, 2, 0.72)"
+        focusColor="#FEDEBE"
         changeMenuColorOnOpen
-        colors={["#b98324", "#9d6800"]}
+        colors={["#FF8303", "#FD5602"]}
         logoUrl=""
-        accentColor="#9d6800"
+        accentColor="#FD5602"
         isFixed
         onItemClick={handleMenuItemClick}
       />

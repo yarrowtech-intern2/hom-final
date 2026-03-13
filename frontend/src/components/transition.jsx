@@ -28,7 +28,7 @@ export default function TransitionProvider({ children }) {
   }, []);
 
   useLayoutEffect(() => {
-    const scrollPages = new Set(["/about", "/contact", "/projects"]);
+    const scrollPages = new Set(["/about", "/contact", "/projects", "/carrers"]);
     const isScrollPage = scrollPages.has(location.pathname);
     const root = document.getElementById("root");
 
@@ -146,7 +146,8 @@ export default function TransitionProvider({ children }) {
               left: 0,
               top: 0,
               borderRadius: "50%",
-              background: "radial-gradient(circle, #000 60%, #000 100%)",
+              background:
+                "radial-gradient(circle, #FF8303 0%, #FD5602 58%, #C63E00 100%)",
               opacity: 0,
               transform: "scale(0)",
               // GPU-friendly props:

@@ -12,6 +12,9 @@ export default function StaggeredMenu({
   logoUrl = "/logo/logo-white.png",
   menuButtonColor = "#fff",
   openMenuButtonColor = "#fff",
+  foregroundColor = "#fff",
+  mutedColor = "rgba(255, 255, 255, 0.72)",
+  focusColor = "#fff",
   changeMenuColorOnOpen = true,
   accentColor = "#5227FF",
   isFixed = false,
@@ -445,7 +448,12 @@ export default function StaggeredMenu({
     >
       <div
         className={`${className ? `${className} ` : ""}staggered-menu-wrapper`}
-        style={accentColor ? { "--sm-accent": accentColor } : undefined}
+        style={{
+          ...(accentColor ? { "--sm-accent": accentColor } : {}),
+          "--sm-foreground": foregroundColor,
+          "--sm-foreground-muted": mutedColor,
+          "--sm-focus": focusColor,
+        }}
         data-position={position}
         data-open={open || undefined}
       >
@@ -579,37 +587,37 @@ export default function StaggeredMenu({
 .sm-scope .staggered-menu-header > * { pointer-events: auto; }
 .sm-scope .sm-logo { display: flex; align-items: center; user-select: none; }
 .sm-scope .sm-logo-img { display: block; height: 54px; width: auto; object-fit: contain; }
-.sm-scope .sm-toggle { position: relative; display: inline-flex; align-items: center; gap: 0.35rem; background: transparent; border: none; cursor: pointer; color: #ffffff; font-weight: 600; line-height: 1; overflow: visible; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.8rem; }
-.sm-scope .sm-toggle:focus-visible { outline: 2px solid #ffffffaa; outline-offset: 4px; border-radius: 4px; }
+.sm-scope .sm-toggle { position: relative; display: inline-flex; align-items: center; gap: 0.35rem; background: transparent; border: none; cursor: pointer; color: var(--sm-foreground, #ffffff); font-weight: 600; line-height: 1; overflow: visible; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.8rem; }
+.sm-scope .sm-toggle:focus-visible { outline: 2px solid var(--sm-focus, #ffffffaa); outline-offset: 4px; border-radius: 4px; }
 .sm-scope .sm-toggle-textWrap { position: relative; margin-right: 0.45em; display: inline-block; height: 1em; overflow: hidden; white-space: nowrap; width: var(--sm-toggle-width, auto); min-width: var(--sm-toggle-width, auto); }
 .sm-scope .sm-toggle-textInner { display: flex; flex-direction: column; line-height: 1; }
 .sm-scope .sm-toggle-line { display: block; height: 1em; line-height: 1; }
 .sm-scope .sm-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
 .sm-scope .sm-icon-line { position: absolute; left: 50%; top: 50%; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transform: translate(-50%, -50%); will-change: transform; }
-.sm-scope .staggered-menu-panel { position: absolute; top: 0; right: 0; width: 100%; max-width: 100vw; height: 100%; background: var(--sm-accent, #9d6800); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 7.5rem 1.2rem 1.5rem; overflow-y: auto; z-index: 10; pointer-events: auto; }
+.sm-scope .staggered-menu-panel { position: absolute; top: 0; right: 0; width: 100%; max-width: 100vw; height: 100%; background: linear-gradient(180deg, color-mix(in srgb, var(--sm-accent, #9d6800) 92%, #000 8%), var(--sm-accent, #9d6800)); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 7.5rem 1.2rem 1.5rem; overflow-y: auto; z-index: 10; pointer-events: auto; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sm-foreground, #ffffff) 14%, transparent); }
 .sm-scope [data-position='left'] .staggered-menu-panel { right: auto; left: 0; }
 .sm-scope .sm-prelayers { position: absolute; top: 0; right: 0; bottom: 0; width: 100%; pointer-events: none; z-index: 5; }
 .sm-scope [data-position='left'] .sm-prelayers { right: auto; left: 0; }
 .sm-scope .sm-prelayer { position: absolute; top: 0; right: 0; height: 100%; width: 100%; transform: translateX(0); }
 .sm-scope .sm-panel-inner { flex: 1; display: flex; flex-direction: column; gap: 1.25rem; }
 .sm-scope .sm-socials { margin-top: auto; padding-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem; }
-.sm-scope .sm-socials-title { margin: 0; font-size: 1rem; font-weight: 500; color: #ffffff; }
+.sm-scope .sm-socials-title { margin: 0; font-size: 1rem; font-weight: 500; color: var(--sm-foreground-muted, #ffffff); }
 .sm-scope .sm-socials-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: row; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .sm-scope .sm-socials-list .sm-socials-link { opacity: 1; transition: opacity 0.3s ease; }
 .sm-scope .sm-socials-list:hover .sm-socials-link:not(:hover) { opacity: 0.35; }
 .sm-scope .sm-socials-list:focus-within .sm-socials-link:not(:focus-visible) { opacity: 0.35; }
 .sm-scope .sm-socials-list .sm-socials-link:hover,
 .sm-scope .sm-socials-list .sm-socials-link:focus-visible { opacity: 1; }
-.sm-scope .sm-socials-link:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
-.sm-scope .sm-socials-link { font-size: 1rem; font-weight: 500; color: #ffffff; text-decoration: none; position: relative; padding: 2px 0; display: inline-block; transition: color 0.3s ease, opacity 0.3s ease; }
-.sm-scope .sm-socials-link:hover { color: #ffffff; }
+.sm-scope .sm-socials-link:focus-visible { outline: 2px solid var(--sm-focus, #ffffff); outline-offset: 3px; }
+.sm-scope .sm-socials-link { font-size: 1rem; font-weight: 500; color: var(--sm-foreground, #ffffff); text-decoration: none; position: relative; padding: 2px 0; display: inline-block; transition: color 0.3s ease, opacity 0.3s ease; }
+.sm-scope .sm-socials-link:hover { color: var(--sm-foreground, #ffffff); }
 .sm-scope .sm-panel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; }
 .sm-scope .sm-panel-itemWrap { position: relative; overflow: hidden; line-height: 1; }
-.sm-scope .sm-panel-item { position: relative; color: #ffffff; font-weight: 700; font-size: clamp(2.1rem, 12vw, 3.3rem); cursor: pointer; line-height: 1; letter-spacing: -0.04em; text-transform: uppercase; transition: color 0.25s ease; display: inline-block; text-decoration: none; padding-right: 1.5em; }
+.sm-scope .sm-panel-item { position: relative; color: var(--sm-foreground, #ffffff); font-weight: 700; font-size: clamp(2.1rem, 12vw, 3.3rem); cursor: pointer; line-height: 1; letter-spacing: -0.04em; text-transform: uppercase; transition: color 0.25s ease; display: inline-block; text-decoration: none; padding-right: 1.5em; }
 .sm-scope .sm-panel-itemLabel { display: inline-block; will-change: transform; transform-origin: 50% 100%; }
-.sm-scope .sm-panel-item:hover { color: #ffffff; }
+.sm-scope .sm-panel-item:hover { color: var(--sm-foreground, #ffffff); }
 .sm-scope .sm-panel-list[data-numbering] { counter-reset: smItem; }
-.sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); position: absolute; top: 0.2em; right: 3.1em; font-size: 0.9rem; font-weight: 500; color: #ffffff; letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); }
+.sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); position: absolute; top: 0.2em; right: 3.1em; font-size: 0.9rem; font-weight: 500; color: var(--sm-foreground-muted, #ffffff); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); }
 @media (min-width: 769px) {
   .sm-scope .staggered-menu-header { display: none; }
   .sm-scope .staggered-menu-panel { display: none; }

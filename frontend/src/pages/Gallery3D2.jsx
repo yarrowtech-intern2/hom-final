@@ -496,6 +496,7 @@ function PaintingsManager({
   seedPosition = null,
   textureLoadDistance = 10,
   textureAnisotropy = 4,
+  interactRef = null,
 }) {
   const groupRef = useRef();
   const ray = useRef(new THREE.Raycaster()).current;
@@ -602,6 +603,20 @@ function PaintingsManager({
       window.removeEventListener("touchstart", handleTryOpen);
     };
   }, [camera, ray, maxDistance, onOpen, pointerLocked, ndc]);
+
+  // Expose a fire-from-center function for mobile VIEW button
+  useEffect(() => {
+    if (!interactRef) return;
+    interactRef.current = () => {
+      ray.setFromCamera(ndc, camera);
+      const root = groupRef.current?.children ?? [];
+      const hits = ray.intersectObjects(root, true);
+      const h = hits.find(
+        (x) => x.object?.userData?.isPainting && x.distance <= maxDistance
+      );
+      if (h?.object?.userData?.paintingMeta) onOpen?.(h.object.userData.paintingMeta);
+    };
+  });
 
   return (
     <group ref={groupRef}>
@@ -836,7 +851,7 @@ function TouchLook({ enabled, lookRef }) {
 }
 
 /* ===================== Mobile HUD ======================= */
-function MobileHUD({ setInput }) {
+function MobileHUD({ setInput, onInteract }) {
   if (!setInput) return null;
 
   const joystickRef = useRef(null);
@@ -997,6 +1012,26 @@ function MobileHUD({ setInput }) {
           alignItems: "flex-end",
         }}
       >
+        {/* VIEW / interact button */}
+        <button
+          data-mobile-control="true"
+          onPointerDown={(e) => { e.preventDefault(); onInteract?.(); }}
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: "50%",
+            border: "1px solid rgba(253,86,2,0.7)",
+            background: "rgba(253,86,2,0.22)",
+            color: "#fff",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            touchAction: "none",
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          VIEW
+        </button>
         <button
           data-mobile-control="true"
           onPointerDown={onJumpStart}
@@ -1006,10 +1041,10 @@ function MobileHUD({ setInput }) {
             width: 68,
             height: 68,
             borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.5)",
+            border: "1px solid rgba(255,255,255,0.35)",
             background: "rgba(0,0,0,0.52)",
             color: "#fff",
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: 700,
             letterSpacing: "0.06em",
             touchAction: "none",
@@ -1048,11 +1083,18 @@ export default function GalleryPage() {
   });
 
   // ✅ shared look state for mobile (yaw/pitch)
-  const lookRef = useRef({
-    yaw: 0,
-    pitch: 0,
-    ready: false,
-  });
+  const lookRef = useRef({ yaw: 0, pitch: 0, ready: false });
+
+  // mobile interact (VIEW button → center raycast)
+  const mobileInteractRef = useRef(null);
+
+  // auto-hide mobile hint after 4 s
+  const [showMobileHint, setShowMobileHint] = useState(true);
+  useEffect(() => {
+    if (!isTouchDevice) return;
+    const t = setTimeout(() => setShowMobileHint(false), 4000);
+    return () => clearTimeout(t);
+  }, [isTouchDevice]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1132,87 +1174,114 @@ export default function GalleryPage() {
 
   return (
     <>
-      {/* Desktop pointer-lock gate */}
+      {/* ── Desktop pointer-lock entry ── */}
       {!isTouchDevice && !locked && (
-        <button
-          onClick={() => plcRef.current?.lock()}
-          style={{
-            position: "fixed",
-            inset: 0,
-            margin: "auto",
-            width: 280,
-            height: 120,
-            background: "rgba(0,0,0,0.6)",
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 30,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(0,0,0,0.52)", backdropFilter: "blur(6px)",
+        }}>
+          <div style={{
+            width: "min(90vw, 420px)",
+            background: "rgba(10,10,14,0.92)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 20,
+            padding: "32px 28px 24px",
             color: "#fff",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: 106,
-            fontSize: 16,
-            backdropFilter: "blur(4px)",
-            zIndex: 30,
-          }}
-        >
-          Click to enter • WASD / Shift / Space • Click to shoot • H for
-          Day/Night
-        </button>
-      )}
-
-      {/* Small helper text for mobile */}
-      {isTouchDevice && (
-        <div
-          data-mobile-control="true"
-          style={{
-            position: "fixed",
-            top: 12,
-            left: "50%",
-            transform: "translateX(-50%)",
-            padding: "6px 12px",
-            borderRadius: 999,
-            background: "rgba(0,0,0,0.6)",
-            color: "#fff",
-            fontSize: 11,
-            zIndex: 35,
-            backdropFilter: "blur(6px)",
-          }}
-        >
-          Right-side drag to look - left joystick to move
+            boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+            display: "flex", flexDirection: "column", gap: 20,
+          }}>
+            <div>
+              <p style={{ margin: 0, fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>
+                House of Musa — Gallery
+              </p>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, lineHeight: 1.2 }}>
+                Enter the Gallery
+              </h2>
+              <p style={{ margin: "8px 0 0", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
+                Walk through our interactive 3D space and explore the projects up close.
+              </p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {[
+                ["WASD / ↑↓←→", "Move"],
+                ["Shift", "Sprint"],
+                ["Space", "Jump"],
+                ["Click / E", "View painting"],
+                ["H", "Day / Night"],
+                ["Click", "Shoot ball"],
+              ].map(([key, label]) => (
+                <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ padding: "3px 8px", background: "rgba(255,255,255,0.1)", borderRadius: 6, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
+                    {key}
+                  </span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{label}</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => plcRef.current?.lock()}
+              style={{
+                padding: "13px 0", borderRadius: 12,
+                background: "#FD5602", border: "none",
+                color: "#fff", fontSize: 14, fontWeight: 700,
+                letterSpacing: "0.06em", cursor: "pointer",
+              }}
+            >
+              Click to Enter
+            </button>
+          </div>
         </div>
       )}
 
+      {/* ── Mobile hint (auto-hides) ── */}
+      {isTouchDevice && showMobileHint && !showMobileWarning && (
+        <div
+          data-mobile-control="true"
+          style={{
+            position: "fixed", top: 16, left: "50%",
+            transform: "translateX(-50%)",
+            padding: "8px 16px", borderRadius: 999,
+            background: "rgba(0,0,0,0.7)", color: "#fff",
+            fontSize: 11, letterSpacing: "0.06em",
+            zIndex: 35, backdropFilter: "blur(8px)",
+            whiteSpace: "nowrap",
+            transition: "opacity 0.4s ease",
+            opacity: showMobileHint ? 1 : 0,
+          }}
+        >
+          Drag right side to look · Joystick to move · VIEW to inspect
+        </div>
+      )}
+
+      {/* ── Mobile welcome warning ── */}
       {isTouchDevice && showMobileWarning && (
         <div
           data-mobile-control="true"
           style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 70,
-            display: "grid",
-            placeItems: "center",
-            background: "rgba(0,0,0,0.44)",
-            backdropFilter: "blur(6px)",
+            position: "fixed", inset: 0, zIndex: 70,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)",
             padding: 20,
           }}
         >
-          <div
-            style={{
-              width: "min(92vw, 420px)",
-              background: "rgba(10,10,12,0.84)",
-              border: "1px solid rgba(255,255,255,0.22)",
-              borderRadius: 16,
-              padding: "18px 16px 14px",
-              color: "#fff",
-              boxShadow: "0 20px 44px rgba(0,0,0,0.4)",
-            }}
-          >
-            <p
-              style={{
-                margin: 0,
-                fontSize: 14,
-                lineHeight: 1.45,
-                opacity: 0.95,
-              }}
-            >
-              Warning: this page is best experienced in desktop/laptop.
-            </p>
+          <div style={{
+            width: "min(92vw, 400px)",
+            background: "rgba(10,10,14,0.95)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 20, padding: "28px 22px 20px",
+            color: "#fff", boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+            display: "flex", flexDirection: "column", gap: 16,
+          }}>
+            <div>
+              <p style={{ margin: "0 0 6px", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.38)" }}>
+                House of Musa — Gallery
+              </p>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Best on Desktop</h2>
+              <p style={{ margin: "8px 0 0", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.65 }}>
+                The 3D gallery is designed for desktop. You can still explore on mobile — use the joystick to move, drag the right side to look, and tap VIEW to open paintings.
+              </p>
+            </div>
             <button
               data-mobile-control="true"
               onClick={() => {
@@ -1220,152 +1289,162 @@ export default function GalleryPage() {
                 setShowMobileWarning(false);
               }}
               style={{
-                marginTop: 12,
-                width: "100%",
-                borderRadius: 10,
-                border: "1px solid rgba(255,255,255,0.3)",
-                background: "rgba(255,255,255,0.12)",
-                color: "#fff",
-                padding: "8px 10px",
-                fontWeight: 600,
+                padding: "12px 0", borderRadius: 12,
+                background: "#FD5602", border: "none",
+                color: "#fff", fontSize: 14, fontWeight: 700,
+                letterSpacing: "0.06em", cursor: "pointer",
               }}
             >
-              Continue
+              Enter Gallery
             </button>
           </div>
         </div>
       )}
 
-      {/* HDRI toggle button */}
+      {/* ── HDRI toggle ── */}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setEnvEnabled((v) => !v);
-        }}
+        onClick={(e) => { e.stopPropagation(); setEnvEnabled((v) => !v); }}
         style={{
-          position: "fixed",
-          bottom: 16,
-          right: 16,
-          width: 46,
-          height: 46,
-          borderRadius: "999px",
-          border: "1px solid rgba(255,255,255,0.4)",
-          background: "rgba(255, 255, 255, 0.24)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 6,
-          backdropFilter: "blur(8px)",
-          zIndex: 9999,
-          cursor: "pointer",
-          pointerEvents: "auto",
+          position: "fixed", bottom: 20, right: 20,
+          width: 46, height: 46, borderRadius: 999,
+          border: "1px solid rgba(255,255,255,0.25)",
+          background: "rgba(0,0,0,0.55)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 8, backdropFilter: "blur(10px)",
+          zIndex: 9999, cursor: "pointer",
         }}
         aria-label={envEnabled ? "Turn HDRI off" : "Turn HDRI on"}
       >
         <img
           src={envEnabled ? HDRI_ON_ICON : HDRI_OFF_ICON}
           alt={envEnabled ? "HDRI On" : "HDRI Off"}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            pointerEvents: "none",
-            filter: "drop-shadow(0 0 4px rgba(0,0,0,0.6))",
-          }}
+          style={{ width: "100%", height: "100%", objectFit: "contain", pointerEvents: "none" }}
         />
       </button>
 
-      {/* Crosshair – desktop only */}
-      <div
-        style={{
-          position: "fixed",
-          left: "50%",
-          top: "50%",
+      {/* ── Crosshair (desktop locked) ── */}
+      {!isTouchDevice && locked && (
+        <div style={{
+          position: "fixed", left: "50%", top: "50%",
           transform: "translate(-50%, -50%)",
-          width: 8,
-          height: 8,
-          border: "2px solid rgba(255,255,255,0.8)",
-          borderRadius: 9999,
-          backgroundColor: "rgba(255, 255, 255, 1)",
-          pointerEvents: "none",
-          opacity: !isTouchDevice && locked ? 1 : 0,
-          zIndex: 20,
-        }}
-      />
-
-      {/* 🕹 Mobile HUD joystick */}
-      {isTouchDevice && !active && !showMobileWarning && (
-        <MobileHUD setInput={setMobileInput} />
+          width: 6, height: 6,
+          borderRadius: 999,
+          background: "rgba(255,255,255,0.9)",
+          boxShadow: "0 0 0 1.5px rgba(0,0,0,0.6)",
+          pointerEvents: "none", zIndex: 20,
+        }} />
       )}
 
-      {/* Painting modal */}
+      {/* ── Mobile HUD ── */}
+      {isTouchDevice && !active && !showMobileWarning && (
+        <MobileHUD
+          setInput={setMobileInput}
+          onInteract={() => mobileInteractRef.current?.()}
+        />
+      )}
+
+      {/* ── Painting modal ── */}
       {active && (
         <div
           style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 50,
-            display: "grid",
-            placeItems: "center",
-            background: "rgba(0, 0, 0, 0.56)",
-            backdropFilter: "blur(20px)",
-            transition: "background 160ms ease",
+            position: "fixed", inset: 0, zIndex: 50,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.72)", backdropFilter: "blur(18px)",
+            padding: "16px",
           }}
           onClick={() => setActive(null)}
         >
           <div
-            className="modalCard"
             style={{
-              background: "#ffffff61",
-              backdropFilter: "blur(104px)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: 10,
-              padding: 6,
-              width: "min(56vw, 960px)",
-              maxHeight: "56vh",
-              overflow: "auto",
+              position: "relative",
+              width: "min(92vw, 880px)",
+              maxHeight: "88vh",
+              background: "rgba(10,10,14,0.96)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 20,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ padding: "16px 24px", textAllign: "center" }}>
-              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 16 }}>
-                {active.title}
-              </h2>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  marginBottom: 16,
-                }}>
+            {/* Close button */}
+            <button
+              onClick={() => setActive(null)}
+              style={{
+                position: "absolute", top: 14, right: 14, zIndex: 10,
+                width: 36, height: 36, borderRadius: 999,
+                border: "1px solid rgba(255,255,255,0.18)",
+                background: "rgba(255,255,255,0.1)",
+                color: "#fff", fontSize: 16, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                backdropFilter: "blur(6px)",
+              }}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+
+            {/* Body — image + text side by side on wide, stacked on narrow */}
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              overflowY: "auto",
+              flex: 1,
+            }}>
+              {/* Image banner */}
+              <div style={{
+                width: "100%",
+                background: "rgba(255,255,255,0.04)",
+                borderBottom: "1px solid rgba(255,255,255,0.07)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: "28px 24px 20px",
+                flexShrink: 0,
+              }}>
                 <img
                   src={active.img}
                   alt={active.title}
                   style={{
-                    width: "30%",
-                    maxHeight: "40vh",
-                    borderRadius: 24,
-                    marginBottom: 16,
+                    maxWidth: "min(340px, 72vw)",
+                    maxHeight: "26vh",
+                    borderRadius: 14,
                     objectFit: "contain",
+                    boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
                   }}
                 />
               </div>
 
-              <p style={{ fontSize: 15, lineHeight: 1.7, color: "#ffffffff" }}>
-                {active.desc}
-              </p>
-              <p
-                style={{
-                  color: "#790000ff",
-                  fontWeight: 800,
-                  marginTop: 14,
-                  fontSize: 12,
-                  opacity: 0.65,
-                  textAlign: "center",
-                  userSelect: "none",
-                }}
-              >
-                Press ESC to close
-              </p>
+              {/* Text */}
+              <div style={{ padding: "24px 28px 28px", color: "#fff" }}>
+                <p style={{
+                  margin: "0 0 6px",
+                  fontSize: 10, letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "#FD5602",
+                }}>
+                  Project
+                </p>
+                <h2 style={{
+                  margin: "0 0 16px",
+                  fontSize: "clamp(20px, 3vw, 28px)",
+                  fontWeight: 700, lineHeight: 1.15, color: "#fff",
+                }}>
+                  {active.title}
+                </h2>
+                <div
+                  style={{ fontSize: 14, lineHeight: 1.78, color: "rgba(255,255,255,0.72)" }}
+                  dangerouslySetInnerHTML={{ __html: active.desc }}
+                />
+                <p style={{
+                  margin: "20px 0 0",
+                  fontSize: 11, color: "rgba(255,255,255,0.28)",
+                  textAlign: "center", letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}>
+                  {isTouchDevice ? "Tap outside to close" : "Press ESC or click outside to close"}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -1464,6 +1543,7 @@ export default function GalleryPage() {
                 seedPosition={spawn}
                 textureLoadDistance={textureLoadDistance}
                 textureAnisotropy={textureAnisotropy}
+                interactRef={mobileInteractRef}
               />
 
               {spawn && (

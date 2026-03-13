@@ -139,8 +139,12 @@ export default function HeaderDesktop({ onOpenContact }) {
         {/* <Link to="/projects" onClick={(e) => handleNavClick(e, "/projects")}>
           Projects
         </Link> */}
-        <Link to="/projects" onClick={(e) => handleNavClick(e, "/projects")}>
-          Projects
+        <Link
+          // to="/about#projects"
+          to="/about#projects"
+          onClick={(e) => handleNavClick(e, "/about#projects")}
+        >
+          Products
         </Link>
 
         {/* <Link to="/contact" onClick={(e) => handleNavClick(e, "/contact")}>

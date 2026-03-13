@@ -1,95 +1,67 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
-import * as THREE from "three";
+import { useCallback, useMemo, useState, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import ytPoster from "../assets/posters/yt.png";
-import buildingPoster from "../assets/posters/building.png";
-import hiremePoster from "../assets/posters/hireme.png";
-import artblockPoster from "../assets/posters/artblock.png";
-import greenbarPoster from "../assets/posters/greenbar.png";
-import betterpassPoster from "../assets/posters/betterpass.png";
+import { toast } from "react-toastify";
+import JobApplyModal from "../components/applyModal";
 import "./projectsShowcase.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const PROJECTS = [
+const ROLES = [
   {
-    title: "Yarrowtech",
-    tagline: "Software and ERP Ecosystem",
+    title: "Frontend Developer",
+    tagline: "React + Tailwind",
     description:
-      "Intelligent software products, ERP systems, AI applications, and full-stack delivery for modern businesses.",
-    url: "https://yarrowtech.com",
-    cta: "Visit Website",
-    tags: ["ERP Systems", "AI Apps", "Full-Stack", "Enterprise"],
-    poster: ytPoster,
+      "Build premium UI systems, component libraries, and performance-focused interfaces for modern enterprise products.",
+    meta: "Full-time • Remote/Hybrid",
+    tags: ["React", "Tailwind", "UX", "Performance"],
   },
   {
-    title: "Building",
-    tagline: "Regulated Crowdfunding Platform",
+    title: "Full Stack Developer",
+    tagline: "MERN Stack",
     description:
-      "A trusted digital marketplace for founders and investors, designed with strong compliance and campaign flows.",
-    url: "https://sportbit.app",
-    cta: "View Platform",
-    tags: ["Crowdfunding", "KYC/AML", "Compliance", "Marketplace"],
-    poster: buildingPoster,
+      "Ship end-to-end features, secure APIs, scalable data models, and production workflows from backend to frontend.",
+    meta: "Full-time • Remote/Hybrid",
+    tags: ["Node", "MongoDB", "APIs", "Security"],
   },
   {
-    title: "Hire-Me",
-    tagline: "Subscription HR Infrastructure",
+    title: "Backend Developer",
+    tagline: "Node.js + MongoDB",
     description:
-      "A role-based HR platform for intake, workforce tracking, and compliance operations in one secure system.",
-    url: "https://fb.yarrowtech.com",
-    cta: "Explore Product",
-    tags: ["HR Tech", "SaaS", "Workforce", "Compliance"],
-    poster: hiremePoster,
+      "Own backend services, optimize queries, and design robust architecture for scale across live products.",
+    meta: "Full-time • Remote/Hybrid",
+    tags: ["Node", "DB Design", "Caching", "Scaling"],
   },
   {
-    title: "Art-Block",
-    tagline: "Creator Commerce Network",
+    title: "UI/UX Designer",
+    tagline: "Figma",
     description:
-      "A creator-first platform for memberships, direct audience monetization, and analytics-powered growth.",
-    url: "https://myguide.yarrowtech.com",
-    cta: "See Solution",
-    tags: ["Creator Platform", "Subscriptions", "Payments", "Analytics"],
-    poster: artblockPoster,
-  },
-  {
-    title: "Green-bar",
-    tagline: "Fresh Grocery Ordering System",
-    description:
-      "End-to-end commerce for fresh produce with ordering, inventory workflows, and real-time tracking.",
-    url: "https://electroniceducare.com",
-    cta: "View Product",
-    tags: ["E-Commerce", "Inventory", "Order Tracking", "Admin Panel"],
-    poster: greenbarPoster,
-  },
-  {
-    title: "Better-Pass",
-    tagline: "Social Travel Marketplace",
-    description:
-      "A social booking network for tour companies, travelers, and creators with discovery plus conversion.",
-    url: "https://electroniceducare.com",
-    cta: "View Product",
-    tags: ["Travel Social", "Bookings", "Multi-Role", "Community"],
-    poster: betterpassPoster,
+      "Design modern enterprise UI, flows, and systems that feel premium and intuitive across web and mobile.",
+    meta: "Contract/Full-time • Remote",
+    tags: ["Figma", "Design System", "Prototyping", "UX"],
   },
 ];
 
 const PROCESS_STEPS = [
   {
     num: "01",
-    title: "Discovery",
-    body: "Business mapping, user goals, and architecture planning before a single line is written.",
+    title: "Apply",
+    body: "Share your resume and a short note about what you want to build with us.",
   },
   {
     num: "02",
-    title: "Build",
-    body: "Fast iterations with strong frontend, backend, and performance engineering baked in.",
+    title: "Screen",
+    body: "A short call to align on role expectations, timeline, and mutual fit.",
   },
   {
     num: "03",
-    title: "Scale",
-    body: "Optimization, reliability, and long-term improvements that compound after launch.",
+    title: "Skill Round",
+    body: "Practical review: task, portfolio, or systems discussion based on your role.",
+  },
+  {
+    num: "04",
+    title: "Offer",
+    body: "Final discussion and onboarding plan so you can hit the ground running.",
   },
 ];
 
@@ -109,129 +81,86 @@ function CrosshairIcon({ size = 40, color = "currentColor", strokeWidth = 1.4 })
 }
 
 export default function ProjectsShowcase() {
-  const pageRef  = useRef(null);
-  const canvasRef = useRef(null);
+  const pageRef = useRef(null);
 
-  /* ── Page bg ── */
-  useEffect(() => {
-    const prev = document.body.style.background;
-    document.body.style.background = "#EFE8D5";
-    return () => { document.body.style.background = prev; };
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const roleNames = useMemo(() => ROLES.map((r) => r.title), []);
+
+  const openApply = useCallback((role, e) => {
+    e?.preventDefault?.();
+    setSelectedRole(role || null);
+    setModalOpen(true);
   }, []);
 
-  /* ── Three.js gold wire mesh ── */
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const closeApply = useCallback(() => setModalOpen(false), []);
 
-    const isMobile = window.innerWidth < 768;
-    let renderer;
-    try {
-      renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: false,
-        alpha: false,
-        powerPreference: "high-performance",
-      });
-    } catch (err) {
-      console.error("ProjectsShowcase renderer init failed:", err);
-      return;
-    }
+  const onSubmit = useCallback(
+    async (data) => {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
+      setUploadProgress(0);
 
-    if (!renderer?.getContext?.()) {
-      renderer?.dispose?.();
-      return;
-    }
+      try {
+        const formData = new FormData();
+        formData.append("role", data.role);
+        formData.append("fullName", data.fullName);
+        formData.append("email", data.email);
+        formData.append("phone", data.phone || "");
+        formData.append("coverNote", data.coverNote || "");
+        if (data.resumeFile) formData.append("resume", data.resumeFile);
 
-    renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
-    renderer.setClearColor(0x0b0b0b, 1);
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", `${import.meta.env.VITE_API_URL}/api/job-applications/apply`);
 
-    const scene = new THREE.Scene();
-    /* Wider FOV + closer camera fills the full viewport with the mesh */
-    const camera = new THREE.PerspectiveCamera(68, 1, 0.1, 300);
-    camera.position.set(0, 5, 18);
-    camera.lookAt(0, 0, -1);
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              setUploadProgress(Math.round((event.loaded / event.total) * 100));
+            }
+          };
 
-    /* Fewer segments on mobile for performance */
-    const segW = isMobile ? 48 : 70;
-    const segH = isMobile ? 32 : 46;
-    const geometry = new THREE.PlaneGeometry(150, 100, segW, segH);
-    geometry.rotateX(-Math.PI * 0.4);
+          xhr.onload = () => {
+            const raw = xhr.responseText;
+            if (xhr.status >= 200 && xhr.status < 300) return resolve();
+            try {
+              const err = JSON.parse(raw);
+              reject(new Error(err.error || err.message || "Submission failed"));
+            } catch {
+              reject(new Error(raw || `Submission failed (HTTP ${xhr.status})`));
+            }
+          };
 
-    const material = new THREE.MeshBasicMaterial({
-      color: 0xb07828,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.55,
-    });
+          xhr.onerror = () => reject(new Error("Network error"));
+          xhr.send(formData);
+        });
 
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    const posAttr = geometry.attributes.position;
-    const count   = posAttr.count;
-    const orig    = new Float32Array(posAttr.array);
-
-    function resize() {
-      const cw = canvas.clientWidth;
-      const ch = canvas.clientHeight;
-      if (!cw || !ch) return;
-      renderer.setSize(cw, ch, false);
-      camera.aspect = cw / ch;
-      camera.updateProjectionMatrix();
-    }
-
-    resize();
-    const ro = new ResizeObserver(resize);
-    const resizeTarget = canvas.parentElement || canvas;
-    ro.observe(resizeTarget);
-
-    let animId;
-    const t0 = performance.now();
-    let frame = 0;
-
-    function animate() {
-      animId = requestAnimationFrame(animate);
-      frame++;
-      /* Skip every other frame on mobile for smooth 30 fps */
-      if (isMobile && frame % 2 !== 0) return;
-
-      const t = (performance.now() - t0) * 0.001;
-      const arr = posAttr.array;
-
-      for (let i = 0; i < count; i++) {
-        const ix = i * 3;
-        const ox = orig[ix];
-        const oy = orig[ix + 1];
-        arr[ix + 1] = oy + Math.sin(ox * 0.2 + t) * 1.8 + Math.sin(oy * 0.15 + t * 0.6) * 1.2;
+        toast.success("Application submitted successfully 🚀");
+        setModalOpen(false);
+      } catch (err) {
+        console.error(err);
+        toast.error(err?.message || "Failed to submit application");
+      } finally {
+        setIsSubmitting(false);
+        setUploadProgress(0);
       }
-      posAttr.needsUpdate = true;
-      renderer.render(scene, camera);
-    }
+    },
+    [isSubmitting]
+  );
 
-    animate();
 
-    return () => {
-      cancelAnimationFrame(animId);
-      ro.disconnect();
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
-    };
-  }, []);
-
-  /* ── GSAP — every text element ── */
+  /* ── GSAP ── */
   useLayoutEffect(() => {
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (isMobile || prefersReducedMotion) {
-      return undefined;
-    }
+    if (isMobile || prefersReducedMotion) return undefined;
 
     const ctx = gsap.context(() => {
 
-      /* ── HERO (no scrollTrigger — play on load) ── */
       gsap.fromTo(".ps2-hero-title-inner",
         { y: "108%", immediateRender: true },
         { y: "0%", duration: 1.1, ease: "power4.out", stagger: 0.13, delay: 0.3 }
@@ -241,7 +170,6 @@ export default function ProjectsShowcase() {
         { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", delay: 0.75 }
       );
 
-      /* ── STATEMENT ── */
       gsap.fromTo(".ps2-statement-line",
         { y: "105%", immediateRender: false },
         { y: "0%", duration: 1, ease: "power3.out", stagger: 0.1,
@@ -253,7 +181,6 @@ export default function ProjectsShowcase() {
           scrollTrigger: { trigger: ".ps2-statement-subcols", start: "top 92%", once: true } }
       );
 
-      /* ── PROCESS ── */
       gsap.fromTo(".ps2-process-label",
         { x: -24, opacity: 0, immediateRender: false },
         { x: 0, opacity: 1, duration: 0.65, ease: "power2.out",
@@ -285,7 +212,6 @@ export default function ProjectsShowcase() {
           scrollTrigger: { trigger: ".ps2-process-right", start: "top 88%", once: true } }
       );
 
-      /* ── PROJECTS ── */
       gsap.fromTo(".ps2-projects-headline .ps2-word-inner",
         { y: "108%", immediateRender: false },
         { y: "0%", duration: 1, ease: "power4.out", stagger: 0.13,
@@ -301,11 +227,6 @@ export default function ProjectsShowcase() {
         { x: 0, opacity: 1, duration: 0.65, ease: "power2.out", stagger: 0.08,
           scrollTrigger: { trigger: ".ps2-projects-grid", start: "top 88%", once: true } }
       );
-      gsap.fromTo(".ps2-project-img",
-        { scale: 1.08, opacity: 0, immediateRender: false },
-        { scale: 1, opacity: 1, duration: 0.9, ease: "power3.out", stagger: 0.09,
-          scrollTrigger: { trigger: ".ps2-projects-grid", start: "top 88%", once: true } }
-      );
       gsap.fromTo(".ps2-project-title",
         { y: 20, opacity: 0, immediateRender: false },
         { y: 0, opacity: 1, duration: 0.7, ease: "power3.out", stagger: 0.09,
@@ -317,7 +238,6 @@ export default function ProjectsShowcase() {
           scrollTrigger: { trigger: ".ps2-projects-grid", start: "top 82%", once: true } }
       );
 
-      /* ── FOOTER ── */
       gsap.fromTo(".ps2-footer-left svg",
         { scale: 0.82, opacity: 0, rotation: -10, immediateRender: false },
         { scale: 1, opacity: 1, rotation: 0, duration: 1.1, ease: "power3.out",
@@ -341,7 +261,6 @@ export default function ProjectsShowcase() {
 
     }, pageRef);
 
-    /* Force ScrollTrigger to recalculate after fonts + images load */
     const tid = setTimeout(() => ScrollTrigger.refresh(), 300);
 
     return () => {
@@ -355,19 +274,18 @@ export default function ProjectsShowcase() {
 
       {/* ══ HERO ══ */}
       <section className="ps2-hero">
-        <canvas ref={canvasRef} className="ps2-hero-canvas" />
-
         <div className="ps2-hero-inner">
           <div className="ps2-hero-title-wrap">
+            <p className="ps2-hero-eyebrow">House of Musa — Careers 2025</p>
             <h1 className="ps2-hero-title">
               <span className="ps2-hero-title-line">
-                <span className="ps2-hero-title-inner">HOUSE</span>
-              </span>
-              <span className="ps2-hero-title-line">
-                <span className="ps2-hero-title-inner">OF MUSA.</span>
+                <span className="ps2-hero-title-inner">CAREERS.</span>
               </span>
             </h1>
-            <p className="ps2-hero-caption">Spotlight Projects 2025</p>
+            <p className="ps2-hero-sub">
+              Build systems that matter. Join a team of engineers and designers
+              shipping premium digital products for modern businesses.
+            </p>
           </div>
         </div>
       </section>
@@ -377,9 +295,9 @@ export default function ProjectsShowcase() {
         <div className="ps2-statement-inner">
           <p className="ps2-statement-body">
             {[
-              "Our team of builders, designers,",
-              "and engineers crafts intelligent digital products —",
-              "built for modern businesses that demand performance.",
+              "We hire builders, designers,",
+              "and engineers who care about craft —",
+              "people who want to ship work that matters.",
             ].map((line) => (
               <span key={line} className="ps2-statement-line-wrap">
                 <span className="ps2-statement-line">{line}</span>
@@ -389,36 +307,36 @@ export default function ProjectsShowcase() {
 
           <div className="ps2-statement-subcols">
             <p className="ps2-statement-subcol">
-              FROM THE FIRST IDEA TO LAUNCH, HOUSE OF MUSA IS BY YOUR SIDE — HELPING YOU NAVIGATE
-              PRODUCT STRATEGY, DESIGN, ENGINEERING, AND WHATEVER YOUR PROJECT NEEDS.
+              WE BUILD MODERN ENTERPRISE SYSTEMS: DASHBOARDS, WORKFLOWS, AUTOMATION, AND
+              DATA-DRIVEN EXPERIENCES. IF YOU CARE ABOUT QUALITY AND REAL IMPACT, YOU'LL LOVE IT HERE.
             </p>
             <p className="ps2-statement-subcol">
-              PARTNERING WITH HOUSE OF MUSA MEANS A STREAMLINED, END-TO-END APPROACH — FROM CONCEPT
-              AND ARCHITECTURE TO DEVELOPMENT AND DELIVERY.
+              HIGH OWNERSHIP, FAST ITERATION, CLEAN CODE, AND STRONG ENGINEERING STANDARDS.
+              REMOTE / HYBRID — STRONG TALENT IS ALWAYS WELCOME.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ══ PROCESS ══ */}
+      {/* ══ HIRING PROCESS ══ */}
       <section className="ps2-process">
         <div className="ps2-process-topbar">
-          <span className="ps2-process-label">PROCESS</span>
-          <span className="ps2-process-counter">[HOM.03]</span>
+          <span className="ps2-process-label">HIRING PROCESS</span>
+          <span className="ps2-process-counter">[HOM.CAREERS]</span>
         </div>
 
         <div className="ps2-process-inner">
           <div className="ps2-process-left">
             <h2 className="ps2-process-title">
-              {["Here at", "every step"].map((line) => (
+              {["Transparent", "at every step"].map((line) => (
                 <span key={line} className="ps2-word-line">
                   <span className="ps2-word-inner">{line}</span>
                 </span>
               ))}
             </h2>
             <p className="ps2-process-desc">
-              FROM DISCOVERY TO DELIVERY, WE MOVE WITH INTENTION — MAPPING YOUR GOALS,
-              ENGINEERING ROBUST SYSTEMS, AND SCALING WHAT WORKS.
+              FAST, RESPECTFUL, AND ROLE-FOCUSED. WE KEEP IT PRACTICAL SO YOU KNOW
+              EXACTLY WHERE YOU STAND FROM DAY ONE.
             </p>
           </div>
 
@@ -438,10 +356,10 @@ export default function ProjectsShowcase() {
         </div>
       </section>
 
-      {/* ══ PROJECTS ══ */}
-      <section className="ps2-projects">
+      {/* ══ OPEN ROLES ══ */}
+      <section className="ps2-projects" id="roles">
         <h2 className="ps2-projects-headline">
-          {["Spotlight", "Projects"].map((w) => (
+          {["Open", "Roles"].map((w) => (
             <span key={w} className="ps2-word-line">
               <span className="ps2-word-inner">{w}</span>
             </span>
@@ -449,20 +367,23 @@ export default function ProjectsShowcase() {
         </h2>
 
         <div className="ps2-projects-grid">
-          {PROJECTS.map((p, i) => (
-            <div className="ps2-project-col" key={p.title}>
+          {ROLES.map((r, i) => (
+            <div className="ps2-project-col" key={r.title}>
               <div className="ps2-project-meta">
                 <span className="ps2-project-num">{String(i + 1).padStart(2, "0")}</span>
                 <span className="ps2-project-meta-line" aria-hidden="true" />
-                <span className="ps2-project-tag">{p.tags[0]}</span>
+                <span className="ps2-project-tag">{r.tags[0]}</span>
               </div>
-              <div className="ps2-project-img-wrap">
-                <a href={p.url} target="_blank" rel="noopener noreferrer" tabIndex={-1}>
-                  <img src={p.poster} alt={p.title} className="ps2-project-img" loading="lazy" />
-                </a>
-              </div>
-              <h3 className="ps2-project-title">{p.title}</h3>
-              <p className="ps2-project-tagline">{p.tagline}</p>
+              <h3 className="ps2-project-title">{r.title}</h3>
+              <p className="ps2-project-tagline">{r.tagline}</p>
+              <p className="ps2-project-desc">{r.description}</p>
+              <p className="ps2-project-role-meta">{r.meta}</p>
+              <button
+                className="ps2-apply-btn"
+                onClick={(e) => openApply(r.title, e)}
+              >
+                Apply Now
+              </button>
             </div>
           ))}
         </div>
@@ -472,15 +393,15 @@ export default function ProjectsShowcase() {
       <footer className="ps2-footer">
         <div className="ps2-footer-inner">
           <div className="ps2-footer-left">
-            <CrosshairIcon size={240} color="#EFE8D5" strokeWidth={0.7} />
+            <CrosshairIcon size={240} color="#FEDEBE" strokeWidth={0.7} />
           </div>
 
           <div className="ps2-footer-right">
             <nav className="ps2-footer-nav" aria-label="Footer navigation">
               <a href="/about">ABOUT</a>
-              <a href="/projects">PROJECTS</a>
+              <a href="/projects">CAREERS</a>
               <a href="/gallery">GALLERY</a>
-              <a href="/carrers">CAREERS</a>
+              <a href="/carrers">LEGACY</a>
               <a href="/story">STORY</a>
               <a href="/">HOME</a>
             </nav>
@@ -491,6 +412,15 @@ export default function ProjectsShowcase() {
               <a href="https://twitter.com"   target="_blank" rel="noopener noreferrer" className="ps2-footer-social-link">TWITTER / X</a>
             </div>
 
+            <div className="ps2-footer-cta-row">
+              <button
+                className="ps2-apply-btn"
+                onClick={(e) => openApply(null, e)}
+              >
+                Apply Now
+              </button>
+            </div>
+
             <div className="ps2-footer-bottom-row">
               <span className="ps2-footer-copy">&copy; 2026. HOUSE OF MUSA. ALL RIGHTS RESERVED.</span>
               <span className="ps2-footer-craft">CRAFTED WITH INTENTION.</span>
@@ -498,6 +428,17 @@ export default function ProjectsShowcase() {
           </div>
         </div>
       </footer>
+
+      {/* ══ MODAL ══ */}
+      <JobApplyModal
+        open={modalOpen}
+        onClose={closeApply}
+        vacantRoles={roleNames}
+        defaultRole={selectedRole}
+        onSubmit={onSubmit}
+        isSubmitting={isSubmitting}
+        uploadProgress={uploadProgress}
+      />
     </div>
   );
 }

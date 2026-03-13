@@ -483,7 +483,7 @@
 // Home3D2.jsx srijon
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
-import { Canvas, useThree, extend } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import {
   Environment,
   OrbitControls,
@@ -496,8 +496,6 @@ import {
 } from "@react-three/drei";
 import { EffectComposer, Bloom, SSAO, Vignette } from "@react-three/postprocessing";
 import { DRACOLoader, MeshoptDecoder, GLTFLoader } from "three-stdlib";
-import { NormalPass } from "postprocessing";
-extend({ NormalPass });
 
 import DoorPortal from "../components/DoorPortal";
 import TutorialHint from "../components/TutorialHint";
@@ -513,7 +511,9 @@ import DecryptedText from "../components/decryptedText";
 const USE_HDR_BACKGROUND = true;
 const HDR_FILE = "/hdr/alps.hdr";
 const HOME_DAWN_GRADIENT =
-  "radial-gradient(120% 78% at 50% 76%, rgba(255, 174, 74, 0.42) 0%, rgba(255, 174, 74, 0) 58%), linear-gradient(180deg, #fff3df 0%, #ffd69a 34%, #f0a041 66%, #b56708 100%)";
+  "radial-gradient(120% 82% at 50% 74%, rgba(255, 131, 3, 0.42) 0%, rgba(255, 131, 3, 0) 56%), radial-gradient(84% 62% at 50% 14%, rgba(254, 222, 190, 0.72) 0%, rgba(254, 222, 190, 0) 68%), linear-gradient(180deg, #fedebe 0%, #ffb45d 34%, #ff8303 64%, #fd5602 100%)";
+const HOME_GRAIN_OVERLAY =
+  "radial-gradient(rgba(24, 8, 2, 0.08) 0.7px, transparent 0.7px), url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='4' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='1'/></svg>\")";
 
 /* ----------------------------- Mobile detector ---------------------------- */
 function useIsMobile(breakpoint = 768) {
@@ -613,7 +613,6 @@ function Scene({ isMobile, lowSpec }) {
   const [perf, setPerf] = useState(1);
   const [envReady, setEnvReady] = useState(false);
   const { start } = usePageTransition();
-  const normalPass = useMemo(() => new NormalPass(), []);
 
   const boundsRef = useRef({ minY: -1 });
 
@@ -732,8 +731,7 @@ function Scene({ isMobile, lowSpec }) {
 
         {/* Post-processing is lighter on mobile */}
         {enablePostFx && (
-          <EffectComposer multisampling={0}>
-            {!isMobile && <primitive attach="passes" object={normalPass} />}
+          <EffectComposer multisampling={0} enableNormalPass={!isMobile}>
             {!isMobile && <SSAO samples={12} radius={0.22} intensity={1.05 * perf} />}
             <Bloom mipmapBlur intensity={isMobile ? 0.28 : 0.52 * perf} luminanceThreshold={0.88} />
             <Vignette eskil={false} offset={-0.18} darkness={isMobile ? 0.64 : 0.82} />
@@ -852,6 +850,20 @@ export default function Home3D() {
 
   return (
     <>
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+          backgroundImage: HOME_GRAIN_OVERLAY,
+          backgroundSize: "18px 18px, 180px 180px",
+          opacity: 0.22,
+          mixBlendMode: "multiply",
+        }}
+      />
+
       <Canvas
         frameloop="demand"
         dpr={dpr}
@@ -872,6 +884,7 @@ export default function Home3D() {
         style={{
           position: "fixed",
           inset: 0,
+          zIndex: 1,
           width: "100vw",
           height: "100vh",
           // touchAction: "none",
