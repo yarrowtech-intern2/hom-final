@@ -12,9 +12,9 @@ const Home3D2 = lazy(() => import("./pages/Home3D2"));
 const Gallery3D = lazy(() => import("./pages/Gallery3D2"));
 // const About = lazy(() => import("./pages/About"));
 const About3 = lazy(() => import("./pages/about3"));
-// const ProjectsShowcase = lazy(() => import("./pages/ProjectsShowcase"));
+const ProjectsShowcase = lazy(() => import("./pages/ProjectsShowcase"));
 const Project = lazy(() => import("./pages/story"));
-const Carrers = lazy(() => import("./pages/projectsShowcase"));
+const Carrers = lazy(() => import("./pages/carrers"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const NotFound = lazy(() => import("./pages/notFound"));
@@ -63,7 +63,7 @@ export default function App() {
           <Route path="/gallery" element={<Gallery3D />} />
           {/* <Route path="/about" element={<About />} /> */}
           <Route path="/about" element={<About3 />} />
-          {/* <Route path="/projects" element={<ProjectsShowcase />} /> */}
+          <Route path="/projects" element={<ProjectsShowcase />} />
           <Route path="/project" element={<Project />} />
           <Route path="/carrers" element={<Carrers />} />
           <Route path="/admin123" element={<AdminLogin />} />
