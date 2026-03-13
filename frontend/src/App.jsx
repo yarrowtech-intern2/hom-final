@@ -1,12 +1,12 @@
 
-
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header";
 import TransitionProvider from "./components/transition";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import API_BASE_URL from "./config";
 
 const Home3D2 = lazy(() => import("./pages/Home3D2"));
 const Gallery3D = lazy(() => import("./pages/Gallery3D2"));
@@ -51,10 +51,39 @@ function RouteFallback() {
   );
 }
 
+function BackendKeepAlive() {
+  useEffect(() => {
+    if (import.meta.env.MODE !== "production") {
+      return undefined;
+    }
+
+    const keepAlive = () => {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        return;
+      }
+
+      fetch(`${API_BASE_URL}/api/health`, {
+        method: "GET",
+        cache: "no-store",
+        credentials: "omit",
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    const intervalId = window.setInterval(keepAlive, 14 * 60 * 1000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  return null;
+}
 
 export default function App() {
   return (
     <TransitionProvider>
+      <BackendKeepAlive />
       <Header />
       <ToastContainer position="top-right" autoClose={3000} />
       <Suspense fallback={<RouteFallback />}>

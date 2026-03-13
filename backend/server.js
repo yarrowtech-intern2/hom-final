@@ -25,6 +25,26 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+const normalizeOrigin = (value) => {
+  if (!value) return "";
+  return String(value).trim().replace(/\/+$/, "");
+};
+
+const defaultAllowedOrigins = [
+  "http://localhost:5173",
+  "https://house-of-musa-gixs.onrender.com",
+  "https://houseofmusa.co.in",
+  "https://www.houseofmusa.co.in",
+].map(normalizeOrigin);
+
+const allowedOrigins = new Set([
+  ...defaultAllowedOrigins,
+  ...(process.env.CLIENT_ORIGIN || "")
+    .split(",")
+    .map(normalizeOrigin)
+    .filter(Boolean),
+]);
+
 
 
 // 🛡 Security
@@ -76,19 +96,11 @@ app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
     origin: function (origin, callback) {
-      const envOrigins = (process.env.CLIENT_ORIGIN || "")
-        .split(",")
-        .map(s => s.trim())
-        .filter(Boolean);
+      const normalizedOrigin = normalizeOrigin(origin);
 
-      const defaults = [
-        "http://localhost:5173",
-        "https://house-of-musa-gixs.onrender.com",
-      ];
-
-      const allow = new Set([...defaults, ...envOrigins]);
-
-      if (!origin || allow.has(origin)) return callback(null, true);
+      if (!origin || allowedOrigins.has(normalizedOrigin)) {
+        return callback(null, true);
+      }
 
       console.log("❌ Blocked by CORS:", origin);
       return callback(new Error("Not allowed by CORS"));
@@ -96,6 +108,7 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-admin-token"],
     credentials: true,
+    optionsSuccessStatus: 204,
   })
 );
 
