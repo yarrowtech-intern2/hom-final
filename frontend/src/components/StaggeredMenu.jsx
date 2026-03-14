@@ -7,6 +7,8 @@ export default function StaggeredMenu({
   items = [],
   socialItems = [],
   displaySocials = true,
+  dynamicButtonColor = false,
+  dynamicButtonColorKey = "",
   displayItemNumbering = true,
   className,
   logoUrl = "/logo/logo-white.png",
@@ -45,6 +47,138 @@ export default function StaggeredMenu({
   const textCycleAnimRef = useRef(null);
   const colorTweenRef = useRef(null);
   const itemEntranceTweenRef = useRef(null);
+  const autoColorFrameRef = useRef(null);
+
+  const parseColor = useCallback((value) => {
+    if (!value || value === "transparent") return null;
+
+    const trimmed = value.trim();
+    const rgbMatch = trimmed.match(/^rgba?\(([^)]+)\)$/i);
+    if (rgbMatch) {
+      const parts = rgbMatch[1].split(",").map((part) => Number.parseFloat(part.trim()));
+      if (parts.length < 3 || parts.slice(0, 3).some((part) => Number.isNaN(part))) {
+        return null;
+      }
+
+      return {
+        r: parts[0],
+        g: parts[1],
+        b: parts[2],
+        a: Number.isNaN(parts[3]) ? 1 : parts[3],
+      };
+    }
+
+    const hexMatch = trimmed.match(/^#([0-9a-f]{3,8})$/i);
+    if (!hexMatch) return null;
+
+    let hex = hexMatch[1];
+    if (hex.length === 3 || hex.length === 4) {
+      hex = hex
+        .split("")
+        .map((char) => char + char)
+        .join("");
+    }
+
+    if (hex.length !== 6 && hex.length !== 8) return null;
+
+    return {
+      r: Number.parseInt(hex.slice(0, 2), 16),
+      g: Number.parseInt(hex.slice(2, 4), 16),
+      b: Number.parseInt(hex.slice(4, 6), 16),
+      a: hex.length === 8 ? Number.parseInt(hex.slice(6, 8), 16) / 255 : 1,
+    };
+  }, []);
+
+  const extractColors = useCallback(
+    (value) => {
+      if (!value || value === "none") return [];
+
+      const matches = [
+        ...value.matchAll(/rgba?\(([^)]+)\)/gi),
+        ...value.matchAll(/#([0-9a-f]{3,8})/gi),
+      ];
+
+      return matches
+        .map((match) => parseColor(match[0]))
+        .filter((color) => color && color.a > 0.08);
+    },
+    [parseColor]
+  );
+
+  const getColorLuminance = useCallback((color) => {
+    const toLinear = (channel) => {
+      const normalized = channel / 255;
+      return normalized <= 0.03928
+        ? normalized / 12.92
+        : ((normalized + 0.055) / 1.055) ** 2.4;
+    };
+
+    const r = toLinear(color.r);
+    const g = toLinear(color.g);
+    const b = toLinear(color.b);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }, []);
+
+  const getElementColors = useCallback(
+    (element) => {
+      const colorsFound = [];
+      const visited = new Set();
+      let node = element;
+
+      while (node && node !== document.documentElement) {
+        if (visited.has(node)) break;
+        visited.add(node);
+
+        const styles = window.getComputedStyle(node);
+        const bgColor = parseColor(styles.backgroundColor);
+        if (bgColor && bgColor.a > 0.08) colorsFound.push(bgColor);
+
+        colorsFound.push(...extractColors(styles.backgroundImage));
+
+        if (colorsFound.length) return colorsFound;
+        node = node.parentElement;
+      }
+
+      return colorsFound;
+    },
+    [extractColors, parseColor]
+  );
+
+  const resolveClosedButtonColor = useCallback(() => {
+    if (!dynamicButtonColor || !toggleBtnRef.current) return menuButtonColor;
+
+    const rect = toggleBtnRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(window.innerWidth - 1, rect.left + rect.width / 2));
+    const y = Math.max(0, Math.min(window.innerHeight - 1, rect.top + rect.height / 2));
+    const elements = document.elementsFromPoint(x, y);
+
+    for (const element of elements) {
+      if (!(element instanceof HTMLElement)) continue;
+      if (toggleBtnRef.current.contains(element)) continue;
+      if (element.closest(".staggered-menu-wrapper")) continue;
+
+      const colorsFound = getElementColors(element);
+      if (!colorsFound.length) continue;
+
+      const averageLuminance =
+        colorsFound.reduce((sum, color) => sum + getColorLuminance(color), 0) /
+        colorsFound.length;
+
+      return averageLuminance > 0.34 ? "#180802" : "#FEDEBE";
+    }
+
+    return menuButtonColor;
+  }, [dynamicButtonColor, getColorLuminance, getElementColors, menuButtonColor]);
+
+  const applyResolvedButtonColor = useCallback(() => {
+    if (!toggleBtnRef.current) return;
+
+    const targetColor = openRef.current
+      ? openMenuButtonColor
+      : resolveClosedButtonColor();
+
+    gsap.set(toggleBtnRef.current, { color: targetColor });
+  }, [openMenuButtonColor, resolveClosedButtonColor]);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -73,12 +207,15 @@ export default function StaggeredMenu({
       gsap.set(textInner, { yPercent: 0 });
 
       if (toggleBtnRef.current) {
-        gsap.set(toggleBtnRef.current, { color: menuButtonColor });
+        const targetColor = dynamicButtonColor
+          ? resolveClosedButtonColor()
+          : menuButtonColor;
+        gsap.set(toggleBtnRef.current, { color: targetColor });
       }
     });
 
     return () => ctx.revert();
-  }, [menuButtonColor, position]);
+  }, [dynamicButtonColor, menuButtonColor, position, resolveClosedButtonColor]);
 
   const buildOpenTimeline = useCallback(() => {
     const panel = panelRef.current;
@@ -285,7 +422,11 @@ export default function StaggeredMenu({
 
       colorTweenRef.current?.kill();
       if (changeMenuColorOnOpen) {
-        const targetColor = opening ? openMenuButtonColor : menuButtonColor;
+        const targetColor = opening
+          ? openMenuButtonColor
+          : dynamicButtonColor
+            ? resolveClosedButtonColor()
+            : menuButtonColor;
         colorTweenRef.current = gsap.to(btn, {
           color: targetColor,
           delay: 0.18,
@@ -295,20 +436,69 @@ export default function StaggeredMenu({
         return;
       }
 
-      gsap.set(btn, { color: menuButtonColor });
+      gsap.set(btn, {
+        color: dynamicButtonColor ? resolveClosedButtonColor() : menuButtonColor,
+      });
     },
-    [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]
+    [
+      changeMenuColorOnOpen,
+      dynamicButtonColor,
+      menuButtonColor,
+      openMenuButtonColor,
+      resolveClosedButtonColor,
+    ]
   );
 
   React.useEffect(() => {
     if (!toggleBtnRef.current) return;
     if (changeMenuColorOnOpen) {
-      const targetColor = openRef.current ? openMenuButtonColor : menuButtonColor;
+      const targetColor = openRef.current
+        ? openMenuButtonColor
+        : dynamicButtonColor
+          ? resolveClosedButtonColor()
+          : menuButtonColor;
       gsap.set(toggleBtnRef.current, { color: targetColor });
       return;
     }
-    gsap.set(toggleBtnRef.current, { color: menuButtonColor });
-  }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
+    gsap.set(toggleBtnRef.current, {
+      color: dynamicButtonColor ? resolveClosedButtonColor() : menuButtonColor,
+    });
+  }, [
+    changeMenuColorOnOpen,
+    dynamicButtonColor,
+    menuButtonColor,
+    openMenuButtonColor,
+    resolveClosedButtonColor,
+  ]);
+
+  React.useEffect(() => {
+    if (!dynamicButtonColor) return undefined;
+
+    const scheduleColorSync = () => {
+      if (openRef.current) return;
+      if (autoColorFrameRef.current) {
+        window.cancelAnimationFrame(autoColorFrameRef.current);
+      }
+
+      autoColorFrameRef.current = window.requestAnimationFrame(() => {
+        applyResolvedButtonColor();
+        autoColorFrameRef.current = null;
+      });
+    };
+
+    scheduleColorSync();
+    window.addEventListener("scroll", scheduleColorSync, { passive: true });
+    window.addEventListener("resize", scheduleColorSync);
+
+    return () => {
+      window.removeEventListener("scroll", scheduleColorSync);
+      window.removeEventListener("resize", scheduleColorSync);
+      if (autoColorFrameRef.current) {
+        window.cancelAnimationFrame(autoColorFrameRef.current);
+        autoColorFrameRef.current = null;
+      }
+    };
+  }, [applyResolvedButtonColor, dynamicButtonColor, dynamicButtonColorKey]);
 
   const animateText = useCallback((opening) => {
     const inner = textInnerRef.current;
@@ -438,6 +628,9 @@ export default function StaggeredMenu({
       textCycleAnimRef.current?.kill();
       colorTweenRef.current?.kill();
       itemEntranceTweenRef.current?.kill();
+      if (autoColorFrameRef.current) {
+        window.cancelAnimationFrame(autoColorFrameRef.current);
+      }
     },
     []
   );
@@ -587,7 +780,7 @@ export default function StaggeredMenu({
 .sm-scope .staggered-menu-header > * { pointer-events: auto; }
 .sm-scope .sm-logo { display: flex; align-items: center; user-select: none; }
 .sm-scope .sm-logo-img { display: block; height: 54px; width: auto; object-fit: contain; }
-.sm-scope .sm-toggle { position: relative; display: inline-flex; align-items: center; gap: 0.35rem; background: transparent; border: none; cursor: pointer; color: var(--sm-foreground, #ffffff); font-weight: 600; line-height: 1; overflow: visible; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.8rem; }
+.sm-scope .sm-toggle { position: relative; display: inline-flex; align-items: center; gap: 0.35rem; background: transparent; border: none; cursor: pointer; color: var(--sm-foreground, #ffffff); font-weight: 600; line-height: 1; overflow: visible; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.8rem; text-shadow: 0 0 10px rgba(24, 8, 2, 0.14), 0 0 10px rgba(254, 222, 190, 0.16); }
 .sm-scope .sm-toggle:focus-visible { outline: 2px solid var(--sm-focus, #ffffffaa); outline-offset: 4px; border-radius: 4px; }
 .sm-scope .sm-toggle-textWrap { position: relative; margin-right: 0.45em; display: inline-block; height: 1em; overflow: hidden; white-space: nowrap; width: var(--sm-toggle-width, auto); min-width: var(--sm-toggle-width, auto); }
 .sm-scope .sm-toggle-textInner { display: flex; flex-direction: column; line-height: 1; }

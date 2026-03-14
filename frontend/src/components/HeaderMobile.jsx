@@ -1,10 +1,12 @@
 import React, { useCallback, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { usePageTransition } from "./transition";
 import StaggeredMenu from "./StaggeredMenu";
 import "./HeaderMobile.css";
 
 export default function HeaderMobile({ onOpenContact }) {
   const { start } = usePageTransition();
+  const location = useLocation();
 
   const menuItems = useMemo(
     () => [
@@ -32,15 +34,6 @@ export default function HeaderMobile({ onOpenContact }) {
         link: "/carrers",
       },
       // { label: "Admin", ariaLabel: "Open admin login", link: "/admin123" },
-    ],
-    []
-  );
-
-  const socialItems = useMemo(
-    () => [
-      { label: "Twitter", link: "https://twitter.com" },
-      { label: "GitHub", link: "https://github.com" },
-      { label: "LinkedIn", link: "https://linkedin.com" },
     ],
     []
   );
@@ -77,8 +70,9 @@ export default function HeaderMobile({ onOpenContact }) {
       <StaggeredMenu
         position="right"
         items={menuItems}
-        socialItems={socialItems}
-        displaySocials
+        displaySocials={false}
+        dynamicButtonColor
+        dynamicButtonColorKey={`${location.pathname}${location.hash}`}
         displayItemNumbering
         menuButtonColor="#FEDEBE"
         openMenuButtonColor="#180802"
