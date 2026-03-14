@@ -49,6 +49,7 @@
 
 
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import HeaderDesktop from "./HeaderDesktop";
 import HeaderMobile from "./HeaderMobile";
 import ContactModal from "./ContactModal";
@@ -70,6 +71,11 @@ function useMediaQuery(query) {
 export default function Header() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [contactOpen, setContactOpen] = useState(false);
+  const location = useLocation();
+
+  if (location.pathname === "/admin123" || location.pathname === "/admin1234") {
+    return null;
+  }
 
   const openContact = () => setContactOpen(true);
   const closeContact = () => setContactOpen(false);

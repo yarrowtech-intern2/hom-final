@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header";
 import TransitionProvider from "./components/transition";
+import CustomCursor from "./components/CustomCursor";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API_BASE_URL from "./config";
@@ -83,6 +84,7 @@ function BackendKeepAlive() {
 export default function App() {
   return (
     <TransitionProvider>
+      <CustomCursor />
       <BackendKeepAlive />
       <Header />
       <ToastContainer position="top-right" autoClose={3000} />

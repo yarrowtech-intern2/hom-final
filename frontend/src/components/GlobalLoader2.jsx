@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useProgress } from "@react-three/drei";
+import { useLocation } from "react-router-dom";
 import "../styles/loader.css";
 
 const MIN_VISIBLE_MS = 650;
@@ -19,6 +20,7 @@ const CURTAIN_BLOCKS = Array.from({ length: CURTAIN_COLUMNS }, (_, idx) => ({
 }));
 
 export default function GlobalLoader({ children }) {
+  const location = useLocation();
   const { active: threeActive, progress: threeProgressRaw, loaded: threeLoaded, total: threeTotal } =
     useProgress();
 
@@ -227,7 +229,9 @@ export default function GlobalLoader({ children }) {
     [target]
   );
   const showPage = phase !== "loading";
-  const showPinnedLogo = phase === "done";
+  const suppressPinnedLogo =
+    location.pathname === "/admin123" || location.pathname === "/admin1234";
+  const showPinnedLogo = phase === "done" && !suppressPinnedLogo;
 
   return (
     <>
