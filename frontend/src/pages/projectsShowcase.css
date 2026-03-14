@@ -234,7 +234,7 @@
 }
 
 .ps2-process-card {
-  background: var(--card);
+  background: transparent;
   border: 1px solid rgba(11, 11, 11, 0.18);
   padding: clamp(20px, 3vh, 30px) clamp(20px, 2.5vw, 30px);
   display: flex;
@@ -294,7 +294,7 @@
 ───────────────────────────────────────────── */
 
 .ps2-projects {
-  background: var(--cream);
+  background: #f96302;
   padding: 0 clamp(24px, 4vw, 64px) clamp(80px, 12vh, 140px);
 }
 
