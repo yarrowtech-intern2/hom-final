@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { toast } from "react-toastify";
+import API_BASE_URL from "../config";
 import JobApplyModal from "../components/applyModal";
 import "./projectsShowcase.css";
 
@@ -115,7 +116,7 @@ export default function ProjectsShowcase() {
 
         await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          xhr.open("POST", `${import.meta.env.VITE_API_URL}/api/job-applications/apply`);
+          xhr.open("POST", `${API_BASE_URL}/api/job-applications/apply`);
 
           xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {

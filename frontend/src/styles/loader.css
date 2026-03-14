@@ -4,9 +4,7 @@
   --loader-logo-width: 122px;
   --loader-logo-final-left: 79px;
   --loader-logo-final-top: 25px;
-  --loader-curtain-base: #fd5602;
-  --loader-curtain-top: #ff8303;
-  --loader-curtain-bottom: #fd5602;
+  --loader-curtain-base: #f96302;
   --loader-progress-color: #fedebe;
   --loader-ink: #180802;
 
@@ -30,21 +28,6 @@
   transition-delay: var(--step-delay, 0ms);
   will-change: transform;
   background: var(--loader-curtain-base);
-  box-shadow: inset 0 -14px 24px rgba(24, 8, 2, 0.22);
-}
-
-.global-loader-curtain-step::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    var(--loader-curtain-top) 0%,
-    var(--loader-curtain-base) 56%,
-    var(--loader-curtain-bottom) 100%
-  );
-  opacity: 0.9;
 }
 
 .global-loader-overlay.is-revealing .global-loader-curtain-step {

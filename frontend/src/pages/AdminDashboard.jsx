@@ -377,6 +377,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config";
 
 const cn = (...a) => a.filter(Boolean).join(" ");
 
@@ -403,7 +404,7 @@ export default function AdminDashboard() {
   const [contacts, setContacts] = useState([]);
   const [contactsTotal, setContactsTotal] = useState(0);
 
-  const apiBase = import.meta.env.VITE_API_URL;
+  const apiBase = API_BASE_URL;
 
   useEffect(() => {
     if (!token) nav("/admin123");

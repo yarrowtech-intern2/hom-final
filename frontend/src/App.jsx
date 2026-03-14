@@ -53,7 +53,7 @@ function RouteFallback() {
 
 function BackendKeepAlive() {
   useEffect(() => {
-    if (import.meta.env.MODE !== "production") {
+    if (import.meta.env.MODE !== "production" || !API_BASE_URL) {
       return undefined;
     }
 

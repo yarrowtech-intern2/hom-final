@@ -146,8 +146,7 @@ export default function TransitionProvider({ children }) {
               left: 0,
               top: 0,
               borderRadius: "50%",
-              background:
-                "radial-gradient(circle, #FF8303 0%, #FD5602 58%, #C63E00 100%)",
+              background: "#FD5602",
               opacity: 0,
               transform: "scale(0)",
               // GPU-friendly props:

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import API_BASE_URL from "../config";
 
 export default function AdminLogin() {
   const [token, setToken] = useState("");
@@ -14,7 +15,7 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       // Optional: verify token by calling a protected endpoint
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/job-applications?limit=1`, {
+      const res = await fetch(`${API_BASE_URL}/api/job-applications?limit=1`, {
         headers: { "x-admin-token": token.trim() },
       });
 
