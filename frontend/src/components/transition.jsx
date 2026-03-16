@@ -28,7 +28,13 @@ export default function TransitionProvider({ children }) {
   }, []);
 
   useLayoutEffect(() => {
-    const scrollPages = new Set(["/about", "/contact", "/projects", "/carrers"]);
+    const scrollPages = new Set([
+      "/about",
+      "/contact",
+      "/projects",
+      "/carrers",
+      "/developer",
+    ]);
     const isScrollPage = scrollPages.has(location.pathname);
     const root = document.getElementById("root");
 

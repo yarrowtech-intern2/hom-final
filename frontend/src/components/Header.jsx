@@ -73,7 +73,11 @@ export default function Header() {
   const [contactOpen, setContactOpen] = useState(false);
   const location = useLocation();
 
-  if (location.pathname === "/admin123" || location.pathname === "/admin1234") {
+  if (
+    location.pathname === "/admin123" ||
+    location.pathname === "/admin1234" ||
+    location.pathname === "/developer"
+  ) {
     return null;
   }
 

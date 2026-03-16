@@ -16,6 +16,7 @@ const About3 = lazy(() => import("./pages/about3"));
 const ProjectsShowcase = lazy(() => import("./pages/ProjectsShowcase"));
 const Project = lazy(() => import("./pages/story"));
 const Carrers = lazy(() => import("./pages/carrers"));
+const Developer = lazy(() => import("./pages/Developer"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const NotFound = lazy(() => import("./pages/notFound"));
@@ -97,6 +98,7 @@ export default function App() {
           <Route path="/projects" element={<ProjectsShowcase />} />
           <Route path="/project" element={<Project />} />
           <Route path="/carrers" element={<Carrers />} />
+          <Route path="/developer" element={<Developer />} />
           <Route path="/admin123" element={<AdminLogin />} />
           <Route path="/admin1234" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
