@@ -807,9 +807,9 @@ function TouchLook({ enabled, lookRef }) {
     if (!lookRef?.current) return;
 
     const element = gl.domElement;
-    const sensitivity = 0.0022;
-    const PI_2 = Math.PI / 2;
-    const lookZoneRatio = 0.42;
+    const sensitivity = 0.0016;
+    const lookZoneRatio = 0.5;
+    const horizontalDeadzone = 1.5;
 
     const isMobileControlTarget = (target) => {
       if (!(target instanceof Element)) return false;
@@ -832,19 +832,17 @@ function TouchLook({ enabled, lookRef }) {
       if (!lookRef.current) return;
 
       const dx = e.clientX - last.current.x;
-      const dy = e.clientY - last.current.y;
       last.current.x = e.clientX;
       last.current.y = e.clientY;
 
-      let { yaw, pitch } = lookRef.current;
+      if (Math.abs(dx) < horizontalDeadzone) {
+        e.preventDefault();
+        return;
+      }
 
-      yaw -= dx * sensitivity;
-      pitch -= dy * sensitivity;
-
-      pitch = Math.max(-PI_2 + 0.1, Math.min(PI_2 - 0.1, pitch));
-
-      lookRef.current.yaw = yaw;
-      lookRef.current.pitch = pitch;
+      // Mobile keeps a fixed pitch so casual diagonal swipes do not throw the camera.
+      // Positive horizontal drag should turn the view in the same perceived direction.
+      lookRef.current.yaw += dx * sensitivity;
       lookRef.current.ready = true;
       e.preventDefault();
     };

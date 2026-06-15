@@ -19,6 +19,41 @@ const CURTAIN_BLOCKS = Array.from({ length: CURTAIN_COLUMNS }, (_, idx) => ({
   bottom: "0%",
   delay: idx * 90,
 }));
+const WAITING_MILESTONES = [
+  { max: 12, line: "Preparing the experience." },
+  { max: 28, line: "Loading the essentials." },
+  { max: 46, line: "Building the scene." },
+  { max: 64, line: "Bringing it together." },
+  { max: 82, line: "Final details in motion." },
+  { max: 99, line: "Just a little longer." },
+];
+const COMPLETION_LINES = [
+  "Yay, let's enter.",
+  "Done. Now we proceed.",
+  "All set. Let's go.",
+  "Ready when you are.",
+];
+const preloadPromiseCache = new Map();
+
+function getCachedPromise(key, factory) {
+  const existing = preloadPromiseCache.get(key);
+  if (existing) return existing;
+  const next = factory();
+  preloadPromiseCache.set(key, next);
+  return next;
+}
+
+function preloadInitialRoute(pathname) {
+  if (pathname === "/" || pathname === "/landing") {
+    return getCachedPromise(`route:${pathname}`, () =>
+      pathname === "/"
+        ? import("../pages/Home3D2.jsx")
+        : import("../pages/LandingFinal.jsx")
+    );
+  }
+
+  return getCachedPromise(`route:${pathname}`, () => Promise.resolve());
+}
 
 function extractRgbTriples(value) {
   const colors = [];
@@ -94,6 +129,10 @@ export default function GlobalLoader({ children }) {
     typeof document !== "undefined" ? document.readyState === "complete" : false
   );
   const [pinnedLogoSrc, setPinnedLogoSrc] = useState(LOGO_WHITE_SRC);
+  const [routeAssetsReady, setRouteAssetsReady] = useState(false);
+  const [waitingLine, setWaitingLine] = useState(WAITING_MILESTONES[0].line);
+  const [waitingLineVisible, setWaitingLineVisible] = useState(true);
+  const [completionLineIndex, setCompletionLineIndex] = useState(0);
   const [fontsReady, setFontsReady] = useState(
     typeof document === "undefined" || !document.fonts || document.fonts.status === "loaded"
   );
@@ -121,6 +160,23 @@ export default function GlobalLoader({ children }) {
     timersRef.current.push(timerId);
     return () => window.clearTimeout(timerId);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setRouteAssetsReady(false);
+
+    preloadInitialRoute(location.pathname)
+      .then(() => {
+        if (!cancelled) setRouteAssetsReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setRouteAssetsReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname]);
 
   useEffect(() => {
     if (domReady) return undefined;
@@ -180,24 +236,72 @@ export default function GlobalLoader({ children }) {
     return (imageStats.loaded / imageStats.total) * 100;
   }, [imageStats.loaded, imageStats.total]);
 
+  const routePercent = useMemo(() => (routeAssetsReady ? 100 : 0), [routeAssetsReady]);
+
   const shellPercent = useMemo(() => {
     const readyCount = (domReady ? 1 : 0) + (fontsReady ? 1 : 0);
     return (readyCount / 2) * 100;
   }, [domReady, fontsReady]);
 
   const mergedProgress = useMemo(() => {
-    const next = threePercent * 0.78 + imagePercent * 0.14 + shellPercent * 0.08;
+    const next =
+      threePercent * 0.66 +
+      routePercent * 0.18 +
+      imagePercent * 0.1 +
+      shellPercent * 0.06;
     return Math.round(Math.max(0, Math.min(100, next)));
-  }, [imagePercent, shellPercent, threePercent]);
+  }, [imagePercent, routePercent, shellPercent, threePercent]);
 
   const threeReady = seenThreeActivity ? !threeActive && threePercent >= 99 : threeGraceDone;
   const imagesReady = imageStats.total === 0 || imageStats.loaded >= imageStats.total;
-  const allReady = domReady && fontsReady && imagesReady && threeReady;
+  const allReady = domReady && fontsReady && imagesReady && threeReady && routeAssetsReady;
 
   useEffect(() => {
     if (!loading) return;
     setProgress((prev) => Math.max(prev, mergedProgress));
   }, [loading, mergedProgress]);
+
+  useEffect(() => {
+    if (!loading) {
+      setWaitingLineVisible(true);
+      return undefined;
+    }
+
+    const nextLine =
+      progress >= 100
+        ? COMPLETION_LINES[completionLineIndex]
+        : WAITING_MILESTONES.find((step) => progress <= step.max)?.line ??
+          WAITING_MILESTONES[WAITING_MILESTONES.length - 1].line;
+
+    if (nextLine === waitingLine) return undefined;
+
+    const fadeTimeoutId = window.setTimeout(() => {
+      setWaitingLine(nextLine);
+      setWaitingLineVisible(true);
+    }, 220);
+
+    setWaitingLineVisible(false);
+
+    return () => {
+      window.clearTimeout(fadeTimeoutId);
+    };
+  }, [completionLineIndex, loading, progress, waitingLine]);
+
+  useEffect(() => {
+    if (!loading) return undefined;
+    if (progress < 100) return undefined;
+
+    setCompletionLineIndex((current) => {
+      if (COMPLETION_LINES.length <= 1) return current;
+      let next = current;
+      while (next === current) {
+        next = Math.floor(Math.random() * COMPLETION_LINES.length);
+      }
+      return next;
+    });
+
+    return undefined;
+  }, [loading, progress]);
 
   useEffect(() => {
     if (!loading || phase !== "loading" || !allReady) return undefined;
@@ -349,6 +453,13 @@ export default function GlobalLoader({ children }) {
             <p className="global-loader-progress-value">
               {progress}
               <span>%</span>
+            </p>
+            <p
+              className={`global-loader-waiting-line${
+                waitingLineVisible ? " is-visible" : " is-hidden"
+              }`}
+            >
+              {waitingLine}
             </p>
           </div>
         </div>

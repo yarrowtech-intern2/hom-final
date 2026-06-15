@@ -489,6 +489,7 @@ import {
   OrbitControls,
   ContactShadows,
   useGLTF,
+  useEnvironment,
   Preload,
   AdaptiveDpr,
   AdaptiveEvents,
@@ -604,6 +605,7 @@ function House({
 // useGLTF.preload("/models/house10.glb");
 // useGLTF.preload("/models/house-model.glb");
 useGLTF.preload("/models/house3.glb");
+useEnvironment.preload({ files: HDR_FILE });
 
 /* ---------------------------- Inner Scene node --------------------------- */
 function Scene({ isMobile, lowSpec }) {

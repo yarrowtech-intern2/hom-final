@@ -93,7 +93,7 @@
   bottom: clamp(18px, 3.2vh, 40px);
   z-index: 3;
   display: grid;
-  gap: 0;
+  gap: 10px;
   text-align: left;
 }
 
@@ -110,6 +110,30 @@
 .global-loader-progress-value span {
   font-size: 0.4em;
   margin-left: 0.08em;
+}
+
+.global-loader-waiting-line {
+  margin: 0;
+  max-width: min(34vw, 360px);
+  color: rgba(254, 222, 190, 0.9);
+  font-family: "Manrope", system-ui, sans-serif;
+  font-size: clamp(0.78rem, 1vw, 1rem);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  transform: translateY(0);
+  transition: opacity 0.22s ease, transform 0.26s ease;
+  will-change: opacity, transform;
+}
+
+.global-loader-waiting-line.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.global-loader-waiting-line.is-hidden {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .global-loader-overlay.is-revealing .global-loader-progress-wrap {
@@ -145,5 +169,10 @@
 
   .global-loader-progress-value {
     font-size: clamp(5.4rem, 23vw, 8rem);
+  }
+
+  .global-loader-waiting-line {
+    max-width: min(72vw, 300px);
+    font-size: 0.8rem;
   }
 }
