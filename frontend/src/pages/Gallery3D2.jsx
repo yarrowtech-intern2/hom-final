@@ -507,7 +507,7 @@ function Painting({
           fontWeight: "bold",
         }}
       >
-        {title} • Press <b>E</b> / Click
+        {title}
       </Html>
     </group>
   );
@@ -885,8 +885,61 @@ function TouchLook({ enabled, lookRef }) {
   return null;
 }
 
+function HudIcon({ kind, size = 18, color = "rgba(255,255,255,0.88)" }) {
+  if (kind === "inspect") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M2.5 12C4.8 7.8 8 5.7 12 5.7S19.2 7.8 21.5 12c-2.3 4.2-5.5 6.3-9.5 6.3S4.8 16.2 2.5 12Z"
+          stroke={color}
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="12" cy="12" r="2.8" stroke={color} strokeWidth="1.7" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 18.5V7.2"
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8.4 10.8 12 7.2l3.6 3.6"
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.4 19.2h11.2"
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /* ===================== Mobile HUD ======================= */
-function MobileHUD({ setInput, onInteract }) {
+function MobileHUD({ setInput, onInteract, envEnabled, setEnvEnabled }) {
   if (!setInput) return null;
 
   const joystickRef = useRef(null);
@@ -990,10 +1043,10 @@ function MobileHUD({ setInput, onInteract }) {
   const hudBaseButton = {
     border: "1px solid rgba(255,255,255,0.1)",
     background:
-      "linear-gradient(180deg, rgba(18,18,22,0.28) 0%, rgba(10,10,14,0.16) 100%)",
-    color: "#f7f2eb",
+      "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.1) 100%)",
+    color: "#ffffff",
     backdropFilter: "blur(10px)",
-    boxShadow: "0 10px 24px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.05)",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.18)",
     touchAction: "none",
   };
 
@@ -1002,10 +1055,10 @@ function MobileHUD({ setInput, onInteract }) {
       data-mobile-control="true"
       style={{
         position: "fixed",
-        bottom: 28,
+        bottom: 20,
         left: 0,
         right: 0,
-        padding: "0 18px max(env(safe-area-inset-bottom), 18px)",
+        padding: "0 16px max(env(safe-area-inset-bottom), 14px)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-end",
@@ -1021,25 +1074,25 @@ function MobileHUD({ setInput, onInteract }) {
         onPointerUp={onStickUp}
         onPointerCancel={onStickUp}
         style={{
-          width: 118,
-          height: 118,
+          width: 94,
+          height: 94,
           borderRadius: "50%",
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid rgba(255,255,255,0.14)",
           background:
-            "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 34%, rgba(8,8,10,0.24) 72%, rgba(6,6,8,0.4) 100%)",
+          "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 34%, rgba(255,255,255,0.03) 72%, rgba(255,255,255,0.08) 100%)",
           pointerEvents: "auto",
           touchAction: "none",
-          backdropFilter: "blur(10px)",
+          backdropFilter: "blur(8px)",
           position: "relative",
-          boxShadow: "0 12px 24px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.05)",
+          boxShadow: "0 8px 18px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.16)",
         }}
       >
         <div
           style={{
             position: "absolute",
-            inset: 12,
+            inset: 10,
             borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.12)",
             pointerEvents: "none",
           }}
         />
@@ -1048,45 +1101,27 @@ function MobileHUD({ setInput, onInteract }) {
             position: "absolute",
             left: "50%",
             top: "50%",
-            width: 52,
-            height: 52,
+            width: 40,
+            height: 40,
             borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.18)",
+            border: "1px solid rgba(255,255,255,0.22)",
             background:
-              "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%)",
+              "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.08) 100%)",
             transform: `translate(calc(-50% + ${thumbPos.x}px), calc(-50% + ${thumbPos.y}px))`,
             transition:
               joystickPointerIdRef.current === null ? "transform 80ms ease-out" : "none",
-            boxShadow: "0 8px 16px rgba(0,0,0,0.12)",
+            boxShadow: "0 6px 12px rgba(0,0,0,0.1)",
           }}
         />
-        <div
-          style={{
-            position: "absolute",
-            left: "50%",
-            bottom: -22,
-            transform: "translateX(-50%)",
-            fontSize: 10,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.4)",
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
-          }}
-        >
-          Move
-        </div>
       </div>
 
       <div
         data-mobile-control="true"
         style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
+          position: "relative",
+          width: 124,
+          height: 124,
           pointerEvents: "none",
-          alignItems: "flex-end",
-          width: 78,
         }}
       >
         <button
@@ -1094,22 +1129,55 @@ function MobileHUD({ setInput, onInteract }) {
           onPointerDown={(e) => { e.preventDefault(); onInteract?.(); }}
           style={{
             ...hudBaseButton,
-            width: 78,
-            height: 78,
+            position: "absolute",
+            top: 0,
+            right: 18,
+            width: 54,
+            height: 54,
             borderRadius: 999,
-            border: `1px solid ${hudAccent}55`,
+            border: "1px solid rgba(255,255,255,0.18)",
             background:
-              "linear-gradient(180deg, rgba(253,86,2,0.14) 0%, rgba(253,86,2,0.08) 100%)",
-            fontSize: 10,
-            fontWeight: 800,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
+              "linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.12) 100%)",
             boxShadow:
-              "0 10px 22px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.05)",
+              "0 8px 18px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.16)",
             pointerEvents: "auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
+          aria-label="Inspect painting"
         >
-          Inspect
+          <HudIcon kind="inspect" size={18} color="rgba(255,255,255,0.98)" />
+        </button>
+        <button
+          data-mobile-control="true"
+          onClick={(e) => {
+            e.stopPropagation();
+            setEnvEnabled((v) => !v);
+          }}
+          style={{
+            ...hudBaseButton,
+            position: "absolute",
+            bottom: 0,
+            right: 62,
+            width: 54,
+            height: 54,
+            borderRadius: 999,
+            background: envEnabled
+              ? "linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.16) 100%)"
+              : "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)",
+            pointerEvents: "auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          aria-label={envEnabled ? "Turn HDRI off" : "Turn HDRI on"}
+        >
+          <img
+            src={envEnabled ? HDRI_ON_ICON : HDRI_OFF_ICON}
+            alt=""
+            style={{ width: 22, height: 22, objectFit: "contain", pointerEvents: "none", opacity: 0.92 }}
+          />
         </button>
         <button
           data-mobile-control="true"
@@ -1118,17 +1186,20 @@ function MobileHUD({ setInput, onInteract }) {
           onPointerCancel={onJumpEnd}
           style={{
             ...hudBaseButton,
-            width: 70,
-            height: 70,
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            width: 54,
+            height: 54,
             borderRadius: 999,
-            fontSize: 10,
-            fontWeight: 800,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
             pointerEvents: "auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
+          aria-label="Jump"
         >
-          Jump
+          <HudIcon kind="jump" size={16} color="rgba(255,255,255,0.94)" />
         </button>
       </div>
     </div>
@@ -1177,15 +1248,29 @@ export default function GalleryPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const isCoarsePointer =
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0 ||
-      window.matchMedia("(pointer: coarse)").matches;
+    const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
+    const updateDeviceMode = () => {
+      const isCoarsePointer =
+        "ontouchstart" in window ||
+        navigator.maxTouchPoints > 0 ||
+        coarsePointerQuery.matches;
 
-    const isSmallScreen = window.innerWidth < 768;
+      const isSmallScreen = window.innerWidth < 768;
 
-    setIsTouchDevice(isCoarsePointer || isSmallScreen);
-    setIsLowSpec((prev) => prev || isSmallScreen || detectLowSpecDevice());
+      setIsTouchDevice(isCoarsePointer || isSmallScreen);
+      setIsLowSpec((prev) => prev || isSmallScreen || detectLowSpecDevice());
+    };
+
+    updateDeviceMode();
+    window.addEventListener("resize", updateDeviceMode);
+    window.addEventListener("orientationchange", updateDeviceMode);
+    coarsePointerQuery.addEventListener?.("change", updateDeviceMode);
+
+    return () => {
+      window.removeEventListener("resize", updateDeviceMode);
+      window.removeEventListener("orientationchange", updateDeviceMode);
+      coarsePointerQuery.removeEventListener?.("change", updateDeviceMode);
+    };
   }, []);
 
   useEffect(() => {
@@ -1489,27 +1574,6 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* ── HDRI toggle ── */}
-      <button
-        onClick={(e) => { e.stopPropagation(); setEnvEnabled((v) => !v); }}
-        style={{
-          position: "fixed", bottom: 20, right: 20,
-          width: 46, height: 46, borderRadius: 999,
-          border: "1px solid rgba(255,255,255,0.25)",
-          background: "rgba(0,0,0,0.55)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          padding: 8, backdropFilter: "blur(10px)",
-          zIndex: 9999, cursor: "pointer",
-        }}
-        aria-label={envEnabled ? "Turn HDRI off" : "Turn HDRI on"}
-      >
-        <img
-          src={envEnabled ? HDRI_ON_ICON : HDRI_OFF_ICON}
-          alt={envEnabled ? "HDRI On" : "HDRI Off"}
-          style={{ width: "100%", height: "100%", objectFit: "contain", pointerEvents: "none" }}
-        />
-      </button>
-
       {/* ── Crosshair (desktop locked) ── */}
       {!isTouchDevice && locked && (
         <div style={{
@@ -1528,6 +1592,8 @@ export default function GalleryPage() {
         <MobileHUD
           setInput={setMobileInput}
           onInteract={() => mobileInteractRef.current?.()}
+          envEnabled={envEnabled}
+          setEnvEnabled={setEnvEnabled}
         />
       )}
 
