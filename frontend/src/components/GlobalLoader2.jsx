@@ -7,7 +7,8 @@ const MIN_VISIBLE_MS = 650;
 const HOLD_AT_100_MS = 220;
 const REVEAL_MS = 1450;
 const THREE_GRACE_MS = 1500;
-const LOGO_SRC = "/logo/logo-white.png";
+const LOGO_WHITE_SRC = "/logo/logo-white.png";
+const LOGO_BLACK_SRC = "/logo/logo-black.png";
 const TARGET_DESKTOP = { left: 18, top: 4, width: 122 };
 const TARGET_MOBILE = { left: 10, top: 3, width: 96 };
 const CURTAIN_COLUMNS = 6;
@@ -18,6 +19,66 @@ const CURTAIN_BLOCKS = Array.from({ length: CURTAIN_COLUMNS }, (_, idx) => ({
   bottom: "0%",
   delay: idx * 90,
 }));
+
+function extractRgbTriples(value) {
+  const colors = [];
+  const normalized = String(value || "");
+  const hexMatches = normalized.match(/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})/g) || [];
+
+  hexMatches.forEach((hex) => {
+    const raw = hex.slice(1);
+    const expanded =
+      raw.length === 3
+        ? raw
+            .split("")
+            .map((part) => part + part)
+            .join("")
+        : raw;
+    const int = Number.parseInt(expanded, 16);
+    colors.push([(int >> 16) & 255, (int >> 8) & 255, int & 255]);
+  });
+
+  const rgbRegex = /rgba?\(([^)]+)\)/g;
+  let match;
+  while ((match = rgbRegex.exec(normalized))) {
+    const parts = match[1]
+      .split(",")
+      .map((part) => Number.parseFloat(part.trim()))
+      .slice(0, 3);
+    if (parts.length === 3 && parts.every((part) => Number.isFinite(part))) {
+      colors.push(parts);
+    }
+  }
+
+  return colors;
+}
+
+function getPerceivedBrightness([r, g, b]) {
+  return (r * 299 + g * 587 + b * 114) / 1000 / 255;
+}
+
+function detectLogoVariant() {
+  if (typeof window === "undefined") return LOGO_WHITE_SRC;
+
+  const bodyStyle = window.getComputedStyle(document.body);
+  const htmlStyle = window.getComputedStyle(document.documentElement);
+  const backgroundTokens = [
+    document.body.style.background,
+    document.documentElement.style.background,
+    bodyStyle.backgroundImage,
+    bodyStyle.backgroundColor,
+    htmlStyle.backgroundImage,
+    htmlStyle.backgroundColor,
+  ];
+
+  const colors = backgroundTokens.flatMap(extractRgbTriples);
+  if (colors.length === 0) return LOGO_WHITE_SRC;
+
+  const averageBrightness =
+    colors.reduce((sum, color) => sum + getPerceivedBrightness(color), 0) / colors.length;
+
+  return averageBrightness >= 0.66 ? LOGO_BLACK_SRC : LOGO_WHITE_SRC;
+}
 
 export default function GlobalLoader({ children }) {
   const location = useLocation();
@@ -32,6 +93,7 @@ export default function GlobalLoader({ children }) {
   const [domReady, setDomReady] = useState(
     typeof document !== "undefined" ? document.readyState === "complete" : false
   );
+  const [pinnedLogoSrc, setPinnedLogoSrc] = useState(LOGO_WHITE_SRC);
   const [fontsReady, setFontsReady] = useState(
     typeof document === "undefined" || !document.fonts || document.fonts.status === "loaded"
   );
@@ -178,13 +240,29 @@ export default function GlobalLoader({ children }) {
 
   useEffect(() => {
     const img = new Image();
-    img.src = LOGO_SRC;
+    img.src = LOGO_WHITE_SRC;
     img.onload = () => {
       if (img.naturalWidth > 0 && img.naturalHeight > 0) {
         setLogoAspect(img.naturalWidth / img.naturalHeight);
       }
     };
   }, []);
+
+  useEffect(() => {
+    let frameId = 0;
+    let timeoutId = 0;
+
+    const updateLogo = () => setPinnedLogoSrc(detectLogoVariant());
+
+    updateLogo();
+    frameId = window.requestAnimationFrame(updateLogo);
+    timeoutId = window.setTimeout(updateLogo, 120);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [location.pathname, location.hash]);
 
   useEffect(() => {
     const previousBodyOverflow = document.body.style.overflow;
@@ -261,7 +339,7 @@ export default function GlobalLoader({ children }) {
           </div>
 
           <img
-            src={LOGO_SRC}
+            src={LOGO_WHITE_SRC}
             alt="House of MUSA"
             className="global-loader-logo"
             draggable="false"
@@ -278,7 +356,7 @@ export default function GlobalLoader({ children }) {
 
       {showPinnedLogo && (
         <img
-          src={LOGO_SRC}
+          src={pinnedLogoSrc}
           alt="House of MUSA"
           className="global-pinned-logo"
           style={pinnedLogoStyle}

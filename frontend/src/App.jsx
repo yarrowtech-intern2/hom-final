@@ -10,6 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import API_BASE_URL from "./config";
 
 const Home3D2 = lazy(() => import("./pages/Home3D2"));
+const LandingFinal = lazy(() => import("./pages/LandingFinal"));
 const Gallery3D = lazy(() => import("./pages/Gallery3D2"));
 // const About = lazy(() => import("./pages/About"));
 const About3 = lazy(() => import("./pages/about3"));
@@ -92,6 +93,7 @@ export default function App() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<Home3D2 />} />
+          <Route path="/landing" element={<LandingFinal />} />
           <Route path="/gallery" element={<Gallery3D />} />
           {/* <Route path="/about" element={<About />} /> */}
           <Route path="/about" element={<About3 />} />

@@ -480,7 +480,7 @@
 
 
 
-// Home3D2.jsx srijon
+// LandingFinal.jsx
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
@@ -780,7 +780,7 @@ function Scene({ isMobile, lowSpec }) {
 
 
 
-export default function Home3D() {
+export default function LandingFinal() {
   const isMobile = useIsMobile(768);
   const lowSpec = useMemo(() => detectLowSpecDevice(), []);
   const maxDpr = lowSpec ? 1 : isMobile ? 1.25 : 1.5;

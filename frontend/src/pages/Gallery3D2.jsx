@@ -1089,7 +1089,7 @@ export default function GalleryPage() {
   const [canvasKey, setCanvasKey] = useState(0);
   const [webglUnavailable, setWebglUnavailable] = useState(false);
 
-  const [envEnabled, setEnvEnabled] = useState(() => !detectLowSpecDevice());
+  const [envEnabled, setEnvEnabled] = useState(false);
   const [balls, setBalls] = useState([]);
 
   // 📱 detect touch devices
@@ -1159,15 +1159,15 @@ export default function GalleryPage() {
     if (!alreadyShown) setShowMobileWarning(true);
   }, [isTouchDevice]);
 
-  const maxBallsAllowed = isLowSpec ? 18 : isTouchDevice ? 28 : MAX_BALLS;
-  const canvasDpr = isLowSpec ? [0.85, 1] : isTouchDevice ? [0.9, 1.2] : [1, 1.35];
-  const shadowMapSize = isLowSpec ? 1024 : 2048;
-  const useHighFx = !isLowSpec;
+  const maxBallsAllowed = isLowSpec ? 12 : isTouchDevice ? 18 : 24;
+  const canvasDpr = isLowSpec ? [0.8, 0.95] : isTouchDevice ? [0.85, 1] : [0.95, 1.15];
+  const shadowMapSize = isLowSpec ? 768 : 1536;
+  const useHighFx = !isLowSpec && !isTouchDevice;
   const physicsTimeStep = isLowSpec ? 1 / 50 : 1 / 60;
-  const physicsSubsteps = isLowSpec ? 1 : 2;
-  const textureAnisotropy = isLowSpec ? 2 : isTouchDevice ? 4 : 8;
-  const textureLoadDistance = isLowSpec ? 8 : 10.5;
-  const ballSegments = isLowSpec ? 12 : isTouchDevice ? 14 : 20;
+  const physicsSubsteps = 1;
+  const textureAnisotropy = isLowSpec ? 2 : isTouchDevice ? 2 : 4;
+  const textureLoadDistance = isLowSpec ? 7 : 9;
+  const ballSegments = isLowSpec ? 10 : isTouchDevice ? 12 : 16;
   const ballCastShadow = !isLowSpec;
   const glOptions = useMemo(
     () => ({
@@ -1181,6 +1181,8 @@ export default function GalleryPage() {
   const handleWebGLLost = useCallback(() => {
     setLocked(false);
     setActive(null);
+    setEnvEnabled(false);
+    setIsLowSpec(true);
     setWebglUnavailable(true);
   }, []);
 
@@ -1192,6 +1194,8 @@ export default function GalleryPage() {
     setWebglUnavailable(false);
     setLocked(false);
     setActive(null);
+    setEnvEnabled(false);
+    setIsLowSpec(true);
     setSpawn(null);
     setBalls([]);
     setCanvasKey((current) => current + 1);
@@ -1602,7 +1606,7 @@ export default function GalleryPage() {
           onCreated={({ gl, scene }) => {
             gl.setClearColor("#050509", 1);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = isLowSpec ? 1.05 : 1.2;
+            gl.toneMappingExposure = isLowSpec ? 1 : 1.08;
             gl.outputColorSpace = THREE.SRGBColorSpace;
             gl.setPixelRatio(Math.min(window.devicePixelRatio, canvasDpr[1]));
 
@@ -1622,7 +1626,7 @@ export default function GalleryPage() {
             onContextLost={handleWebGLLost}
             onContextRestored={handleWebGLRestored}
           />
-          {useHighFx && <SoftShadows size={25} samples={24} focus={0.7} />}
+          {useHighFx && <SoftShadows size={18} samples={12} focus={0.55} />}
           <ambientLight intensity={0.18} color="#d9e1ff" />
           <directionalLight
             position={[6, 10, 4]}
@@ -1661,11 +1665,11 @@ export default function GalleryPage() {
 
               <ContactShadows
                 position={[0, 0.01, 0]}
-                opacity={isLowSpec ? 0.28 : 0.55}
+                opacity={isLowSpec ? 0.24 : 0.42}
                 scale={40}
-                blur={isLowSpec ? 3.6 : 3.1}
+                blur={isLowSpec ? 3.8 : 3.3}
                 far={22}
-                resolution={isLowSpec ? 512 : 1024}
+                resolution={isLowSpec ? 256 : 512}
               />
 
 
