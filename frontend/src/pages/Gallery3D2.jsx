@@ -294,6 +294,7 @@ function Player({ spawn = [0, 1.2, 3], mobileInput, isTouchDevice, lookRef }) {
   const { camera } = useThree();
   const bodyRef = useRef();
   const [, get] = useKeyboardControls();
+  const mobileLookEuler = useRef(new THREE.Euler(0, 0, 0, "YXZ")).current;
 
   const forward = useRef(new THREE.Vector3()).current;
   const right = useRef(new THREE.Vector3()).current;
@@ -308,11 +309,13 @@ function Player({ spawn = [0, 1.2, 3], mobileInput, isTouchDevice, lookRef }) {
 
     // init yaw/pitch for mobile from camera
     if (isTouchDevice && lookRef?.current) {
-      lookRef.current.yaw = camera.rotation.y;
-      lookRef.current.pitch = camera.rotation.x;
+      mobileLookEuler.setFromQuaternion(camera.quaternion, "YXZ");
+      camera.rotation.order = "YXZ";
+      lookRef.current.yaw = mobileLookEuler.y;
+      lookRef.current.pitch = mobileLookEuler.x;
       lookRef.current.ready = true;
     }
-  }, [camera, spawn, isTouchDevice, lookRef]);
+  }, [camera, spawn, isTouchDevice, lookRef, mobileLookEuler]);
 
   useFrame(() => {
     const rb = bodyRef.current;
@@ -321,7 +324,8 @@ function Player({ spawn = [0, 1.2, 3], mobileInput, isTouchDevice, lookRef }) {
     // 🔁 On mobile, apply yaw/pitch from lookRef to camera
     if (isTouchDevice && lookRef?.current?.ready) {
       const { yaw, pitch } = lookRef.current;
-      camera.rotation.set(pitch, yaw, 0);
+      mobileLookEuler.set(pitch, yaw, 0, "YXZ");
+      camera.quaternion.setFromEuler(mobileLookEuler);
     }
 
     const pressed = get();
@@ -807,9 +811,12 @@ function TouchLook({ enabled, lookRef }) {
     if (!lookRef?.current) return;
 
     const element = gl.domElement;
-    const sensitivity = 0.0016;
-    const lookZoneRatio = 0.5;
-    const horizontalDeadzone = 1.5;
+    const yawSensitivity = 0.0016;
+    const pitchSensitivity = 0.0012;
+    const pointerDeadzone = 1.5;
+    const maxPitch = Math.PI / 2 - 0.18;
+    const previousTouchAction = element.style.touchAction;
+    element.style.touchAction = "none";
 
     const isMobileControlTarget = (target) => {
       if (!(target instanceof Element)) return false;
@@ -819,11 +826,11 @@ function TouchLook({ enabled, lookRef }) {
     const onPointerDown = (e) => {
       if (activePointerIdRef.current !== null) return;
       if (isMobileControlTarget(e.target)) return;
-      if (e.clientX < window.innerWidth * lookZoneRatio) return;
 
       activePointerIdRef.current = e.pointerId;
       last.current.x = e.clientX;
       last.current.y = e.clientY;
+      element.setPointerCapture?.(e.pointerId);
       e.preventDefault();
     };
 
@@ -832,23 +839,31 @@ function TouchLook({ enabled, lookRef }) {
       if (!lookRef.current) return;
 
       const dx = e.clientX - last.current.x;
+      const dy = e.clientY - last.current.y;
       last.current.x = e.clientX;
       last.current.y = e.clientY;
 
-      if (Math.abs(dx) < horizontalDeadzone) {
+      if (Math.abs(dx) < pointerDeadzone && Math.abs(dy) < pointerDeadzone) {
         e.preventDefault();
         return;
       }
 
-      // Mobile keeps a fixed pitch so casual diagonal swipes do not throw the camera.
-      // Positive horizontal drag should turn the view in the same perceived direction.
-      lookRef.current.yaw += dx * sensitivity;
+      const nextYaw = lookRef.current.yaw + dx * yawSensitivity;
+      const nextPitch = THREE.MathUtils.clamp(
+        lookRef.current.pitch - dy * pitchSensitivity,
+        -maxPitch,
+        maxPitch
+      );
+
+      lookRef.current.yaw = nextYaw;
+      lookRef.current.pitch = nextPitch;
       lookRef.current.ready = true;
       e.preventDefault();
     };
 
     const onPointerUp = (e) => {
       if (activePointerIdRef.current !== e.pointerId) return;
+      element.releasePointerCapture?.(e.pointerId);
       activePointerIdRef.current = null;
     };
 
@@ -862,6 +877,7 @@ function TouchLook({ enabled, lookRef }) {
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
+      element.style.touchAction = previousTouchAction;
       activePointerIdRef.current = null;
     };
   }, [enabled, gl, lookRef]);
@@ -970,17 +986,29 @@ function MobileHUD({ setInput, onInteract }) {
     return () => resetMovement();
   }, [resetMovement]);
 
+  const hudAccent = "#fd5602";
+  const hudBaseButton = {
+    border: "1px solid rgba(255,255,255,0.1)",
+    background:
+      "linear-gradient(180deg, rgba(18,18,22,0.28) 0%, rgba(10,10,14,0.16) 100%)",
+    color: "#f7f2eb",
+    backdropFilter: "blur(10px)",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.05)",
+    touchAction: "none",
+  };
+
   return (
     <div
       data-mobile-control="true"
       style={{
         position: "fixed",
-        bottom: 84,
+        bottom: 28,
         left: 0,
         right: 0,
-        padding: "0 20px",
+        padding: "0 18px max(env(safe-area-inset-bottom), 18px)",
         display: "flex",
         justifyContent: "space-between",
+        alignItems: "flex-end",
         pointerEvents: "none",
         zIndex: 40,
       }}
@@ -993,32 +1021,61 @@ function MobileHUD({ setInput, onInteract }) {
         onPointerUp={onStickUp}
         onPointerCancel={onStickUp}
         style={{
-          width: 108,
-          height: 108,
+          width: 118,
+          height: 118,
           borderRadius: "50%",
-          border: "1px solid rgba(255,255,255,0.32)",
-          background: "rgba(0,0,0,0.42)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          background:
+            "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 34%, rgba(8,8,10,0.24) 72%, rgba(6,6,8,0.4) 100%)",
           pointerEvents: "auto",
           touchAction: "none",
-          backdropFilter: "blur(8px)",
+          backdropFilter: "blur(10px)",
           position: "relative",
+          boxShadow: "0 12px 24px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.05)",
         }}
       >
         <div
           style={{
             position: "absolute",
+            inset: 12,
+            borderRadius: "50%",
+            border: "1px solid rgba(255,255,255,0.08)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
             left: "50%",
             top: "50%",
-            width: 48,
-            height: 48,
+            width: 52,
+            height: 52,
             borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.5)",
-            background: "rgba(255,255,255,0.16)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%)",
             transform: `translate(calc(-50% + ${thumbPos.x}px), calc(-50% + ${thumbPos.y}px))`,
             transition:
               joystickPointerIdRef.current === null ? "transform 80ms ease-out" : "none",
+            boxShadow: "0 8px 16px rgba(0,0,0,0.12)",
           }}
         />
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: -22,
+            transform: "translateX(-50%)",
+            fontSize: 10,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.4)",
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+          }}
+        >
+          Move
+        </div>
       </div>
 
       <div
@@ -1026,30 +1083,33 @@ function MobileHUD({ setInput, onInteract }) {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 12,
-          pointerEvents: "auto",
+          gap: 10,
+          pointerEvents: "none",
           alignItems: "flex-end",
+          width: 78,
         }}
       >
-        {/* VIEW / interact button */}
         <button
           data-mobile-control="true"
           onPointerDown={(e) => { e.preventDefault(); onInteract?.(); }}
           style={{
-            width: 72,
-            height: 72,
-            borderRadius: "50%",
-            border: "1px solid rgba(253,86,2,0.7)",
-            background: "rgba(253,86,2,0.22)",
-            color: "#fff",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-            touchAction: "none",
-            backdropFilter: "blur(10px)",
+            ...hudBaseButton,
+            width: 78,
+            height: 78,
+            borderRadius: 999,
+            border: `1px solid ${hudAccent}55`,
+            background:
+              "linear-gradient(180deg, rgba(253,86,2,0.14) 0%, rgba(253,86,2,0.08) 100%)",
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            boxShadow:
+              "0 10px 22px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.05)",
+            pointerEvents: "auto",
           }}
         >
-          VIEW
+          Inspect
         </button>
         <button
           data-mobile-control="true"
@@ -1057,20 +1117,18 @@ function MobileHUD({ setInput, onInteract }) {
           onPointerUp={onJumpEnd}
           onPointerCancel={onJumpEnd}
           style={{
-            width: 68,
-            height: 68,
-            borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.35)",
-            background: "rgba(0,0,0,0.52)",
-            color: "#fff",
-            fontSize: 13,
-            fontWeight: 700,
-            letterSpacing: "0.06em",
-            touchAction: "none",
-            backdropFilter: "blur(10px)",
+            ...hudBaseButton,
+            width: 70,
+            height: 70,
+            borderRadius: 999,
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            pointerEvents: "auto",
           }}
         >
-          JUMP
+          Jump
         </button>
       </div>
     </div>
@@ -1380,7 +1438,7 @@ export default function GalleryPage() {
             opacity: showMobileHint ? 1 : 0,
           }}
         >
-          Drag right side to look · Joystick to move · VIEW to inspect
+          Drag right side to look · Joystick to move · Inspect to open
         </div>
       )}
 
@@ -1409,7 +1467,7 @@ export default function GalleryPage() {
               </p>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Best on Desktop</h2>
               <p style={{ margin: "8px 0 0", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.65 }}>
-                The 3D gallery is designed for desktop. You can still explore on mobile — use the joystick to move, drag the right side to look, and tap VIEW to open paintings.
+                The 3D gallery is designed for desktop. You can still explore on mobile — use the joystick to move, drag the right side to look, and tap Inspect to open paintings.
               </p>
             </div>
             <button
