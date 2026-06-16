@@ -429,7 +429,7 @@
 
 
 
-import { useCallback, useMemo, useState, useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { toast } from "react-toastify";
@@ -529,6 +529,40 @@ export default function ProjectsShowcase() {
   }, []);
 
   const closeApply = useCallback(() => setModalOpen(false), []);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const root = document.getElementById("root");
+
+    const prevHtmlClass = html.className;
+    const prevHtmlStyle = html.getAttribute("style") || "";
+    const prevBodyStyle = body.getAttribute("style") || "";
+    const prevRootStyle = root?.getAttribute("style") || "";
+
+    html.className = `${prevHtmlClass} careers-page`.trim();
+    html.style.overflowY = "auto";
+    html.style.height = "auto";
+
+    body.style.overflowY = "auto";
+    body.style.height = "auto";
+
+    if (root) {
+      root.style.height = "auto";
+      root.style.minHeight = "100%";
+      root.style.overflow = "visible";
+    }
+
+    return () => {
+      html.className = prevHtmlClass;
+      html.setAttribute("style", prevHtmlStyle);
+      body.setAttribute("style", prevBodyStyle);
+
+      if (root) {
+        root.setAttribute("style", prevRootStyle);
+      }
+    };
+  }, []);
 
   const onSubmit = useCallback(
     async (data) => {

@@ -19,6 +19,23 @@
   overflow-x: hidden;
 }
 
+html.careers-page,
+html.careers-page body,
+html.careers-page #root {
+  height: auto !important;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+}
+
+html.careers-page {
+  -webkit-overflow-scrolling: touch;
+}
+
+html.careers-page body {
+  touch-action: pan-y !important;
+}
+
 /* ─────────────────────────────────────────────
    SECTION 1 — HERO
 ───────────────────────────────────────────── */
@@ -657,6 +674,21 @@
   .ps2-hero-canvas {
     pointer-events: none !important;
     touch-action: auto !important;
+  }
+
+  .ps2-page {
+    min-height: 100dvh;
+    overscroll-behavior-y: auto;
+  }
+
+  .ps2-hero {
+    min-height: 100dvh;
+    height: auto;
+  }
+
+  .ps2-hero-inner {
+    min-height: 100dvh;
+    padding-top: calc(64px + clamp(24px, 6vw, 32px));
   }
 }
 
